@@ -2,4 +2,5 @@ fastapi
 uvicorn
 httpx
 sqlalchemy
-python-jose[cryptography]
+python-jose
+cryptography

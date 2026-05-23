@@ -314,7 +314,7 @@ async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
     yield
 
-app = FastAPI(title="VisePanda", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="VisePanda", version="0.1.0", lifespan=lifespan)
 
 
 @app.get("/api/health")
