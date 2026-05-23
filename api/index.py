@@ -285,6 +285,34 @@ async function signIn(){{if(!sb)await initSupabase();sb.auth.signInWithOAuth({{p
 initSupabase();
 </script></body></html>"""
 
+def page_trips() -> str:
+    return f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>My Trips · VisePanda</title><style>{CSS}
+.trips-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding:20px;max-width:900px;margin:0 auto}}
+.trip-item{{border:1px solid var(--line);border-radius:14px;padding:18px;background:rgba(255,255,255,.02);cursor:pointer;transition:all .2s;text-decoration:none;display:block}}
+.trip-item:hover{{border-color:rgba(125,211,252,.35);background:rgba(125,211,252,.04)}}
+.trip-item h3{{font-size:16px;margin:0 0 6px;color:var(--text)}}
+.trip-item .meta{{font-size:12px;color:var(--muted)}}
+.empty{{text-align:center;padding:60px 20px;color:var(--muted)}}
+</style></head><body>
+<div class="bg-shanshui"></div>
+<header><div><span class="dot"></span><span class="name">VisePanda</span></div><div><a href="/" class="btn">Home</a></div></header>
+<main style="position:relative;z-index:1;min-height:calc(100vh-56px);padding:20px 16px 80px">
+<h2 style="text-align:center;color:var(--text);font-size:22px;margin:20px 0">My Trips</h2>
+<div id="tripsList" class="trips-grid"><div class="skeleton" style="height:100px"></div></div>
+<div id="emptyMsg" class="empty" style="display:none"><p>No trips yet.</p><a href="/" class="btn btn-accent" style="display:inline-block;margin-top:12px">Start Planning</a></div>
+</main>
+<script>
+const T=document.getElementById('tripsList'),E=document.getElementById('emptyMsg');
+(async()=>{{
+const guest=localStorage.getItem('vp_trip')||'';
+const r=await fetch('/api/trips'+(guest?'?guest_id='+guest:''));
+if(!r.ok){{T.innerHTML='<div class=empty>Failed to load trips.</div>';return}}
+const trips=await r.json();
+if(!trips.length){{T.style.display='none';E.style.display='block';return}}
+T.innerHTML=trips.map(t=>'<a class=trip-item href=/chat?trip='+t.id+'><h3>'+t.cities.join(' → ')+'</h3><div class=meta>'+t.msg_count+' messages · '+new Date(t.updated_at).toLocaleDateString()+'</div></a>').join('');
+}})();
+</script></body></html>'''
+
 def page_chat() -> str:
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Chat · VisePanda — AI China Travel Planner</title><meta name="description" content="Chat with VisePanda AI to plan your China trip. Get day-by-day itineraries, food guides, and practical travel tips."><style>{CSS}
 .layout{{display:flex;height:calc(100vh-56px);position:relative;z-index:1}}
@@ -316,7 +344,7 @@ def page_chat() -> str:
 .time{{font-size:10px;color:var(--muted);margin-top:4px}}
 </style>{_inject_config()}</head><body>
 <div class="bg-shanshui"></div>
-<header><div><span class="dot"></span><span class="name">VisePanda</span></div><div><a href="#" onclick="event.preventDefault();clearChat()" class="btn" style="margin-right:8px">Clear</a><a href="/" class="btn">Home</a></div></header>
+<header><div><span class="dot"></span><span class="name">VisePanda</span></div><div><a href="/trips" class="btn" style="margin-right:8px">Trips</a><a href="#" onclick="event.preventDefault();clearChat()" class="btn" style="margin-right:8px">Clear</a><a href="/" class="btn">Home</a></div></header>
 <div class="layout"><main style="flex:1;display:flex;flex-direction:column"><div id="thread"><div class="welcome" id="welcomeMsg"><h2>👋 Welcome to VisePanda</h2><p>Your AI travel planner for China. Ask me anything!</p><div class="welcome-chips"><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Beijing 3-day itinerary';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🏯 Beijing 3 days</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Chengdu food tour 4 days';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🐼 Chengdu food</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Yunnan 7 days nature trip';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🏔️ Yunnan 7 days</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Shanghai weekend guide';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🌃 Shanghai weekend</span></div></div></div></main></div>
 <div class="chat-footer"><div id="quickReplies"></div><form id="msgForm"><input id="msgInput" type="text" placeholder="Type a message…" autofocus><button id="sendBtn" type="submit">Send</button></form></div>
 <script src="https://esm.sh/@supabase/supabase-js@2"></script>
@@ -387,6 +415,10 @@ def landing():
     return page_landing()
 
 
+@app.get("/trips", response_class=HTMLResponse)
+def trips_page():
+    return page_trips()
+
 @app.get("/chat", response_class=HTMLResponse)
 def chat_page():
     return page_chat()
@@ -429,7 +461,7 @@ async def chat_endpoint(payload: ChatIn, request: Request):
 
         trip = db.query(Trip).filter(Trip.id == payload.trip_id).one_or_none()
         if not trip:
-            trip = Trip(id=payload.trip_id, user_id=user_id)
+            trip = Trip(id=payload.trip_id, user_id=user_id, title=payload.text[:80])
             db.add(trip)
             db.flush()
 
@@ -478,6 +510,44 @@ async def chat_endpoint(payload: ChatIn, request: Request):
 @app.exception_handler(404)
 async def not_found(request, exc):
     return HTMLResponse('<html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>404 — VisePanda</title><style>body{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0a0f17;color:#fff;font-family:sans-serif;text-align:center;margin:0}h1{font-size:48px;margin:0;letter-spacing:-.02em}p{color:rgba(255,255,255,.5)}a{color:#7dd3fc}</style><h1>🐼</h1><p>Page not found</p><a href=/>Back home</a>', status_code=404)
+
+
+@app.get("/api/trips")
+def list_trips(request: Request, guest_id: str | None = None):
+    """List trips for current user."""
+    from fastapi import Query
+    db = SessionLocal()
+    try:
+        user_id = None
+        auth = request.headers.get("Authorization", "")
+        if auth.startswith("Bearer "):
+            token = auth[7:]
+            if AUTH_TEST_BYPASS and token.startswith("test:"):
+                user_id = token.split(":", 1)[1] or "test_user"
+            else:
+                try:
+                    header = jwt.get_unverified_header(token)
+                    kid = header.get("kid")
+                    if kid:
+                        keys = _get_jwks()
+                        key = next((k for k in keys if k.get("kid") == kid), None)
+                        if key:
+                            claims = jwt.decode(token, key, algorithms=["RS256"], audience="authenticated")
+                            user_id = claims.get("sub")
+                except:
+                    pass
+        if not user_id and guest_id:
+            user_id = f"guest:{guest_id}"
+        if not user_id:
+            user_id = "unknown"
+        trips = db.query(Trip).filter(Trip.user_id == user_id).order_by(Trip.updated_at.desc()).limit(20).all()
+        msgs_count = {}
+        for t in trips:
+            cnt = db.query(ChatMessage).filter(ChatMessage.trip_id == t.id).count()
+            msgs_count[t.id] = cnt
+        return [{"id": t.id, "title": t.title or "Untitled Trip", "cities": t.cities or [], "start_date": t.start_date, "updated_at": t.updated_at.isoformat() if t.updated_at else None, "msg_count": msgs_count.get(t.id, 0)} for t in trips]
+    finally:
+        db.close()
 
 
 @app.get("/api/trips/{trip_id}/messages")
