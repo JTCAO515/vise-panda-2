@@ -7,6 +7,8 @@ LLM: GLM 5.1 (ZhipuAI, OpenAI-compatible).
 from __future__ import annotations
 
 import datetime as dt
+import re
+import time
 import hashlib
 import json
 import os
@@ -34,6 +36,11 @@ LLM_MODEL = os.getenv("LLM_MODEL", "glm-5.1")
 LLM_ENABLED = os.getenv("LLM_ENABLED", "1") == "1"
 AUTH_TEST_BYPASS = os.getenv("AUTH_TEST_BYPASS", "0") == "1"
 IS_DEV = os.getenv("IS_DEV", "0") == "1"
+
+# Rate limiting
+_RATE_LIMIT: dict[str, list[float]] = {}
+_RATE_WINDOW = 60  # seconds
+_RATE_MAX = 20  # requests per window
 
 DB_URL = os.getenv("DATABASE_URL")
 if DB_URL:
@@ -98,6 +105,14 @@ def _get_jwks():
     _JWKS["keys"] = r.json()["keys"]
     _JWKS["ts"] = now
     return _JWKS["keys"]
+
+
+def _sanitize(text: str) -> str:
+    """Strip HTML, limit length, remove control chars."""
+    text = text.strip()[:2000]
+    text = re.sub(r'<[^>]*>', '', text)
+    text = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f]', '', text)
+    return text
 
 def _get_user_id(request: Request, guest_id: str | None) -> tuple[str, str]:
     """Returns (user_id, mode). mode = 'user' | 'guest'."""
@@ -292,11 +307,17 @@ def page_chat() -> str:
 @keyframes shimmer{{0%{{background-position:200%0}}100%{{background-position:-200%0}}}}
 .trip-card{{border:1px solid var(--line);border-radius:12px;padding:14px;margin:6px 0;background:rgba(125,211,252,.03)}}
 .trip-card b{{color:var(--accent)}}
+.welcome{{text-align:center;padding:40px 20px;color:var(--muted)}}
+.welcome h2{{font-size:20px;color:var(--text);margin:0 0 6px}}
+.welcome p{{margin:4px 0;font-size:14px}}
+.welcome-chips{{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:20px}}
+.welcome-chip{{border:1px solid var(--line);border-radius:999px;padding:8px 16px;font-size:13px;color:var(--text);cursor:pointer;background:rgba(255,255,255,.03);transition:all .15s}}
+.welcome-chip:hover{{border-color:rgba(125,211,252,.35);background:rgba(125,211,252,.08)}}
 .time{{font-size:10px;color:var(--muted);margin-top:4px}}
 </style>{_inject_config()}</head><body>
 <div class="bg-shanshui"></div>
 <header><div><span class="dot"></span><span class="name">VisePanda</span></div><div><a href="#" onclick="event.preventDefault();clearChat()" class="btn" style="margin-right:8px">Clear</a><a href="/" class="btn">Home</a></div></header>
-<div class="layout"><main style="flex:1;display:flex;flex-direction:column"><div id="thread"></div></main></div>
+<div class="layout"><main style="flex:1;display:flex;flex-direction:column"><div id="thread"><div class="welcome" id="welcomeMsg"><h2>👋 Welcome to VisePanda</h2><p>Your AI travel planner for China. Ask me anything!</p><div class="welcome-chips"><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Beijing 3-day itinerary';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🏯 Beijing 3 days</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Chengdu food tour 4 days';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🐼 Chengdu food</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Yunnan 7 days nature trip';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🏔️ Yunnan 7 days</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Shanghai weekend guide';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🌃 Shanghai weekend</span></div></div></div></main></div>
 <div class="chat-footer"><div id="quickReplies"></div><form id="msgForm"><input id="msgInput" type="text" placeholder="Type a message…" autofocus><button id="sendBtn" type="submit">Send</button></form></div>
 <script src="https://esm.sh/@supabase/supabase-js@2"></script>
 <script>
@@ -304,8 +325,8 @@ let sb=null,tripId=null;
 async function i(){{sb=supabase.createClient(W.__SUPABASE_CONFIG__.supabase_url,W.__SUPABASE_CONFIG__.supabase_anon_key)}}
 const W=window,Q=s=>document.querySelector(s),H=s=>s.replace(/[&<>"']/g,c=>({{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}}[c])),M=t=>{{let h=t.replace(/\\*\\*(.+?)\\*\\*/g,'<b>$1</b>').replace(/\\*(.+?)\\*/g,'<i>$1</i>').replace(/\\n\\n/g,'</p><p>').replace(/\\n/g,'<br>');if(t.includes('**Day '))h='<div class=trip-card>'+h+'</div>';return h}}
 function msg(r,c){{const d=document.createElement('div');d.className='msg '+r;const t=new Date().toLocaleTimeString([],{{hour:'2-digit',minute:'2-digit'}});d.innerHTML='<div class=bubble>'+M(c)+'</div><div class=time>'+t+'</div>';Q('#thread').appendChild(d);smartScroll();return d}}
-async function loadHistory(){{if(!tripId)return;try{{const r=await fetch('/api/trips/'+tripId+'/messages');if(!r.ok)return;const msgs=await r.json();for(const m of msgs){{msg(m.role==='user'?'user':'bot',m.content)}}}}catch(e){{}}}}
-async function send(t){{const sbb=Q('#sendBtn');sbb.disabled=true;sbb.textContent='...';msg('user',t);tripId=tripId||'t_'+crypto.randomUUID();localStorage.setItem('vp_trip',tripId);const b=msg('bot','<div class=skeleton style=width:60%></div><div class=skeleton style=width:40%;margin-top:8px></div><div class=skeleton style=width:50%;margin-top:8px></div>');let f='';try{{
+async function loadHistory(){{if(!tripId)return;try{{const r=await fetch('/api/trips/'+tripId+'/messages');if(!r.ok)return;const msgs=await r.json();if(msgs.length>0){{const w=Q('#welcomeMsg');if(w)w.remove()}}for(const m of msgs){{msg(m.role==='user'?'user':'bot',m.content)}}}}catch(e){{}}}}
+async function send(t){{const sbb=Q('#sendBtn');sbb.disabled=true;sbb.textContent='...';msg('user',t);const w=Q('#welcomeMsg');if(w)w.remove();tripId=tripId||'t_'+crypto.randomUUID();localStorage.setItem('vp_trip',tripId);const b=msg('bot','<div class=skeleton style=width:60%></div><div class=skeleton style=width:40%;margin-top:8px></div><div class=skeleton style=width:50%;margin-top:8px></div>');let f='';try{{
 const s=await sb?.auth.getSession();const tok=s?.data?.session?.access_token;const h={{'Content-Type':'application/json'}};if(tok)h['Authorization']='Bearer '+tok;
 let r;try{{r=await fetch('/api/chat',{{method:'POST',headers:h,body:JSON.stringify({{trip_id:tripId,text:t}})}});
 }}catch(fe){{b.innerHTML='<span style=color:#fca5a5>Connection failed. Check your network.</span> <a href=# onclick="send(\\''+t.replace(/'/g,'\\\\x27')+'\\');return false" style=color:var(--accent);text-decoration:underline>Retry</a>';sbb.disabled=false;sbb.textContent='Send';return}}
@@ -384,6 +405,16 @@ class ChatIn(BaseModel):
 
 @app.post("/api/chat")
 async def chat_endpoint(payload: ChatIn, request: Request):
+    # Rate limit check
+    ip = request.headers.get("x-forwarded-for", "unknown").split(",")[0].strip()
+    now = time.time()
+    _RATE_LIMIT.setdefault(ip, [])
+    _RATE_LIMIT[ip] = [t for t in _RATE_LIMIT[ip] if now - t < _RATE_WINDOW]
+    if len(_RATE_LIMIT[ip]) >= _RATE_MAX:
+        raise HTTPException(429, "Too many requests. Please wait.")
+    _RATE_LIMIT[ip].append(now)
+
+
     """SSE streaming chat with LLM."""
     user_id, mode = _get_user_id(request, payload.guest_id)
 
