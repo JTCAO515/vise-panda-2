@@ -7,7 +7,9 @@ LLM: GLM 5.1 (ZhipuAI, OpenAI-compatible).
 from __future__ import annotations
 
 import datetime as dt
+import random
 import re
+import string
 import time
 import hashlib
 import json
@@ -18,7 +20,7 @@ from typing import AsyncGenerator
 
 import httpx
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import HTMLResponse, Response, StreamingResponse
+from fastapi.responses import HTMLResponse, JSONResponse, Response, StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy import JSON, DateTime, ForeignKey, String, Text, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship, sessionmaker
@@ -79,6 +81,7 @@ class Trip(Base):
     itinerary_versions: Mapped[list] = mapped_column(JSON, default=list)
     created_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), default=_now)
     updated_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    share_id: Mapped[str | None] = mapped_column(String, nullable=True, unique=True, index=True)
     user: Mapped[User] = relationship()
 
 class ChatMessage(Base):
@@ -285,6 +288,25 @@ async function signIn(){{if(!sb)await initSupabase();sb.auth.signInWithOAuth({{p
 initSupabase();
 </script></body></html>"""
 
+def page_share(share_id: str) -> str:
+    db = SessionLocal()
+    try:
+        trip = db.query(Trip).filter(Trip.share_id == share_id).one_or_none()
+        if not trip:
+            return '<html lang=en><head><meta charset=utf-8><title>Not Found</title><style>body{{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0a0f17;color:#fff;font-family:sans-serif;text-align:center;margin:0}}h1{{font-size:48px}}a{{color:#7dd3fc}}</style><h1>🐼</h1><p>Trip not found</p><a href=/>Back home</a>'
+        msgs = db.query(ChatMessage).filter(ChatMessage.trip_id == trip.id).order_by(ChatMessage.created_at.asc()).all()
+    finally:
+        db.close()
+    msgs_html = ''.join(f'<div class="msg {m.role}"><div class=bubble>{m.content}</div></div>' for m in msgs)
+    title = trip.title or 'Shared Trip'
+    return f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{title} · VisePanda</title><meta name="description" content="AI-planned China trip itinerary"><meta property="og:title" content="{title}"><style>{CSS}.share-header{{text-align:center;padding:24px 16px 12px;position:relative;z-index:1}}.share-header h2{{font-size:20px;margin:0;color:var(--text)}}.share-header p{{color:var(--muted);font-size:14px;margin:4px 0}}.share-thread{{max-width:700px;margin:0 auto;padding:12px 16px 100px;position:relative;z-index:1}}.share-footer{{text-align:center;padding:20px;position:relative;z-index:1}}.msg{{margin:8px 0}}.msg.assistant .bubble{{border:1px solid var(--line);border-radius:14px;padding:10px 14px;line-height:1.5;background:rgba(255,255,255,.03);white-space:pre-wrap}}.msg.user .bubble{{background:rgba(125,211,252,.10);border-color:rgba(125,211,252,.18)}}.bubble{{max-width:700px}}
+</style></head><body><div class="bg-shanshui"></div>
+<div class="share-header"><h2>🐼 {title}</h2><p>AI-planned trip · {len(msgs)} messages</p></div>
+<div class="share-thread">{msgs_html}</div>
+<div class="share-footer"><a href="/" class="btn btn-accent">Plan your own trip</a></div>
+</body></html>'''
+
+
 def page_trips() -> str:
     return f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>My Trips · VisePanda</title><style>{CSS}
 .trips-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding:20px;max-width:900px;margin:0 auto}}
@@ -309,8 +331,20 @@ const r=await fetch('/api/trips'+(guest?'?guest_id='+guest:''));
 if(!r.ok){{T.innerHTML='<div class=empty>Failed to load trips.</div>';return}}
 const trips=await r.json();
 if(!trips.length){{T.style.display='none';E.style.display='block';return}}
-T.innerHTML=trips.map(t=>'<a class=trip-item href=/chat?trip='+t.id+'><h3>'+t.cities.join(' → ')+'</h3><div class=meta>'+t.msg_count+' messages · '+new Date(t.updated_at).toLocaleDateString()+'</div></a>').join('');
+T.innerHTML=trips.map(t=>'<div class=trip-item><a href=/chat?trip='+t.id+' style=text-decoration:none;color:inherit><h3>'+t.cities.join(' → ')+'</h3><div class=meta>'+t.msg_count+' messages · '+new Date(t.updated_at).toLocaleDateString()+'</div></a><div style=margin-top:10px;display:flex;gap:8px><button onclick="event.stopPropagation();shareTrip(\''+t.id+'\')" class=btn style=font-size:11px;padding:4px 10px>🔗 Share</button><button onclick="event.stopPropagation();renameTrip(\''+t.id+'\',\''+(t.title||'').replace(/'/g,'\\x27')+'\')" class=btn style=font-size:11px;padding:4px 10px>✏️ Rename</button><button onclick="event.stopPropagation();deleteTrip(\''+t.id+'\')" class=btn style=font-size:11px;padding:4px 10px;color:#fca5a5>🗑 Delete</button></div></div>').join('');
 }})();
+async function renameTrip(id,oldTitle){{
+const t=prompt('Rename trip:',oldTitle);
+if(!t)return;
+const r=await fetch('/api/trips/'+id,{{method:'PUT',headers:{{'Content-Type':'application/json'}},body:JSON.stringify({{title:t}})}});
+if(r.ok)location.reload();
+}}
+async function shareTrip(id){{const r=await fetch('/api/trips/'+id+'/share',{{method:'POST'}});if(r.ok){{const d=await r.json();prompt('Share link:',location.origin+d.url)}}else{{alert('Failed to share')}}}}
+async function deleteTrip(id){{
+if(!confirm('Delete this trip and all messages?'))return;
+const r=await fetch('/api/trips/'+id,{{method:'DELETE'}});
+if(r.ok)location.reload();
+}}
 </script></body></html>'''
 
 def page_chat() -> str:
@@ -415,6 +449,10 @@ def landing():
     return page_landing()
 
 
+@app.get("/share/{share_id}", response_class=HTMLResponse)
+def share_view(share_id: str):
+    return page_share(share_id)
+
 @app.get("/trips", response_class=HTMLResponse)
 def trips_page():
     return page_trips()
@@ -509,6 +547,9 @@ async def chat_endpoint(payload: ChatIn, request: Request):
 
 @app.exception_handler(404)
 async def not_found(request, exc):
+    path = request.url.path
+    if path.startswith("/api/"):
+        return JSONResponse({"error": "not found"}, status_code=404)
     return HTMLResponse('<html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>404 — VisePanda</title><style>body{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0a0f17;color:#fff;font-family:sans-serif;text-align:center;margin:0}h1{font-size:48px;margin:0;letter-spacing:-.02em}p{color:rgba(255,255,255,.5)}a{color:#7dd3fc}</style><h1>🐼</h1><p>Page not found</p><a href=/>Back home</a>', status_code=404)
 
 
@@ -546,6 +587,64 @@ def list_trips(request: Request, guest_id: str | None = None):
             cnt = db.query(ChatMessage).filter(ChatMessage.trip_id == t.id).count()
             msgs_count[t.id] = cnt
         return [{"id": t.id, "title": t.title or "Untitled Trip", "cities": t.cities or [], "start_date": t.start_date, "updated_at": t.updated_at.isoformat() if t.updated_at else None, "msg_count": msgs_count.get(t.id, 0)} for t in trips]
+    finally:
+        db.close()
+
+
+class RenameIn(BaseModel):
+    title: str
+
+@app.put("/api/trips/{trip_id}")
+def rename_trip(trip_id: str, body: RenameIn):
+    db = SessionLocal()
+    try:
+        trip = db.query(Trip).filter(Trip.id == trip_id).one_or_none()
+        if not trip:
+            raise HTTPException(404, "Trip not found")
+        trip.title = body.title[:100]
+        trip.updated_at = _now()
+        db.commit()
+        return {"ok": True}
+    finally:
+        db.close()
+
+
+@app.post("/api/trips/{trip_id}/share")
+def share_trip(trip_id: str):
+    db = SessionLocal()
+    try:
+        trip = db.query(Trip).filter(Trip.id == trip_id).one_or_none()
+        if not trip:
+            raise HTTPException(404, "Trip not found")
+        if not trip.share_id:
+            trip.share_id = "%s" % (''.join(__import__('random').choices(__import__('string').ascii_lowercase + __import__('string').digits, k=8)))
+            trip.updated_at = _now()
+            db.commit()
+        return {"share_id": trip.share_id, "url": f"/share/{trip.share_id}"}
+    finally:
+        db.close()
+
+
+@app.get("/api/trips/{trip_id}/share")
+def get_share_link(trip_id: str):
+    db = SessionLocal()
+    try:
+        trip = db.query(Trip).filter(Trip.id == trip_id).one_or_none()
+        if not trip:
+            raise HTTPException(404, "Trip not found")
+        return {"share_id": trip.share_id, "url": f"/share/{trip.share_id}" if trip.share_id else None}
+    finally:
+        db.close()
+
+
+@app.delete("/api/trips/{trip_id}")
+def delete_trip(trip_id: str):
+    db = SessionLocal()
+    try:
+        db.query(ChatMessage).filter(ChatMessage.trip_id == trip_id).delete()
+        db.query(Trip).filter(Trip.id == trip_id).delete()
+        db.commit()
+        return {"ok": True}
     finally:
         db.close()
 

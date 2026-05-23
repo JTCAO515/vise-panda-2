@@ -125,3 +125,21 @@ cards=4 | goChat=1 | skeleton=2 | trip=3 | btnDisable=2 | mobile=1
 
 **测试**: 5/5 PASS
 
+
+---
+
+## Iteration 11 — 分享行程
+
+**日期**: 2026-05-24
+**状态**: ✅ 完成
+
+| # | 改动 | 效果 |
+|---|------|------|
+| 1 | Trip 模型加 `share_id` | 唯一分享标识 |
+| 2 | `POST /api/trips/{id}/share` | 生成/返回分享链接 |
+| 3 | `GET /api/trips/{id}/share` | 获取已有分享链接 |
+| 4 | `/share/{share_id}` 只读页 | 公开查看行程，无登录 |
+| 5 | Trips 页加 🔗 Share 按钮 | 一键复制分享链接 |
+
+**测试**: 4/4 PASS
+
