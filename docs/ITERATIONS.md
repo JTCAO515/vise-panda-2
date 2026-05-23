@@ -70,16 +70,32 @@
 
 ---
 
-### Iteration 1 — 待定
+### Iteration 1 — 部署修复 ✅ (2026-05-24)
 
-**候选方向**（按优先级，选一个做）：
+**问题**：Vercel 部署后 `FUNCTION_INVOCATION_FAILED / 500`，所有路由不可用。
 
-#### 🥇 P0 — 部署验证 & 修复
-- 用户部署到 Vercel
-- 验证首页、聊天、Auth 全部可用
-- 修复任何部署错误
+**根因**（按发现顺序）：
+1. **SQLite 路径**：`sqlite:///data.sqlite3` 写到 Vercel 只读文件系统，lifespan 直接崩溃
+2. **依赖未安装**：Vercel uv 构建器只读根目录 `requirements.txt`，`api/requirements.txt` 被忽略
+3. **跨文件导入**：`api/index.py → from main import app` 在 Vercel Python runtime 中不稳定
 
-#### 🥈 P1 — 核心功能补齐
+**修复**：
+- SQLite → `/tmp/data.sqlite3`
+- 新增根级 `requirements.txt`（含 `python-jose[cryptography]`）
+- `api/index.py` 内联完整应用代码（不再 import 外部文件）
+- lifespan 加 try/except 容错
+- `.python-version` 固定 Python 3.12
+- Vercel CLI 登录 + 环境变量一键配置 + 自动部署
+
+**教训**：
+- Vercel 文件系统除 `/tmp` 外只读
+- Vercel uv 构建器需要根级依赖声明
+- `api/` 目录下的 Python 函数尽量自包含，避免跨文件导入
+- `.python-version` + `.vercelignore` 是好习惯
+
+**状态**：✅ 已部署，首页可访问
+
+---
 - [ ] **流式聊天断线恢复**：当前 SSE 断线后消息丢失
 - [ ] **对话历史**：加载历史消息到聊天界面
 - [ ] **错误处理**：LLM 超时/失败的用户友好提示
@@ -105,12 +121,13 @@
 ```
 vise-panda-2/
 ├── api/
-│   ├── main.py          # 全部应用逻辑 (~395行)
-│   ├── index.py         # Vercel 入口: from main import app
-│   ├── requirements.txt # fastapi, uvicorn, httpx, sqlalchemy, python-jose
-│   └── .env.example
+│   ├── index.py         # Vercel 入口 + 完整应用 (~400行)
+│   ├── main.py          # 本地开发用 (index.py 的副本)
+│   └── requirements.txt # api 层依赖 (Vercel 不用，仅本地)
+├── requirements.txt     # 根级依赖 (Vercel uv 构建器用)
 ├── vercel.json          # rewrite /* → /api/index.py
-├── .env                 # 本地环境变量 (不提交)
+├── .python-version      # 3.12
+├── .vercelignore
 ├── .gitignore
 └── docs/
     └── ITERATIONS.md    # 👈 本文件
@@ -129,9 +146,9 @@ vise-panda-2/
 ## ⚠️ 已知问题
 
 1. **Vercel Serverless 冷启动**：首次请求可能 2-5 秒延迟
-2. **SQLite 不适合 Serverless**：非生产环境用 SQLite，生产必须 Supabase Postgres
+2. **SQLite 仅限 /tmp**：Serverless 实例重启后数据丢失，生产用 Supabase Postgres
 3. **LLM 无上下文**：当前每次请求只传 system prompt + 当前消息，没有对话历史
-4. **requirements.txt 不完整**：`python-jose[cryptography]` 的中括号在 pip 里需要引号——`"python-jose[cryptography]"`
+4. **未配置 DATABASE_URL**：目前走 SQLite fallback，需接 Supabase Postgres
 
 ---
 
