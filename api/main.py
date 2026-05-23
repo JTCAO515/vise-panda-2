@@ -20,6 +20,7 @@ from typing import AsyncGenerator
 
 import httpx
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, JSONResponse, Response, StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy import JSON, DateTime, ForeignKey, String, Text, create_engine
@@ -280,13 +281,7 @@ def page_landing() -> str:
 </div></main>
 <footer>Try without login — last 3 trips saved locally. Login to sync across devices.</footer>
 <script src="https://esm.sh/@supabase/supabase-js@2"></script>
-<script>
-let sb=null;
-function goChat(q){{const id='t_'+crypto.randomUUID();const u=new URL('/chat',location);u.searchParams.set('trip',id);if(q)u.searchParams.set('q',q);location.href=u.toString()}}
-async function initSupabase(){{sb=supabase.createClient(window.__SUPABASE_CONFIG__.supabase_url,window.__SUPABASE_CONFIG__.supabase_anon_key)}}
-async function signIn(){{if(!sb)await initSupabase();sb.auth.signInWithOAuth({{provider:'google',options:{{redirectTo:location.origin+'/auth/callback'}}}})}}
-initSupabase();
-</script></body></html>"""
+<script src="/static/landing.js"></script></body></html>"""
 
 def page_share(share_id: str) -> str:
     db = SessionLocal()
@@ -323,29 +318,8 @@ def page_trips() -> str:
 <div id="tripsList" class="trips-grid"><div class="skeleton" style="height:100px"></div></div>
 <div id="emptyMsg" class="empty" style="display:none"><p>No trips yet.</p><a href="/" class="btn btn-accent" style="display:inline-block;margin-top:12px">Start Planning</a></div>
 </main>
-<script>
-const T=document.getElementById('tripsList'),E=document.getElementById('emptyMsg');
-(async()=>{{
-const guest=localStorage.getItem('vp_trip')||'';
-const r=await fetch('/api/trips'+(guest?'?guest_id='+guest:''));
-if(!r.ok){{T.innerHTML='<div class=empty>Failed to load trips.</div>';return}}
-const trips=await r.json();
-if(!trips.length){{T.style.display='none';E.style.display='block';return}}
-T.innerHTML=trips.map(t=>'<div class=trip-item><a href=/chat?trip='+t.id+' style=text-decoration:none;color:inherit><h3>'+t.cities.join(' → ')+'</h3><div class=meta>'+t.msg_count+' messages · '+new Date(t.updated_at).toLocaleDateString()+'</div></a><div style=margin-top:10px;display:flex;gap:8px><button onclick="event.stopPropagation();shareTrip(\''+t.id+'\')" class=btn style=font-size:11px;padding:4px 10px>🔗 Share</button><button onclick="event.stopPropagation();renameTrip(\''+t.id+'\',\''+(t.title||'').replace(/'/g,'\\x27')+'\')" class=btn style=font-size:11px;padding:4px 10px>✏️ Rename</button><button onclick="event.stopPropagation();deleteTrip(\''+t.id+'\')" class=btn style=font-size:11px;padding:4px 10px;color:#fca5a5>🗑 Delete</button></div></div>').join('');
-}})();
-async function renameTrip(id,oldTitle){{
-const t=prompt('Rename trip:',oldTitle);
-if(!t)return;
-const r=await fetch('/api/trips/'+id,{{method:'PUT',headers:{{'Content-Type':'application/json'}},body:JSON.stringify({{title:t}})}});
-if(r.ok)location.reload();
-}}
-async function shareTrip(id){{const r=await fetch('/api/trips/'+id+'/share',{{method:'POST'}});if(r.ok){{const d=await r.json();prompt('Share link:',location.origin+d.url)}}else{{alert('Failed to share')}}}}
-async function deleteTrip(id){{
-if(!confirm('Delete this trip and all messages?'))return;
-const r=await fetch('/api/trips/'+id,{{method:'DELETE'}});
-if(r.ok)location.reload();
-}}
-</script></body></html>'''
+<script src="/static/trips.js"></script>
+</body></html>'''
 
 def page_chat() -> str:
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Chat · VisePanda — AI China Travel Planner</title><meta name="description" content="Chat with VisePanda AI to plan your China trip. Get day-by-day itineraries, food guides, and practical travel tips."><style>{CSS}
@@ -382,42 +356,13 @@ def page_chat() -> str:
 <div class="layout"><main style="flex:1;display:flex;flex-direction:column"><div id="thread"><div class="welcome" id="welcomeMsg"><h2>👋 Welcome to VisePanda</h2><p>Your AI travel planner for China. Ask me anything!</p><div class="welcome-chips"><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Beijing 3-day itinerary';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🏯 Beijing 3 days</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Chengdu food tour 4 days';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🐼 Chengdu food</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Yunnan 7 days nature trip';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🏔️ Yunnan 7 days</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Shanghai weekend guide';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🌃 Shanghai weekend</span></div></div></div></main></div>
 <div class="chat-footer"><div id="quickReplies"></div><form id="msgForm"><input id="msgInput" type="text" placeholder="Type a message…" autofocus><button id="sendBtn" type="submit">Send</button></form></div>
 <script src="https://esm.sh/@supabase/supabase-js@2"></script>
-<script>
-let sb=null,tripId=null;
-async function i(){{sb=supabase.createClient(W.__SUPABASE_CONFIG__.supabase_url,W.__SUPABASE_CONFIG__.supabase_anon_key)}}
-const W=window,Q=s=>document.querySelector(s),H=s=>s.replace(/[&<>"']/g,c=>({{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}}[c])),M=t=>{{let h=t.replace(/\\*\\*(.+?)\\*\\*/g,'<b>$1</b>').replace(/\\*(.+?)\\*/g,'<i>$1</i>').replace(/\\n\\n/g,'</p><p>').replace(/\\n/g,'<br>');if(t.includes('**Day '))h='<div class=trip-card>'+h+'</div>';return h}}
-function msg(r,c){{const d=document.createElement('div');d.className='msg '+r;const t=new Date().toLocaleTimeString([],{{hour:'2-digit',minute:'2-digit'}});d.innerHTML='<div class=bubble>'+M(c)+'</div><div class=time>'+t+'</div>';Q('#thread').appendChild(d);smartScroll();return d}}
-async function loadHistory(){{if(!tripId)return;try{{const r=await fetch('/api/trips/'+tripId+'/messages');if(!r.ok)return;const msgs=await r.json();if(msgs.length>0){{const w=Q('#welcomeMsg');if(w)w.remove()}}for(const m of msgs){{msg(m.role==='user'?'user':'bot',m.content)}}}}catch(e){{}}}}
-async function send(t){{const sbb=Q('#sendBtn');sbb.disabled=true;sbb.textContent='...';msg('user',t);const w=Q('#welcomeMsg');if(w)w.remove();tripId=tripId||'t_'+crypto.randomUUID();localStorage.setItem('vp_trip',tripId);const b=msg('bot','<div class=skeleton style=width:60%></div><div class=skeleton style=width:40%;margin-top:8px></div><div class=skeleton style=width:50%;margin-top:8px></div>');let f='';try{{
-const s=await sb?.auth.getSession();const tok=s?.data?.session?.access_token;const h={{'Content-Type':'application/json'}};if(tok)h['Authorization']='Bearer '+tok;
-let r;try{{r=await fetch('/api/chat',{{method:'POST',headers:h,body:JSON.stringify({{trip_id:tripId,text:t}})}});
-}}catch(fe){{b.innerHTML='<span style=color:#fca5a5>Connection failed. Check your network.</span> <a href=# onclick="send(\\''+t.replace(/'/g,'\\\\x27')+'\\');return false" style=color:var(--accent);text-decoration:underline>Retry</a>';sbb.disabled=false;sbb.textContent='Send';return}}
-const rd=r.body.getReader(),dc=new TextDecoder();let buf='';
-while(1){{const{{done,value}}=await rd.read();if(done)break;buf+=dc.decode(value,{{stream:true}});
-for(const l of buf.split('\\n')){{if(!l.startsWith('data:'))continue;const d=l.slice(5).trim();if(d==='[DONE]')continue;try{{const j=JSON.parse(d);if(j.token)f+=j.token;b.innerHTML=M(f)}}catch(_){{}}}}
-buf=buf.includes('\\n')?buf.split('\\n').pop():buf;smartScroll();}};
-const sm=f.split('---SUGGESTIONS---');if(sm[1]){{const sgs=sm[1].split('\\n').filter(l=>l.trim().startsWith('-')).map(l=>l.replace(/^-\\s*/,''));const qr=Q('#quickReplies');qr.innerHTML=sgs.map(s=>'<span class=chip onclick="document.getElementById(\\'msgInput\\').value=\\''+s.replace(/'/g,'\\\\x27')+'\\';document.getElementById(\\'msgForm\\').dispatchEvent(new Event(\\'submit\\'))">'+s+'</span>').join('')}};
-}}catch(e){{b.innerHTML='<span style=color:#fca5a5>Error: '+H(e.message)+'</span> <a href=# onclick="send(\\''+t.replace(/'/g,'\\\\x27')+'\\');return false" style=color:var(--accent);text-decoration:underline>Retry</a>'}};sbb.disabled=false;sbb.textContent='Send';
-smartScroll();}}
-function smartScroll(){{const t=Q('#thread');if(t.scrollHeight-t.scrollTop-t.clientHeight<200)t.scrollTop=t.scrollHeight}}
-function clearChat(){{Q('#thread').innerHTML='';localStorage.removeItem('vp_trip')}}
-i();setTimeout(()=>{{if(!sb)Q('#thread').innerHTML='<div style=padding:20px;color:var(--muted)>Loading services… please wait or <a href=# onclick=location.reload() style=color:var(--accent)>refresh</a></div>'}},5000);const p=new URL(W.location);tripId=p.searchParams.get('trip')||localStorage.getItem('vp_trip');if(tripId)loadHistory();const q=p.searchParams.get('q');
-Q('#msgForm').onsubmit=e=>{{e.preventDefault();const v=Q('#msgInput').value.trim();if(!v)return;Q('#msgInput').value='';Q('#quickReplies').innerHTML='';send(v)}};
-if(q){{p.searchParams.delete('q');history.replaceState(null,'',p.toString());send(q)}}
-</script></body></html>"""
+<script src="/static/chat.js"></script></body></html>"""
 
 def page_auth_callback() -> str:
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Signing in…</title><style>body{{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a0f17;color:#fff;font-family:sans-serif;text-align:center}}.muted{{color:rgba(255,255,255,.5);font-size:14px}}</style>{_inject_config()}</head><body>
 <div><div style="font-size:18px;font-weight:650;margin-bottom:8px">Signing in…</div><div class="muted">Redirecting…</div></div>
 <script src="https://esm.sh/@supabase/supabase-js@2"></script>
-<script>
-(async()=>{{
-const sb=supabase.createClient(window.__SUPABASE_CONFIG__.supabase_url,window.__SUPABASE_CONFIG__.supabase_anon_key);
-const{{data,error}}=await sb.auth.getSession();
-if(data?.session){{localStorage.setItem('visepanda_session',JSON.stringify(data.session));location.href='/chat'}}
-else{{setTimeout(()=>location.href='/',3000)}}
-}})();
-</script></body></html>"""
+<script src="/static/auth.js"></script></body></html>"""
 
 # ══════════════════════════════════════════════════════════
 # APP
@@ -432,6 +377,7 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(title="VisePanda", version="0.1.0", lifespan=lifespan)
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 @app.get("/api/health")

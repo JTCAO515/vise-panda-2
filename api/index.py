@@ -21,6 +21,7 @@ from typing import AsyncGenerator
 import httpx
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse, Response, StreamingResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from sqlalchemy import JSON, DateTime, ForeignKey, String, Text, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship, sessionmaker
@@ -244,6 +245,7 @@ header{height:56px;display:flex;align-items:center;justify-content:space-between
 .card-sub{font-size:12px;color:var(--muted);margin:0}
 .card-emoji{font-size:28px;margin-bottom:8px}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-top:24px;max-width:560px;margin-left:auto;margin-right:auto}
+.lang-switch{font-size:11px;padding:5px 10px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--text);cursor:pointer;margin-left:6px;text-decoration:none}.lang-switch:hover{background:rgba(255,255,255,.06)}
 footer{position:fixed;left:0;right:0;bottom:0;padding:10px 16px;border-top:1px solid var(--line);background:rgba(8,10,14,.55);backdrop-filter:blur(10px);font-size:12px;color:var(--muted);z-index:1}
 input[type=text]{border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--text);padding:12px 16px;outline:none;font-size:14px}
 input[type=text]:focus{border-color:rgba(125,211,252,.35);box-shadow:0 0 0 4px rgba(125,211,252,.12)}
@@ -260,40 +262,35 @@ window.__SUPABASE_CONFIG__ = {{
 </script>"""
 
 def page_landing() -> str:
-    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VisePanda — AI China Travel Planner 🇨🇳</title><meta name="description" content="Plan your China trip with AI. Get personalized itineraries, local food recommendations, hotel tips. Beijing, Shanghai, Chengdu, Yunnan — tell us where and how long."><meta property="og:title" content="VisePanda — AI China Travel Planner"><meta property="og:description" content="Personalized China travel itineraries powered by AI"><meta property="og:type" content="website"><meta name="twitter:card" content="summary"><style>{CSS}</style>{_inject_config()}</head><body>
+    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title data-i18n="title">VisePanda — AI China Travel Planner 🇨🇳</title><meta name="description" data-i18n-content="metaDesc" content="Plan your China trip with AI. Get personalized itineraries, local food recommendations, hotel tips. Beijing, Shanghai, Chengdu, Yunnan — tell us where and how long."><meta property="og:title" content="VisePanda — AI China Travel Planner"><meta property="og:description" content="Personalized China travel itineraries powered by AI"><meta property="og:type" content="website"><meta name="twitter:card" content="summary"><style>{CSS}</style>{_inject_config()}</head><body>
 <div class="bg-shanshui"></div>
-<header><div><span class="dot"></span><span class="name">VisePanda</span></div><div id="authArea"><a href="#" onclick="event.preventDefault();signIn()" class="btn btn-accent">Sign in</a></div></header>
+<header><div><span class="dot"></span><span class="name">VisePanda</span></div><div id="authArea"><a href="#" class="lang-switch" onclick="event.preventDefault();setLang(LANG==='en'?'zh':'en')" data-i18n="langLabel">中</a><a href="#" onclick="event.preventDefault();signIn()" class="btn btn-accent" data-i18n="signIn">Sign in</a></div></header>
 <main style="position:relative;min-height:calc(100vh-56px);display:flex;align-items:center;justify-content:center;padding:24px 16px 90px;z-index:1">
 <div style="width:min(640px,96%);text-align:center">
-<h1 style="font-size:34px;margin:0 0 8px;letter-spacing:-.02em">Plan your China trip 🐼</h1>
-<p style="color:var(--muted);margin:0 0 24px;line-height:1.5">Ask less, chat more. Just tell me where and how long.</p>
+<h1 style="font-size:34px;margin:0 0 8px;letter-spacing:-.02em" data-i18n="heroTitle">Plan your China trip 🐼</h1>
+<p style="color:var(--muted);margin:0 0 24px;line-height:1.5" data-i18n="heroSub">Ask less, chat more. Just tell me where and how long.</p>
 <form onsubmit="event.preventDefault();const v=document.getElementById('q').value.trim();goChat(v||document.getElementById('q').placeholder)" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
-<input id="q" type="text" placeholder="e.g. Beijing 5 days, food+history, relaxed pace…" style="width:min(480px,88vw);height:48px;padding:0 16px">
-<button type="submit" class="btn btn-accent" style="height:48px;padding:0 20px;font-size:14px">Start</button>
+<input id="q" type="text" placeholder="e.g. Beijing 5 days, food+history, relaxed pace…" data-i18n-placeholder="inputPlaceholder" style="width:min(480px,88vw);height:48px;padding:0 16px">
+<button type="submit" class="btn btn-accent" style="height:48px;padding:0 20px;font-size:14px" data-i18n="startBtn">Start</button>
 </form>
 <div class="cards">
 <a class="card" href="#" onclick="event.preventDefault();goChat('北京3天深度游,喜欢历史文化,中等预算')"><div class="card-emoji">🏯</div><div class="card-title">Beijing 3 Days</div><div class="card-sub">Forbidden City · Wall · Hutongs</div></a>
 <a class="card" href="#" onclick="event.preventDefault();goChat('成都4天美食之旅,火锅串串,悠闲逛')"><div class="card-emoji">🐼</div><div class="card-title">Chengdu Food Tour</div><div class="card-sub">Hotpot · Pandas · Tea houses</div></a>
 <a class="card" href="#" onclick="event.preventDefault();goChat('云南7天,大理丽江香格里拉,自然风光')"><div class="card-emoji">🏔️</div><div class="card-title">Yunnan 7 Days</div><div class="card-sub">Dali · Lijiang · Shangri-La</div></a>
 </div>
-<div style="margin-top:20px;font-size:12px;color:var(--muted)">Open chat · Sign in with Google · Continue as guest</div>
+<div style="margin-top:20px;font-size:12px;color:var(--muted)" data-i18n="guestHint">Open chat · Sign in with Google · Continue as guest</div>
 </div></main>
-<footer>Try without login — last 3 trips saved locally. Login to sync across devices.</footer>
+<footer data-i18n="footer">Try without login — last 3 trips saved locally. Login to sync across devices.</footer>
 <script src="https://esm.sh/@supabase/supabase-js@2"></script>
-<script>
-let sb=null;
-function goChat(q){{const id='t_'+crypto.randomUUID();const u=new URL('/chat',location);u.searchParams.set('trip',id);if(q)u.searchParams.set('q',q);location.href=u.toString()}}
-async function initSupabase(){{sb=supabase.createClient(window.__SUPABASE_CONFIG__.supabase_url,window.__SUPABASE_CONFIG__.supabase_anon_key)}}
-async function signIn(){{if(!sb)await initSupabase();sb.auth.signInWithOAuth({{provider:'google',options:{{redirectTo:location.origin+'/auth/callback'}}}})}}
-initSupabase();
-</script></body></html>"""
+<script src="/static/i18n.js"></script>
+<script src="/static/landing.js"></script></body></html>"""
 
 def page_share(share_id: str) -> str:
     db = SessionLocal()
     try:
         trip = db.query(Trip).filter(Trip.share_id == share_id).one_or_none()
         if not trip:
-            return '<html lang=en><head><meta charset=utf-8><title>Not Found</title><style>body{{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0a0f17;color:#fff;font-family:sans-serif;text-align:center;margin:0}}h1{{font-size:48px}}a{{color:#7dd3fc}}</style><h1>🐼</h1><p>Trip not found</p><a href=/>Back home</a>'
+            return '<html lang=en><head><meta charset=utf-8><title>Not Found</title><style>body{{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0a0f17;color:#fff;font-family:sans-serif;text-align:center;margin:0}}h1{{font-size:48px}}a{{color:#7dd3fc}}</style><h1>🐼</h1><p>Trip not found</p><a href=/>Back home</a><script src="/static/i18n.js"></script>'
         msgs = db.query(ChatMessage).filter(ChatMessage.trip_id == trip.id).order_by(ChatMessage.created_at.asc()).all()
     finally:
         db.close()
@@ -301,14 +298,14 @@ def page_share(share_id: str) -> str:
     title = trip.title or 'Shared Trip'
     return f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{title} · VisePanda</title><meta name="description" content="AI-planned China trip itinerary"><meta property="og:title" content="{title}"><style>{CSS}.share-header{{text-align:center;padding:24px 16px 12px;position:relative;z-index:1}}.share-header h2{{font-size:20px;margin:0;color:var(--text)}}.share-header p{{color:var(--muted);font-size:14px;margin:4px 0}}.share-thread{{max-width:700px;margin:0 auto;padding:12px 16px 100px;position:relative;z-index:1}}.share-footer{{text-align:center;padding:20px;position:relative;z-index:1}}.msg{{margin:8px 0}}.msg.assistant .bubble{{border:1px solid var(--line);border-radius:14px;padding:10px 14px;line-height:1.5;background:rgba(255,255,255,.03);white-space:pre-wrap}}.msg.user .bubble{{background:rgba(125,211,252,.10);border-color:rgba(125,211,252,.18)}}.bubble{{max-width:700px}}
 </style></head><body><div class="bg-shanshui"></div>
-<div class="share-header"><h2>🐼 {title}</h2><p>AI-planned trip · {len(msgs)} messages</p></div>
+<div class="share-header"><h2>🐼 {title}</h2><p data-i18n="shareAI">AI-planned trip · {len(msgs)} messages</p></div>
 <div class="share-thread">{msgs_html}</div>
-<div class="share-footer"><a href="/" class="btn btn-accent">Plan your own trip</a></div>
+<div class="share-footer"><a href="/" class="btn btn-accent" data-i18n="planYourOwn">Plan your own trip</a><script src="/static/i18n.js"></script></div>
 </body></html>'''
 
 
 def page_trips() -> str:
-    return f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>My Trips · VisePanda</title><style>{CSS}
+    return f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title data-i18n="tripsTitle">My Trips · VisePanda</title><style>{CSS}
 .trips-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding:20px;max-width:900px;margin:0 auto}}
 .trip-item{{border:1px solid var(--line);border-radius:14px;padding:18px;background:rgba(255,255,255,.02);cursor:pointer;transition:all .2s;text-decoration:none;display:block}}
 .trip-item:hover{{border-color:rgba(125,211,252,.35);background:rgba(125,211,252,.04)}}
@@ -317,38 +314,17 @@ def page_trips() -> str:
 .empty{{text-align:center;padding:60px 20px;color:var(--muted)}}
 </style></head><body>
 <div class="bg-shanshui"></div>
-<header><div><span class="dot"></span><span class="name">VisePanda</span></div><div><a href="/" class="btn">Home</a></div></header>
+<header><div><span class="dot"></span><span class="name">VisePanda</span></div><div><a href="/" class="btn" data-i18n="homeBtn">Home</a><a href="#" class="lang-switch" onclick="event.preventDefault();setLang(LANG==='en'?'zh':'en')" data-i18n="langLabel">中</a></div></header>
 <main style="position:relative;z-index:1;min-height:calc(100vh-56px);padding:20px 16px 80px">
-<h2 style="text-align:center;color:var(--text);font-size:22px;margin:20px 0">My Trips</h2>
+<h2 style="text-align:center;color:var(--text);font-size:22px;margin:20px 0" data-i18n="tripsHeading">My Trips</h2>
 <div id="tripsList" class="trips-grid"><div class="skeleton" style="height:100px"></div></div>
-<div id="emptyMsg" class="empty" style="display:none"><p>No trips yet.</p><a href="/" class="btn btn-accent" style="display:inline-block;margin-top:12px">Start Planning</a></div>
+<div id="emptyMsg" class="empty" style="display:none"><p data-i18n="noTrips">No trips yet.</p><a href="/" class="btn btn-accent" style="display:inline-block;margin-top:12px" data-i18n="startPlanning">Start Planning</a></div>
 </main>
-<script>
-const T=document.getElementById('tripsList'),E=document.getElementById('emptyMsg');
-(async()=>{{
-const guest=localStorage.getItem('vp_trip')||'';
-const r=await fetch('/api/trips'+(guest?'?guest_id='+guest:''));
-if(!r.ok){{T.innerHTML='<div class=empty>Failed to load trips.</div>';return}}
-const trips=await r.json();
-if(!trips.length){{T.style.display='none';E.style.display='block';return}}
-T.innerHTML=trips.map(t=>'<div class=trip-item><a href=/chat?trip='+t.id+' style=text-decoration:none;color:inherit><h3>'+t.cities.join(' → ')+'</h3><div class=meta>'+t.msg_count+' messages · '+new Date(t.updated_at).toLocaleDateString()+'</div></a><div style=margin-top:10px;display:flex;gap:8px><button onclick="event.stopPropagation();shareTrip(\''+t.id+'\')" class=btn style=font-size:11px;padding:4px 10px>🔗 Share</button><button onclick="event.stopPropagation();renameTrip(\''+t.id+'\',\''+(t.title||'').replace(/'/g,'\\x27')+'\')" class=btn style=font-size:11px;padding:4px 10px>✏️ Rename</button><button onclick="event.stopPropagation();deleteTrip(\''+t.id+'\')" class=btn style=font-size:11px;padding:4px 10px;color:#fca5a5>🗑 Delete</button></div></div>').join('');
-}})();
-async function renameTrip(id,oldTitle){{
-const t=prompt('Rename trip:',oldTitle);
-if(!t)return;
-const r=await fetch('/api/trips/'+id,{{method:'PUT',headers:{{'Content-Type':'application/json'}},body:JSON.stringify({{title:t}})}});
-if(r.ok)location.reload();
-}}
-async function shareTrip(id){{const r=await fetch('/api/trips/'+id+'/share',{{method:'POST'}});if(r.ok){{const d=await r.json();prompt('Share link:',location.origin+d.url)}}else{{alert('Failed to share')}}}}
-async function deleteTrip(id){{
-if(!confirm('Delete this trip and all messages?'))return;
-const r=await fetch('/api/trips/'+id,{{method:'DELETE'}});
-if(r.ok)location.reload();
-}}
-</script></body></html>'''
+<script src="/static/i18n.js"></script>
+<script src="/static/trips.js"></script></body></html>'''
 
 def page_chat() -> str:
-    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Chat · VisePanda — AI China Travel Planner</title><meta name="description" content="Chat with VisePanda AI to plan your China trip. Get day-by-day itineraries, food guides, and practical travel tips."><style>{CSS}
+    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title data-i18n="chatTitle">Chat · VisePanda — AI China Travel Planner</title><meta name="description" data-i18n-content="chatMeta" content="Chat with VisePanda AI to plan your China trip. Get day-by-day itineraries, food guides, and practical travel tips."><style>{CSS}
 .layout{{display:flex;height:calc(100vh-56px);position:relative;z-index:1}}
 #thread{{flex:1;overflow:auto;padding:18px 16px 120px}}
 .msg{{display:flex;margin:8px 0}}
@@ -378,46 +354,19 @@ def page_chat() -> str:
 .time{{font-size:10px;color:var(--muted);margin-top:4px}}
 </style>{_inject_config()}</head><body>
 <div class="bg-shanshui"></div>
-<header><div><span class="dot"></span><span class="name">VisePanda</span></div><div><a href="/trips" class="btn" style="margin-right:8px">Trips</a><a href="#" onclick="event.preventDefault();clearChat()" class="btn" style="margin-right:8px">Clear</a><a href="/" class="btn">Home</a></div></header>
-<div class="layout"><main style="flex:1;display:flex;flex-direction:column"><div id="thread"><div class="welcome" id="welcomeMsg"><h2>👋 Welcome to VisePanda</h2><p>Your AI travel planner for China. Ask me anything!</p><div class="welcome-chips"><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Beijing 3-day itinerary';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🏯 Beijing 3 days</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Chengdu food tour 4 days';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🐼 Chengdu food</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Yunnan 7 days nature trip';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🏔️ Yunnan 7 days</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Shanghai weekend guide';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🌃 Shanghai weekend</span></div></div></div></main></div>
-<div class="chat-footer"><div id="quickReplies"></div><form id="msgForm"><input id="msgInput" type="text" placeholder="Type a message…" autofocus><button id="sendBtn" type="submit">Send</button></form></div>
+<header><div><span class="dot"></span><span class="name">VisePanda</span></div><div><a href="/trips" class="btn" style="margin-right:8px" data-i18n="tripsBtn">Trips</a><a href="#" onclick="event.preventDefault();clearChat()" class="btn" style="margin-right:8px" data-i18n="clearBtn">Clear</a><a href="/" class="btn" data-i18n="homeBtn">Home</a><a href="#" class="lang-switch" onclick="event.preventDefault();setLang(LANG==='en'?'zh':'en')" data-i18n="langLabel">中</a></div></header>
+<div class="layout"><main style="flex:1;display:flex;flex-direction:column"><div id="thread"><div class="welcome" id="welcomeMsg"><h2 data-i18n="welcomeTitle">👋 Welcome to VisePanda</h2><p data-i18n="welcomeSub">Your AI travel planner for China. Ask me anything!</p><div class="welcome-chips"><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Beijing 3-day itinerary';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🏯 Beijing 3 days</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Chengdu food tour 4 days';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🐼 Chengdu food</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Yunnan 7 days nature trip';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🏔️ Yunnan 7 days</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Shanghai weekend guide';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🌃 Shanghai weekend</span></div></div></div></main></div>
+<div class="chat-footer"><div id="quickReplies"></div><form id="msgForm"><input id="msgInput" type="text" placeholder="Type a message…" data-i18n-placeholder="inputMsgPlaceholder" autofocus><button id="sendBtn" type="submit" data-i18n="sendBtn">Send</button></form></div>
 <script src="https://esm.sh/@supabase/supabase-js@2"></script>
-<script>
-let sb=null,tripId=null;
-async function i(){{sb=supabase.createClient(W.__SUPABASE_CONFIG__.supabase_url,W.__SUPABASE_CONFIG__.supabase_anon_key)}}
-const W=window,Q=s=>document.querySelector(s),H=s=>s.replace(/[&<>"']/g,c=>({{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}}[c])),M=t=>{{let h=t.replace(/\\*\\*(.+?)\\*\\*/g,'<b>$1</b>').replace(/\\*(.+?)\\*/g,'<i>$1</i>').replace(/\\n\\n/g,'</p><p>').replace(/\\n/g,'<br>');if(t.includes('**Day '))h='<div class=trip-card>'+h+'</div>';return h}}
-function msg(r,c){{const d=document.createElement('div');d.className='msg '+r;const t=new Date().toLocaleTimeString([],{{hour:'2-digit',minute:'2-digit'}});d.innerHTML='<div class=bubble>'+M(c)+'</div><div class=time>'+t+'</div>';Q('#thread').appendChild(d);smartScroll();return d}}
-async function loadHistory(){{if(!tripId)return;try{{const r=await fetch('/api/trips/'+tripId+'/messages');if(!r.ok)return;const msgs=await r.json();if(msgs.length>0){{const w=Q('#welcomeMsg');if(w)w.remove()}}for(const m of msgs){{msg(m.role==='user'?'user':'bot',m.content)}}}}catch(e){{}}}}
-async function send(t){{const sbb=Q('#sendBtn');sbb.disabled=true;sbb.textContent='...';msg('user',t);const w=Q('#welcomeMsg');if(w)w.remove();tripId=tripId||'t_'+crypto.randomUUID();localStorage.setItem('vp_trip',tripId);const b=msg('bot','<div class=skeleton style=width:60%></div><div class=skeleton style=width:40%;margin-top:8px></div><div class=skeleton style=width:50%;margin-top:8px></div>');let f='';try{{
-const s=await sb?.auth.getSession();const tok=s?.data?.session?.access_token;const h={{'Content-Type':'application/json'}};if(tok)h['Authorization']='Bearer '+tok;
-let r;try{{r=await fetch('/api/chat',{{method:'POST',headers:h,body:JSON.stringify({{trip_id:tripId,text:t}})}});
-}}catch(fe){{b.innerHTML='<span style=color:#fca5a5>Connection failed. Check your network.</span> <a href=# onclick="send(\\''+t.replace(/'/g,'\\\\x27')+'\\');return false" style=color:var(--accent);text-decoration:underline>Retry</a>';sbb.disabled=false;sbb.textContent='Send';return}}
-const rd=r.body.getReader(),dc=new TextDecoder();let buf='';
-while(1){{const{{done,value}}=await rd.read();if(done)break;buf+=dc.decode(value,{{stream:true}});
-for(const l of buf.split('\\n')){{if(!l.startsWith('data:'))continue;const d=l.slice(5).trim();if(d==='[DONE]')continue;try{{const j=JSON.parse(d);if(j.token)f+=j.token;b.innerHTML=M(f)}}catch(_){{}}}}
-buf=buf.includes('\\n')?buf.split('\\n').pop():buf;smartScroll();}};
-const sm=f.split('---SUGGESTIONS---');if(sm[1]){{const sgs=sm[1].split('\\n').filter(l=>l.trim().startsWith('-')).map(l=>l.replace(/^-\\s*/,''));const qr=Q('#quickReplies');qr.innerHTML=sgs.map(s=>'<span class=chip onclick="document.getElementById(\\'msgInput\\').value=\\''+s.replace(/'/g,'\\\\x27')+'\\';document.getElementById(\\'msgForm\\').dispatchEvent(new Event(\\'submit\\'))">'+s+'</span>').join('')}};
-}}catch(e){{b.innerHTML='<span style=color:#fca5a5>Error: '+H(e.message)+'</span> <a href=# onclick="send(\\''+t.replace(/'/g,'\\\\x27')+'\\');return false" style=color:var(--accent);text-decoration:underline>Retry</a>'}};sbb.disabled=false;sbb.textContent='Send';
-smartScroll();}}
-function smartScroll(){{const t=Q('#thread');if(t.scrollHeight-t.scrollTop-t.clientHeight<200)t.scrollTop=t.scrollHeight}}
-function clearChat(){{Q('#thread').innerHTML='';localStorage.removeItem('vp_trip')}}
-i();setTimeout(()=>{{if(!sb)Q('#thread').innerHTML='<div style=padding:20px;color:var(--muted)>Loading services… please wait or <a href=# onclick=location.reload() style=color:var(--accent)>refresh</a></div>'}},5000);const p=new URL(W.location);tripId=p.searchParams.get('trip')||localStorage.getItem('vp_trip');if(tripId)loadHistory();const q=p.searchParams.get('q');
-Q('#msgForm').onsubmit=e=>{{e.preventDefault();const v=Q('#msgInput').value.trim();if(!v)return;Q('#msgInput').value='';Q('#quickReplies').innerHTML='';send(v)}};
-if(q){{p.searchParams.delete('q');history.replaceState(null,'',p.toString());send(q)}}
-</script></body></html>"""
+<script src="/static/i18n.js"></script>
+<script src="/static/chat.js"></script></body></html>"""
 
 def page_auth_callback() -> str:
-    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Signing in…</title><style>body{{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a0f17;color:#fff;font-family:sans-serif;text-align:center}}.muted{{color:rgba(255,255,255,.5);font-size:14px}}</style>{_inject_config()}</head><body>
-<div><div style="font-size:18px;font-weight:650;margin-bottom:8px">Signing in…</div><div class="muted">Redirecting…</div></div>
+    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title data-i18n="signingIn">Signing in…</title><style>body{{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a0f17;color:#fff;font-family:sans-serif;text-align:center}}.muted{{color:rgba(255,255,255,.5);font-size:14px}}</style>{_inject_config()}</head><body>
+<div><div style="font-size:18px;font-weight:650;margin-bottom:8px" data-i18n="signingIn">Signing in…</div><div class="muted" data-i18n="redirecting">Redirecting…</div></div>
 <script src="https://esm.sh/@supabase/supabase-js@2"></script>
-<script>
-(async()=>{{
-const sb=supabase.createClient(window.__SUPABASE_CONFIG__.supabase_url,window.__SUPABASE_CONFIG__.supabase_anon_key);
-const{{data,error}}=await sb.auth.getSession();
-if(data?.session){{localStorage.setItem('visepanda_session',JSON.stringify(data.session));location.href='/chat'}}
-else{{setTimeout(()=>location.href='/',3000)}}
-}})();
-</script></body></html>"""
+<script src="/static/i18n.js"></script>
+<script src="/static/auth.js"></script></body></html>"""
 
 # ══════════════════════════════════════════════════════════
 # APP
@@ -432,6 +381,7 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(title="VisePanda", version="0.1.0", lifespan=lifespan)
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 @app.get("/api/health")
@@ -550,7 +500,7 @@ async def not_found(request, exc):
     path = request.url.path
     if path.startswith("/api/"):
         return JSONResponse({"error": "not found"}, status_code=404)
-    return HTMLResponse('<html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>404 — VisePanda</title><style>body{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0a0f17;color:#fff;font-family:sans-serif;text-align:center;margin:0}h1{font-size:48px;margin:0;letter-spacing:-.02em}p{color:rgba(255,255,255,.5)}a{color:#7dd3fc}</style><h1>🐼</h1><p>Page not found</p><a href=/>Back home</a>', status_code=404)
+    return HTMLResponse('<html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title data-i18n="notFoundTitle">404 — VisePanda</title><style>body{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0a0f17;color:#fff;font-family:sans-serif;text-align:center;margin:0}h1{font-size:48px;margin:0;letter-spacing:-.02em}p{color:rgba(255,255,255,.5)}a{color:#7dd3fc}</style><h1>🐼</h1><p data-i18n="notFound">Page not found</p><a href=/>Back home</a><script src="/static/i18n.js"></script>', status_code=404)
 
 
 @app.get("/api/trips")
