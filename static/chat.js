@@ -95,7 +95,7 @@ async function send(text) {
         try {
             r = await fetch('/api/chat', {
                 method: 'POST', headers: h,
-                body: JSON.stringify({ trip_id: tripId, text: text })
+                body: JSON.stringify({ trip_id: tripId, text: text, guest_id: localStorage.getItem('vp_trip') || '' })
             });
         } catch (fe) {
             b.innerHTML = '<span style=color:#fca5a5>' + getT('connFailed') + '</span> ' +
