@@ -262,7 +262,12 @@ window.__SUPABASE_CONFIG__ = {{
 </script>"""
 
 def page_landing() -> str:
-    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title data-i18n="title">VisePanda — AI China Travel Planner 🇨🇳</title><meta name="description" data-i18n-content="metaDesc" content="Plan your China trip with AI. Get personalized itineraries, local food recommendations, hotel tips. Beijing, Shanghai, Chengdu, Yunnan — tell us where and how long."><meta property="og:title" content="VisePanda — AI China Travel Planner"><meta property="og:description" content="Personalized China travel itineraries powered by AI"><meta property="og:type" content="website"><meta name="twitter:card" content="summary"><style>{CSS}</style>{_inject_config()}</head><body>
+    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="manifest" href="/static/manifest.json">
+<meta name="theme-color" content="#7dd3fc">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="VisePanda">
+<link rel="apple-touch-icon" href="/static/icon.svg"><title data-i18n="title">VisePanda — AI China Travel Planner 🇨🇳</title><meta name="description" data-i18n-content="metaDesc" content="Plan your China trip with AI. Get personalized itineraries, local food recommendations, hotel tips. Beijing, Shanghai, Chengdu, Yunnan — tell us where and how long."><meta property="og:title" content="VisePanda — AI China Travel Planner"><meta property="og:description" content="Personalized China travel itineraries powered by AI"><meta property="og:type" content="website"><meta name="twitter:card" content="summary"><style>{CSS}</style>{_inject_config()}</head><body>
 <div class="bg-shanshui"></div>
 <header><div><span class="dot"></span><span class="name">VisePanda</span></div><div id="authArea"><a href="#" class="lang-switch" onclick="event.preventDefault();setLang(LANG==='en'?'zh':'en')" data-i18n="langLabel">中</a><a href="#" onclick="event.preventDefault();signIn()" class="btn btn-accent" data-i18n="signIn">Sign in</a></div></header>
 <main style="position:relative;min-height:calc(100vh-56px);display:flex;align-items:center;justify-content:center;padding:24px 16px 90px;z-index:1">
@@ -283,7 +288,7 @@ def page_landing() -> str:
 <footer data-i18n="footer">Try without login — last 3 trips saved locally. Login to sync across devices.</footer>
 <script src="https://esm.sh/@supabase/supabase-js@2"></script>
 <script src="/static/i18n.js"></script>
-<script src="/static/landing.js"></script></body></html>"""
+<script src="/static/landing.js"></script><script src="/static/pwa.js"></script></body></html>"""
 
 def page_share(share_id: str) -> str:
     db = SessionLocal()
@@ -296,16 +301,26 @@ def page_share(share_id: str) -> str:
         db.close()
     msgs_html = ''.join(f'<div class="msg {m.role}"><div class=bubble>{m.content}</div></div>' for m in msgs)
     title = trip.title or 'Shared Trip'
-    return f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{title} · VisePanda</title><meta name="description" content="AI-planned China trip itinerary"><meta property="og:title" content="{title}"><style>{CSS}.share-header{{text-align:center;padding:24px 16px 12px;position:relative;z-index:1}}.share-header h2{{font-size:20px;margin:0;color:var(--text)}}.share-header p{{color:var(--muted);font-size:14px;margin:4px 0}}.share-thread{{max-width:700px;margin:0 auto;padding:12px 16px 100px;position:relative;z-index:1}}.share-footer{{text-align:center;padding:20px;position:relative;z-index:1}}.msg{{margin:8px 0}}.msg.assistant .bubble{{border:1px solid var(--line);border-radius:14px;padding:10px 14px;line-height:1.5;background:rgba(255,255,255,.03);white-space:pre-wrap}}.msg.user .bubble{{background:rgba(125,211,252,.10);border-color:rgba(125,211,252,.18)}}.bubble{{max-width:700px}}
+    return f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="manifest" href="/static/manifest.json">
+<meta name="theme-color" content="#7dd3fc">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="VisePanda">
+<link rel="apple-touch-icon" href="/static/icon.svg"><title>{title} · VisePanda</title><meta name="description" content="AI-planned China trip itinerary"><meta property="og:title" content="{title}"><style>{CSS}.share-header{{text-align:center;padding:24px 16px 12px;position:relative;z-index:1}}.share-header h2{{font-size:20px;margin:0;color:var(--text)}}.share-header p{{color:var(--muted);font-size:14px;margin:4px 0}}.share-thread{{max-width:700px;margin:0 auto;padding:12px 16px 100px;position:relative;z-index:1}}.share-footer{{text-align:center;padding:20px;position:relative;z-index:1}}.msg{{margin:8px 0}}.msg.assistant .bubble{{border:1px solid var(--line);border-radius:14px;padding:10px 14px;line-height:1.5;background:rgba(255,255,255,.03);white-space:pre-wrap}}.msg.user .bubble{{background:rgba(125,211,252,.10);border-color:rgba(125,211,252,.18)}}.bubble{{max-width:700px}}
 </style></head><body><div class="bg-shanshui"></div>
 <div class="share-header"><h2>🐼 {title}</h2><p data-i18n="shareAI">AI-planned trip · {len(msgs)} messages</p></div>
 <div class="share-thread">{msgs_html}</div>
 <div class="share-footer"><a href="/" class="btn btn-accent" data-i18n="planYourOwn">Plan your own trip</a><script src="/static/i18n.js"></script></div>
-</body></html>'''
+<script src="/static/pwa.js"></script></body></html>'''
 
 
 def page_trips() -> str:
-    return f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title data-i18n="tripsTitle">My Trips · VisePanda</title><style>{CSS}
+    return f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="manifest" href="/static/manifest.json">
+<meta name="theme-color" content="#7dd3fc">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="VisePanda">
+<link rel="apple-touch-icon" href="/static/icon.svg"><title data-i18n="tripsTitle">My Trips · VisePanda</title><style>{CSS}
 .trips-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding:20px;max-width:900px;margin:0 auto}}
 .trip-item{{border:1px solid var(--line);border-radius:14px;padding:18px;background:rgba(255,255,255,.02);cursor:pointer;transition:all .2s;text-decoration:none;display:block}}
 .trip-item:hover{{border-color:rgba(125,211,252,.35);background:rgba(125,211,252,.04)}}
@@ -321,10 +336,15 @@ def page_trips() -> str:
 <div id="emptyMsg" class="empty" style="display:none"><p data-i18n="noTrips">No trips yet.</p><a href="/" class="btn btn-accent" style="display:inline-block;margin-top:12px" data-i18n="startPlanning">Start Planning</a></div>
 </main>
 <script src="/static/i18n.js"></script>
-<script src="/static/trips.js"></script></body></html>'''
+<script src="/static/trips.js"></script><script src="/static/pwa.js"></script></body></html>'''
 
 def page_chat() -> str:
-    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title data-i18n="chatTitle">Chat · VisePanda — AI China Travel Planner</title><meta name="description" data-i18n-content="chatMeta" content="Chat with VisePanda AI to plan your China trip. Get day-by-day itineraries, food guides, and practical travel tips."><style>{CSS}
+    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="manifest" href="/static/manifest.json">
+<meta name="theme-color" content="#7dd3fc">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="VisePanda">
+<link rel="apple-touch-icon" href="/static/icon.svg"><title data-i18n="chatTitle">Chat · VisePanda — AI China Travel Planner</title><meta name="description" data-i18n-content="chatMeta" content="Chat with VisePanda AI to plan your China trip. Get day-by-day itineraries, food guides, and practical travel tips."><style>{CSS}
 .layout{{display:flex;height:calc(100vh-56px);position:relative;z-index:1}}
 #thread{{flex:1;overflow:auto;padding:18px 16px 120px}}
 .msg{{display:flex;margin:8px 0}}
@@ -359,14 +379,19 @@ def page_chat() -> str:
 <div class="chat-footer"><div id="quickReplies"></div><form id="msgForm"><input id="msgInput" type="text" placeholder="Type a message…" data-i18n-placeholder="inputMsgPlaceholder" autofocus><button id="sendBtn" type="submit" data-i18n="sendBtn">Send</button></form></div>
 <script src="https://esm.sh/@supabase/supabase-js@2"></script>
 <script src="/static/i18n.js"></script>
-<script src="/static/chat.js"></script></body></html>"""
+<script src="/static/chat.js"></script><script src="/static/pwa.js"></script></body></html>"""
 
 def page_auth_callback() -> str:
-    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title data-i18n="signingIn">Signing in…</title><style>body{{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a0f17;color:#fff;font-family:sans-serif;text-align:center}}.muted{{color:rgba(255,255,255,.5);font-size:14px}}</style>{_inject_config()}</head><body>
+    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="manifest" href="/static/manifest.json">
+<meta name="theme-color" content="#7dd3fc">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="VisePanda">
+<link rel="apple-touch-icon" href="/static/icon.svg"><title data-i18n="signingIn">Signing in…</title><style>body{{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a0f17;color:#fff;font-family:sans-serif;text-align:center}}.muted{{color:rgba(255,255,255,.5);font-size:14px}}</style>{_inject_config()}</head><body>
 <div><div style="font-size:18px;font-weight:650;margin-bottom:8px" data-i18n="signingIn">Signing in…</div><div class="muted" data-i18n="redirecting">Redirecting…</div></div>
 <script src="https://esm.sh/@supabase/supabase-js@2"></script>
 <script src="/static/i18n.js"></script>
-<script src="/static/auth.js"></script></body></html>"""
+<script src="/static/auth.js"></script><script src="/static/pwa.js"></script></body></html>"""
 
 # ══════════════════════════════════════════════════════════
 # APP
@@ -500,7 +525,7 @@ async def not_found(request, exc):
     path = request.url.path
     if path.startswith("/api/"):
         return JSONResponse({"error": "not found"}, status_code=404)
-    return HTMLResponse('<html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title data-i18n="notFoundTitle">404 — VisePanda</title><style>body{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0a0f17;color:#fff;font-family:sans-serif;text-align:center;margin:0}h1{font-size:48px;margin:0;letter-spacing:-.02em}p{color:rgba(255,255,255,.5)}a{color:#7dd3fc}</style><h1>🐼</h1><p data-i18n="notFound">Page not found</p><a href=/>Back home</a><script src="/static/i18n.js"></script>', status_code=404)
+    return HTMLResponse('<html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><link rel="manifest" href="/static/manifest.json"><meta name="theme-color" content="#7dd3fc"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="VisePanda"><link rel="apple-touch-icon" href="/static/icon.svg"><title data-i18n="notFoundTitle">404 — VisePanda</title><style>body{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0a0f17;color:#fff;font-family:sans-serif;text-align:center;margin:0}h1{font-size:48px;margin:0;letter-spacing:-.02em}p{color:rgba(255,255,255,.5)}a{color:#7dd3fc}</style><h1>🐼</h1><p data-i18n="notFound">Page not found</p><a href=/>Back home</a><script src="/static/i18n.js"></script><script src="/static/pwa.js"></script>', status_code=404)
 
 
 @app.get("/api/trips")
