@@ -252,10 +252,10 @@ header{height:56px;display:flex;align-items:center;justify-content:space-between
 .card-sub{font-size:12px;color:var(--muted);margin:0}
 .card-emoji{font-size:28px;margin-bottom:8px}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-top:24px;max-width:560px;margin-left:auto;margin-right:auto}
-footer{position:fixed;left:0;right:0;bottom:0;padding:10px 16px;border-top:1px solid var(--line);background:rgba(8,10,14,.55);backdrop-filter:blur(10px);font-size:12px;color:var(--muted);z-index:1}
-input[type=text]{border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--text);padding:12px 16px;outline:none;font-size:14px}
+footer{position:fixed;left:0;right:0;bottom:0;padding:10px 16px;padding-bottom:calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:rgba(8,10,14,.55);backdrop-filter:blur(10px);font-size:12px;color:var(--muted);z-index:1}
+input[type=text]{border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--text);padding:12px 16px;outline:none;font-size:16px}
 input[type=text]:focus{border-color:rgba(125,211,252,.35);box-shadow:0 0 0 4px rgba(125,211,252,.12)}
-@media(max-width:640px){h1{font-size:24px!important}header{padding:0 12px}.btn{padding:6px 12px;font-size:11px}footer{font-size:11px;padding:8px 12px}.bubble{max-width:95%!important;font-size:15px}#msgForm{gap:6px}#msgInput{height:40px;font-size:16px}#sendBtn{height:40px;padding:0 14px;font-size:13px}.chat-footer{padding:10px 12px}#thread{padding:12px 12px 140px}input[type=text]{font-size:16px}}
+@media(max-width:640px){h1{font-size:24px!important}header{padding:0 12px}.btn{padding:6px 12px;font-size:11px}footer{font-size:11px;padding:8px 12px}.bubble{max-width:95%!important;font-size:15px}#msgForm{gap:6px}#msgInput{height:40px;font-size:16px}#sendBtn{height:44px;padding:0 20px;font-size:14px}.chat-footer{padding:10px 12px;padding-bottom:calc(10px + env(safe-area-inset-bottom))}#thread{padding:12px 12px 140px;padding-bottom:calc(140px + env(safe-area-inset-bottom))}input[type=text]{font-size:16px}.welcome-chips{gap:4px!important}}
 """
 
 def _inject_config() -> str:
@@ -268,7 +268,7 @@ window.__SUPABASE_CONFIG__ = {{
 </script>"""
 
 def page_landing() -> str:
-    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VisePanda — AI China Travel Planner 🇨🇳</title><meta name="description" content="Plan your China trip with AI. Get personalized itineraries, local food recommendations, hotel tips. Beijing, Shanghai, Chengdu, Yunnan — tell us where and how long."><meta property="og:title" content="VisePanda — AI China Travel Planner"><meta property="og:description" content="Personalized China travel itineraries powered by AI"><meta property="og:type" content="website"><meta name="twitter:card" content="summary"><style>{CSS}</style>{_inject_config()}</head><body>
+    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>VisePanda — AI China Travel Planner 🇨🇳</title><meta name="description" content="Plan your China trip with AI. Get personalized itineraries, local food recommendations, hotel tips. Beijing, Shanghai, Chengdu, Yunnan — tell us where and how long."><meta property="og:title" content="VisePanda — AI China Travel Planner"><meta property="og:description" content="Personalized China travel itineraries powered by AI"><meta property="og:type" content="website"><meta name="twitter:card" content="summary"><style>{CSS}</style>{_inject_config()}</head><body>
 <div class="bg-shanshui"></div>
 <header><div><span class="dot"></span><span class="name">VisePanda</span></div><div id="authArea"><a href="#" onclick="event.preventDefault();signIn()" class="btn btn-accent">Sign in</a></div></header>
 <main style="position:relative;min-height:calc(100vh-56px);display:flex;align-items:center;justify-content:center;padding:24px 16px 90px;z-index:1">
@@ -332,7 +332,7 @@ def page_trips() -> str:
 </body></html>'''
 
 def page_chat() -> str:
-    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Chat · VisePanda — AI China Travel Planner</title><meta name="description" content="Chat with VisePanda AI to plan your China trip. Get day-by-day itineraries, food guides, and practical travel tips."><style>{CSS}
+    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Chat · VisePanda — AI China Travel Planner</title><meta name="description" content="Chat with VisePanda AI to plan your China trip. Get day-by-day itineraries, food guides, and practical travel tips."><style>{CSS}
 .layout{{display:flex;height:calc(100vh-56px);position:relative;z-index:1}}
 #thread{{flex:1;overflow:auto;padding:18px 16px 120px}}
 .msg{{display:flex;margin:8px 0}}
@@ -341,7 +341,7 @@ def page_chat() -> str:
 .msg.user .bubble{{background:rgba(125,211,252,.10);border-color:rgba(125,211,252,.18)}}
 .msg.bot .bubble p{{margin:0}}
 .chip{{font-size:11px;padding:5px 10px;border-radius:999px;border:1px solid rgba(125,211,252,.2);background:rgba(125,211,252,.06);color:rgba(255,255,255,.8);cursor:pointer;white-space:nowrap;margin:4px 4px 0 0;display:inline-block}}
-.chat-footer{{position:fixed;bottom:0;left:0;right:0;padding:12px 16px;border-top:1px solid var(--line);background:rgba(8,10,14,.55);backdrop-filter:blur(10px);z-index:2}}
+.chat-footer{{position:fixed;bottom:0;left:0;right:0;padding:12px 16px;padding-bottom:calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:rgba(8,10,14,.55);backdrop-filter:blur(10px);z-index:2}}
 #msgForm{{display:flex;gap:10px;align-items:center;max-width:800px;margin:0 auto}}
 #msgInput{{flex:1;height:44px;padding:0 14px;font-size:14px}}
 #sendBtn{{height:44px;padding:0 20px;background:rgba(125,211,252,.14);border:1px solid rgba(125,211,252,.35);border-radius:999px;color:var(--text);cursor:pointer;font-size:14px}}
