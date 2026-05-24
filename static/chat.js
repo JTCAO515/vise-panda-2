@@ -119,12 +119,25 @@ async function send(text) {
                 body: JSON.stringify({ trip_id: tripId, text: text, guest_id: localStorage.getItem('vp_trip') || '' })
             });
         } catch (fe) {
-            b.innerHTML = '<span style=color:#fca5a5>' + getT('connFailed') + '</span> ' +
-                '<a href=# onclick="W.send(\'' + text.replace(/'/g, '\\x27') + '\');return false" ' +
-                'style=color:var(--accent);text-decoration:underline>' + getT('retry') + '</a>';
-            sbb.disabled = false;
-            sbb.textContent = getT('sendBtn');
-            return;
+            // Auto-reconnect with exponential backoff
+            for (let retries = 0; retries < 3; retries++) {
+                await new Promise(r => setTimeout(r, 1000 * Math.pow(2, retries)));
+                try {
+                    r = await fetch('/api/chat', {
+                        method: 'POST', headers: h,
+                        body: JSON.stringify({ trip_id: tripId, text: text, guest_id: localStorage.getItem('vp_trip') || '' })
+                    });
+                    if (r.ok) break;
+                } catch (_) {}
+            }
+            if (!r || !r.ok) {
+                b.innerHTML = '<span style=color:#fca5a5>' + getT('connFailed') + '</span> ' +
+                    '<a href=# onclick="W.send(\'' + text.replace(/'/g, '\\x27') + '\');return false" ' +
+                    'style=color:var(--accent);text-decoration:underline>' + getT('retry') + '</a>';
+                sbb.disabled = false;
+                sbb.textContent = getT('sendBtn');
+                return;
+            }
         }
 
         const rd = r.body.getReader();
@@ -132,7 +145,19 @@ async function send(text) {
         let buf = '';
 
         while (1) {
-            const { done, value } = await rd.read();
+            let done, value;
+            try {
+                ({ done, value } = await rd.read());
+            } catch (re) {
+                // Stream interrupted mid-response
+                b.innerHTML = b.innerHTML + '<br><small style=color:rgba(255,255,255,.4)>' +
+                    '<span style=color:#fca5a5>' + getT('connFailed') + '</span> ' +
+                    '<a href=# onclick="W.send(\'' + text.replace(/'/g, '\\x27') + '\');return false" ' +
+                    'style=color:var(--accent)">' + getT('retry') + '</a></small>';
+                sbb.disabled = false;
+                sbb.textContent = getT('sendBtn');
+                return;
+            }
             if (done) break;
             buf += dc.decode(value, { stream: true });
             for (const l of buf.split('\n')) {
@@ -142,6 +167,14 @@ async function send(text) {
                 try {
                     const j = JSON.parse(d);
                     if (j.token) f += j.token;
+                    if (j.trip_update) {
+                        // Notify user that itinerary was detected and saved
+                        const note = document.createElement('div');
+                        note.style.cssText = 'font-size:11px;color:rgba(125,211,252,.6);text-align:center;padding:6px 0';
+                        note.textContent = '📋 Itinerary saved — ' + (j.cities || []).join(', ') + ' · ' + j.days + ' days';
+                        Q('#thread').appendChild(note);
+                        smartScroll();
+                    }
                     b.innerHTML = M(f);
                 } catch (_) {}
             }

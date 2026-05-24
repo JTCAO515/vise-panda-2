@@ -56,9 +56,9 @@ _SB_QUERY_URL = f"https://api.supabase.com/v1/projects/{SUPABASE_PROJECT_REF}/da
 class SupabaseDB:
     """Drop-in replacement for SQLAlchemy session using Supabase Management API."""
     
-    _http_proxy = "http://127.0.0.1:10809"
+    _http_proxy = os.getenv("SUPABASE_HTTP_PROXY", "")
     _http_client = httpx.Client(
-        proxy=_http_proxy,
+        proxy=_http_proxy if (IS_DEV and _http_proxy) else None,
         timeout=httpx.Timeout(20.0, connect=15.0)
     )
     
@@ -613,12 +613,28 @@ def page_share(share_id: str) -> str:
         db.close()
     msgs_html = ''.join(f'<div class="msg {m.role}"><div class=bubble>{_render_msg(m.content)}</div></div>' for m in msgs)
     title = trip.title or 'Shared Trip'
+    
+    # Build structured summary
+    itin = trip.current_itinerary or {}
+    cities_str = ', '.join(itin.get('cities', [])) or 'China'
+    days_str = f"{itin.get('day_count', '?')} days" if itin.get('day_count') else ''
+    budget_str = {'budget': '💰 Budget', 'mid': '💰 Mid-range', 'luxury': '💰 Luxury'}.get(itin.get('budget_tier', ''), '')
+    summary_parts = [s for s in [cities_str, days_str, budget_str] if s]
+    summary = ' · '.join(summary_parts) if summary_parts else 'AI-planned trip'
+    
     return f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="manifest" href="/static/manifest.json">
 <meta name="theme-color" content="#7dd3fc">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="VisePanda">
-<link rel="apple-touch-icon" href="/static/icon.svg"><title>{title} · VisePanda</title><meta name="description" content="AI-planned China trip itinerary"><meta property="og:title" content="{title}"><style>{CSS}.share-header{{text-align:center;padding:24px 16px 12px;position:relative;z-index:1}}.share-header h2{{font-size:20px;margin:0;color:var(--text)}}.share-header p{{color:var(--muted);font-size:14px;margin:4px 0}}.share-thread{{max-width:700px;margin:0 auto;padding:12px 16px 100px;position:relative;z-index:1}}.share-footer{{text-align:center;padding:20px;position:relative;z-index:1}}.msg{{margin:8px 0}}.msg.assistant .bubble{{border:1px solid var(--line);border-radius:14px;padding:10px 14px;line-height:1.5;background:rgba(255,255,255,.03);white-space:pre-wrap}}.msg.user .bubble{{background:rgba(125,211,252,.10);border-color:rgba(125,211,252,.18)}}.bubble{{max-width:700px}}
+<link rel="apple-touch-icon" href="/static/icon.svg"><title>{title} · VisePanda</title>
+<meta name="description" content="{summary}">
+<meta property="og:title" content="{title}">
+<meta property="og:description" content="{summary}">
+<meta property="og:image" content="/api/trips/{trip.id}/card">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 </style><script defer src='/_vercel/insights/script.js'></script><script defer src='/_vercel/speed-insights/script.js'></script></head><body><div class="bg-shanshui"></div>
 <div class="share-header"><h2>🐼 {title}</h2><p data-i18n="shareAI">AI-planned trip · {len(msgs)} messages</p><a href="/" class="btn btn-accent" style="margin-top:16px;display:inline-block" data-i18n="planYourOwn">🚀 Create your own trip</a></div>
 <div class="share-thread">{msgs_html}</div>
@@ -781,6 +797,53 @@ def landing():
 @app.get("/share/{share_id}", response_class=HTMLResponse)
 def share_view(share_id: str):
     return page_share(share_id)
+
+
+@app.get("/api/trips/{trip_id}/card")
+def trip_card_image(trip_id: str):
+    """Generate an SVG card image for trip sharing (used as og:image)."""
+    db = get_db()
+    try:
+        trip = db.query(Trip).filter(Trip.id == trip_id).one_or_none()
+        if not trip:
+            return Response(status_code=404)
+        itin = trip.current_itinerary or {}
+        title = trip.title or "China Trip"
+        cities = ', '.join(itin.get('cities', [])) or "Explore China"
+        days = itin.get('day_count', 0)
+        budget = {'budget': 'Budget', 'mid': 'Mid-range', 'luxury': 'Luxury'}.get(itin.get('budget_tier', ''), '')
+        hotels = itin.get('hotels', [])
+        hotels_str = ' · '.join(hotels[:3]) if hotels else ''
+        
+        svg = f'''<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a0f17"/>
+      <stop offset="50%" style="stop-color:#121826"/>
+      <stop offset="100%" style="stop-color:#05070b"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#7dd3fc"/>
+      <stop offset="100%" style="stop-color:#38bdf8"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <circle cx="100" cy="500" r="300" fill="rgba(125,211,252,.03)"/>
+  <circle cx="1100" cy="100" r="200" fill="rgba(125,211,252,.02)"/>
+  <text x="80" y="120" font-family="system-ui,sans-serif" font-size="48" font-weight="700" fill="white">🐼 {self.escape(title) if hasattr(self, 'escape') else title}</text>
+  <text x="80" y="180" font-family="system-ui,sans-serif" font-size="24" fill="rgba(255,255,255,.6)">{self.escape(cities) if hasattr(self, 'escape') else cities}</text>
+  <rect x="80" y="220" width="1040" height="1" fill="rgba(255,255,255,.08)"/>
+  <text x="80" y="290" font-family="system-ui,sans-serif" font-size="72" font-weight="700" fill="url(#accent)">{days}</text>
+  <text x="180" y="290" font-family="system-ui,sans-serif" font-size="24" fill="rgba(255,255,255,.5)" dy="-8">days itinerary</text>
+  <text x="80" y="400" font-family="system-ui,sans-serif" font-size="20" fill="rgba(255,255,255,.5)">{f'Hotels: {hotels_str}' if hotels_str else ''}</text>
+  <text x="80" y="450" font-family="system-ui,sans-serif" font-size="20" fill="rgba(255,255,255,.5)">{f'Budget: {budget}' if budget else ''}</text>
+  <text x="80" y="560" font-family="system-ui,sans-serif" font-size="16" fill="rgba(255,255,255,.3)">go2china.space · AI-planned trip by VisePanda</text>
+  <circle cx="1130" cy="570" r="20" fill="rgba(125,211,252,.15)"/>
+  <text x="1120" y="577" font-family="system-ui,sans-serif" font-size="20" text-anchor="middle" fill="rgba(255,255,255,.5)">🐼</text>
+</svg>'''
+        return Response(content=svg, media_type="image/svg+xml")
+    finally:
+        db.close()
 
 @app.get("/trips", response_class=HTMLResponse)
 def trips_page():
@@ -1030,6 +1093,50 @@ def get_locale(request: Request):
         pass
     return {"locale": None}
 
+def _parse_itinerary(text: str) -> dict | None:
+    """Detect structured itinerary in LLM response and extract structured data."""
+    import re as _re
+    
+    # Detect day-by-day format
+    day_pattern = _re.findall(r'\*\*Day\s+(\d+)\s*[—–-]\s*(.+?)\*\*', text)
+    if not day_pattern:
+        return None
+    
+    days = []
+    for num, title in day_pattern:
+        days.append({"day": int(num), "title": title.strip()})
+    
+    # Detect cities mentioned
+    cn_cities = ["北京", "上海", "广州", "深圳", "成都", "重庆", "杭州", "西安",
+                 "桂林", "昆明", "大理", "丽江", "厦门", "三亚", "长沙", "武汉",
+                 "南京", "苏州", "青岛", "大连", "哈尔滨", "拉萨", "敦煌", "张家界",
+                 "贵阳", "兰州", "西宁", "乌鲁木齐", "呼和浩特"]
+    cities = [c for c in cn_cities if c in text]
+    
+    # Detect budget tier
+    budget = "mid"
+    if "经济档" in text or "Budget" in text: budget = "budget"
+    if "豪华档" in text or "Luxury" in text: budget = "luxury"
+    
+    # Detect named hotels
+    hotel_pattern = _re.findall(r'(?:🏨|Stay|住)[：:]\s*(.+?)(?:[—–—-]|\n|$)', text)
+    hotels = [h.strip() for h in hotel_pattern if h.strip()]
+    
+    # Detect named restaurants
+    restaurant_pattern = _re.findall(r'(?:🍜|Eat|吃)[：:]\s*(.+?)(?:[—–—-]|\n|$)', text)
+    restaurants = [r.strip() for r in restaurant_pattern if r.strip()]
+    
+    return {
+        "cities": cities[:5],
+        "days": days,
+        "day_count": len(days),
+        "budget_tier": budget,
+        "hotels": hotels[:10],
+        "restaurants": restaurants[:10],
+        "raw_preview": text[:500],
+    }
+
+
 class ChatIn(BaseModel):
     trip_id: str
     text: str
@@ -1088,13 +1195,18 @@ async def chat_endpoint(payload: ChatIn, request: Request):
 
     async def generate():
         full_text = ""
+        event_id = 0
         async for chunk in stream_llm(messages):
             if "token" in chunk:
                 try:
-                    full_text += json.loads(chunk.split("data: ")[1].strip())["token"]
+                    token = json.loads(chunk.split("data: ")[1].strip())["token"]
+                    full_text += token
+                    event_id += 1
+                    yield f"id: {event_id}\n{chunk}"
                 except:
-                    pass
-            yield chunk
+                    yield chunk
+            else:
+                yield chunk
 
         # Save assistant message
         if full_text:
@@ -1102,6 +1214,15 @@ async def chat_endpoint(payload: ChatIn, request: Request):
             try:
                 db2.add(ChatMessage(user_id=user_id, trip_id=payload.trip_id, role="assistant", content=full_text))
                 db2.commit()
+
+                # Auto-detect structured itinerary and save to trip
+                trip2 = db2.query(Trip).filter(Trip.id == payload.trip_id).one_or_none()
+                if trip2 and not trip2.current_itinerary:
+                    parsed = _parse_itinerary(full_text)
+                    if parsed:
+                        trip2.current_itinerary = parsed
+                        db2.commit()
+                        yield f"data: {json.dumps({'trip_update': True, 'cities': parsed.get('cities', []), 'days': len(parsed.get('days', []))})}\n\n"
             finally:
                 db2.close()
 
@@ -1161,6 +1282,28 @@ def list_trips(request: Request, guest_id: str | None = None):
 
 class RenameIn(BaseModel):
     title: str
+
+
+@app.get("/api/trips/{trip_id}")
+def get_trip_detail(trip_id: str):
+    """Return trip detail including structured itinerary."""
+    db = get_db()
+    try:
+        trip = db.query(Trip).filter(Trip.id == trip_id).one_or_none()
+        if not trip:
+            raise HTTPException(404, "Trip not found")
+        return {
+            "id": trip.id,
+            "title": trip.title or "Untitled Trip",
+            "cities": trip.cities or [],
+            "current_itinerary": trip.current_itinerary,
+            "start_date": trip.start_date,
+            "end_date": trip.end_date,
+            "updated_at": trip.updated_at.isoformat() if trip.updated_at else None,
+        }
+    finally:
+        db.close()
+
 
 @app.put("/api/trips/{trip_id}")
 def rename_trip(trip_id: str, body: RenameIn):
