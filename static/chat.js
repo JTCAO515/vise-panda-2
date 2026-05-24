@@ -95,10 +95,16 @@ async function send(text) {
 
     let f = '';
     try {
-        const s = await sb?.auth.getSession();
-        const tok = s?.data?.session?.access_token;
+        // Auth: try local token first, then Supabase
+        const token = localStorage.getItem('vp_token');
         const h = { 'Content-Type': 'application/json' };
-        if (tok) h['Authorization'] = 'Bearer ' + tok;
+        if (token) {
+            h['Authorization'] = 'Bearer ' + token;
+        } else {
+            const s = await sb?.auth.getSession();
+            const tok = s?.data?.session?.access_token;
+            if (tok) h['Authorization'] = 'Bearer ' + tok;
+        }
 
         let r;
         try {
