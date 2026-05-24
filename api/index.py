@@ -37,7 +37,7 @@ LLM_BASE_URL = os.getenv("LLM_BASE_URL", "https://open.bigmodel.cn/api/paas/v4")
 LLM_API_KEY = os.getenv("LLM_API_KEY", "")
 LLM_MODEL = os.getenv("LLM_MODEL", "glm-5.1")
 LLM_ENABLED = os.getenv("LLM_ENABLED", "1") == "1"
-AUTH_TEST_BYPASS = os.getenv("AUTH_TEST_BYPASS", "0") == "1"
+AUTH_TEST_BYPASS = os.getenv("AUTH_TEST_BYPASS", "0").lower() in ("1", "true", "yes")
 IS_DEV = os.getenv("IS_DEV", "0") == "1"
 
 # Rate limiting
