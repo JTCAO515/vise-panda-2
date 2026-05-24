@@ -253,6 +253,11 @@ header{height:56px;display:flex;align-items:center;justify-content:space-between
 .card-emoji{font-size:28px;margin-bottom:8px}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-top:24px;max-width:560px;margin-left:auto;margin-right:auto}
 .lang-switch{font-size:11px;padding:5px 10px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--text);cursor:pointer;margin-left:6px;text-decoration:none}.lang-switch:hover{background:rgba(255,255,255,.06)}
+.recent-title{font-size:13px;color:var(--muted);margin-bottom:8px;font-weight:600}
+.recent-trip{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border:1px solid var(--line);border-radius:12px;margin-bottom:6px;background:rgba(255,255,255,.02);text-decoration:none;color:var(--text);transition:all .15s}
+.recent-trip:hover{border-color:rgba(125,211,252,.35);background:rgba(125,211,252,.06)}
+.recent-trip-label{font-size:14px;font-weight:500}
+.recent-trip-meta{font-size:11px;color:var(--muted)}
 footer{position:fixed;left:0;right:0;bottom:0;padding:10px 16px;padding-bottom:calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:rgba(8,10,14,.55);backdrop-filter:blur(10px);font-size:12px;color:var(--muted);z-index:1}
 input[type=text]{border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--text);padding:12px 16px;outline:none;font-size:16px}
 input[type=text]:focus{border-color:rgba(125,211,252,.35);box-shadow:0 0 0 4px rgba(125,211,252,.12)}
@@ -293,6 +298,7 @@ def page_landing() -> str:
 <a class="card" href="#" onclick="event.preventDefault();goChat('西安3天历史游,兵马俑古城墙,中等预算')"><div class="card-emoji">🏛️</div><div class="card-title">Xi'an 3 Days</div><div class="card-sub">Terracotta · City Wall · Muslim Quarter</div></a>
 <a class="card" href="#" onclick="event.preventDefault();goChat('桂林4天,漓江阳朔,自然风光')"><div class="card-emoji">🛶</div><div class="card-title">Guilin 4 Days</div><div class="card-sub">Li River · Yangshuo · Karst Mountains</div></a>
 </div>
+<div id="recentTrips" style="display:none;margin-top:20px;text-align:left"></div>
 <div style="margin-top:20px;font-size:12px;color:var(--muted)" data-i18n="guestHint">Open chat · Sign in with Google · Continue as guest</div>
 </div></main>
 <footer data-i18n="footer">Try without login — last 3 trips saved locally. Login to sync across devices.</footer>

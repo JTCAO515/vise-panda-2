@@ -255,6 +255,11 @@ header{height:56px;display:flex;align-items:center;justify-content:space-between
 footer{position:fixed;left:0;right:0;bottom:0;padding:10px 16px;padding-bottom:calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:rgba(8,10,14,.55);backdrop-filter:blur(10px);font-size:12px;color:var(--muted);z-index:1}
 input[type=text]{border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--text);padding:12px 16px;outline:none;font-size:16px}
 input[type=text]:focus{border-color:rgba(125,211,252,.35);box-shadow:0 0 0 4px rgba(125,211,252,.12)}
+.recent-title{font-size:13px;color:var(--muted);margin-bottom:8px;font-weight:600}
+.recent-trip{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border:1px solid var(--line);border-radius:12px;margin-bottom:6px;background:rgba(255,255,255,.02);text-decoration:none;color:var(--text);transition:all .15s}
+.recent-trip:hover{border-color:rgba(125,211,252,.35);background:rgba(125,211,252,.06)}
+.recent-trip-label{font-size:14px;font-weight:500}
+.recent-trip-meta{font-size:11px;color:var(--muted)}
 @media(max-width:640px){h1{font-size:24px!important}header{padding:0 12px}.btn{padding:6px 12px;font-size:11px}footer{font-size:11px;padding:8px 12px}.bubble{max-width:95%!important;font-size:15px}#msgForm{gap:6px}#msgInput{height:40px;font-size:16px}#sendBtn{height:44px;padding:0 20px;font-size:14px}.chat-footer{padding:10px 12px;padding-bottom:calc(10px + env(safe-area-inset-bottom))}#thread{padding:12px 12px 140px;padding-bottom:calc(140px + env(safe-area-inset-bottom))}input[type=text]{font-size:16px}.welcome-chips{gap:4px!important}}
 """
 
@@ -287,6 +292,7 @@ def page_landing() -> str:
 <a class="card" href="#" onclick="event.preventDefault();goChat('西安3天历史游,兵马俑古城墙,中等预算')"><div class="card-emoji">🏛️</div><div class="card-title">Xi'an 3 Days</div><div class="card-sub">Terracotta · City Wall · Muslim Quarter</div></a>
 <a class="card" href="#" onclick="event.preventDefault();goChat('桂林4天,漓江阳朔,自然风光')"><div class="card-emoji">🛶</div><div class="card-title">Guilin 4 Days</div><div class="card-sub">Li River · Yangshuo · Karst Mountains</div></a>
 </div>
+<div id="recentTrips" style="display:none;margin-top:20px;text-align:left"></div>
 <div style="margin-top:20px;font-size:12px;color:var(--muted)">Open chat · Sign in with Google · Continue as guest</div>
 </div></main>
 <footer>Try without login — last 3 trips saved locally. Login to sync across devices.</footer>
