@@ -505,7 +505,7 @@ async def stream_llm(messages: list[dict]) -> AsyncGenerator[str, None]:
 
 CSS = """
 .light-theme,.light{--bg0:#f5f0eb;--bg1:#faf5ef;--line:rgba(0,0,0,.07);--muted:rgba(0,0,0,.45);--text:rgba(0,0,0,.88);--accent:#bc3a2c;--red:#bc3a2c;--red-bright:#c43a2c;--gold:#b8942e;--gold-bright:#c9a96e}
-:root{--bg0:#05070b;--bg1:#0e0b14;--line:rgba(255,255,255,.08);--muted:rgba(255,255,255,.58);--text:rgba(255,255,255,.92);--accent:#7dd3fc;--red:#bc3a2c;--red-bright:#dc4a3a;--gold:#d4a84b;--gold-bright:#e8c56a;font-family:'Noto Sans SC','PingFang SC','Microsoft YaHei',ui-sans-serif,system-ui,-apple-system,sans-serif}
+:root{--bg0:#05070b;--bg1:#0e0b14;--line:rgba(255,255,255,.08);--muted:rgba(255,255,255,.58);--text:rgba(255,255,255,.92);--accent:#7dd3fc;--red:#bc3a2c;--red-bright:#dc4a3a;--gold:#d4a84b;--gold-bright:#e8c56a;font-family:'Inter','Noto Sans SC','PingFang SC',ui-sans-serif,system-ui,-apple-system,sans-serif}
 body{margin:0;min-height:100vh;background:linear-gradient(175deg,#0e0b14 0,#120f1e 35%,#0a0f17 65%,#05070b 100%);color:var(--text);position:relative;animation:fadeIn .4s ease}
 .bg-shanshui{position:fixed;inset:0;background:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 800"><defs><linearGradient id="mG" cx="50%" cy="40%" r="50%"><stop offset="0%" stop-color="%23ffe9c4" stop-opacity=".7"/><stop offset="100%" stop-color="%23ffe9c4" stop-opacity="0"/></linearGradient></defs><circle cx="1050" cy="140" r="48" fill="%23ffe9c4" opacity=".18"/><circle cx="1050" cy="140" r="60" fill="url(%23mG)" opacity=".12"/><path d="M200 460 L203 460 L203 660 L200 660Z M196 460 L211 460 L211 463 L196 463Z M196 490 L211 490 L211 493 L196 493Z M196 520 L211 520 L211 523 L196 523Z M193 530 L217 530 L217 532 L193 532Z M201 440 L195 460 L207 460Z" fill="%23fff" opacity=".007"/><path d="M350 490 L330 520 L370 520Z M347 520 L353 520 L353 660 L347 660Z" fill="%23fff" opacity=".007"/><path d="M500 470 L503 470 L503 660 L500 660Z M496 470 L511 470 L511 473 L496 473Z M496 500 L511 500 L511 503 L496 503Z M501 450 L495 470 L507 470Z M493 480 L517 480 L517 482 L493 482Z" fill="%23fff" opacity=".006"/><path d="M700 400 L704 400 L704 660 L700 660Z M695 400 L714 400 L714 403 L695 403Z M695 430 L714 430 L714 433 L695 433Z M695 460 L714 460 L714 463 L695 463Z M691 470 L722 470 L722 472 L691 472Z M702 380 L694 400 L710 400Z" fill="%23fff" opacity=".01"/><path d="M850 420 Q870 390 890 420 L890 660 L850 660Z M867 420 L873 420 L873 660 L867 660Z" fill="%23fff" opacity=".009"/><path d="M1050 430 L1054 430 L1054 660 L1050 660Z M1045 430 L1064 430 L1064 433 L1045 433Z M1045 460 L1064 460 L1064 463 L1045 463Z M1052 410 L1044 430 L1060 430Z M1041 470 L1072 470 L1072 472 L1041 472Z" fill="%23fff" opacity=".009"/><path d="M150 500 Q180 460 210 500 L210 660 L150 660Z M155 500 L155 660 M205 500 L205 660 M177 500 L183 500 L183 660 L177 660Z M140 500 Q160 495 180 500 Q200 495 220 500 M145 520 Q165 515 180 520 Q195 515 215 520" fill="%23fff" opacity=".013" stroke="%23fff" stroke-width="1"/><path d="M580 380 L585 380 L585 660 L580 660Z M574 380 L596 380 L596 384 L574 384Z M574 410 L596 410 L596 414 L574 414Z M574 440 L596 440 L596 444 L574 444Z M569 450 L606 450 L606 453 L569 453Z M582 355 L572 380 L592 380Z M567 380 Q574 376 582 380 Q590 376 597 380 M567 410 Q574 406 582 410 Q590 406 597 410 M567 440 Q574 436 582 440 Q590 436 597 440" fill="%23fff" opacity=".016" stroke="%23fff" stroke-width="1"/><path d="M1200 470 Q1230 430 1260 470 L1260 660 L1200 660Z M1205 470 Q1220 450 1235 470 M1225 470 Q1240 450 1255 470 M1227 470 L1233 470 L1233 660 L1227 660Z" fill="%23fff" opacity=".012"/><path d="M300 580 L480 580 L480 660 L300 660Z M300 575 L480 575 L480 580 L300 580Z M300 570 L315 570 L315 580 L300 580Z M330 570 L345 570 L345 580 L330 580Z M360 570 L375 570 L375 580 L360 580Z M390 570 L405 570 L405 580 L390 580Z M420 570 L435 570 L435 580 L420 580Z M450 570 L465 570 L465 580 L450 580Z M370 620 L410 620 L410 660 L370 660Z M380 630 Q390 625 400 630" fill="%23fff" opacity=".008"/><rect x="0" y="680" width="1400" height="120" fill="%23fff" opacity=".005"/></svg>') center/cover;opacity:.35;filter:blur(4px);pointer-events:none;z-index:0}
 .bg-shanshui::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 1000px 600px at 1080px 140px,rgba(255,233,196,.06) 0%,transparent 70%);pointer-events:none}
@@ -678,61 +678,61 @@ def page_landing() -> str:
 <meta name="theme-color" content="#bc3a2c">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="VisePanda">
-<link rel="apple-touch-icon" href="/static/icon.svg"><title data-i18n="title">VisePanda — AI China Travel Planner 🇨🇳</title><meta name="description" data-i18n-content="metaDesc" content="Plan your China trip with AI. Get personalized itineraries, local food recommendations, hotel tips. Beijing, Shanghai, Chengdu, Yunnan — tell us where and how long."><meta property="og:title" content="VisePanda — AI China Travel Planner"><meta property="og:description" content="Personalized China travel itineraries powered by AI"><meta property="og:type" content="website"><meta name="twitter:card" content="summary"><style>{CSS}</style><script defer src='/_vercel/insights/script.js'></script><script defer src='/_vercel/speed-insights/script.js'></script>{_inject_config()}</head><body>
+<link rel="apple-touch-icon" href="/static/icon.svg"><title data-i18n="title">VisePanda — AI China Travel Planner</title><meta name="description" data-i18n-content="metaDesc" content="Your AI-powered guide to traveling China. Get personalized day-by-day itineraries, food recommendations, hotel tips, and local insights — just tell us where and how long."><meta property="og:title" content="VisePanda — AI China Travel Planner"><meta property="og:description" content="Personalized China travel itineraries powered by AI — built by travelers, for travelers."><meta property="og:type" content="website"><meta name="twitter:card" content="summary_large_image"><style>{CSS}</style><script defer src='/_vercel/insights/script.js'></script><script defer src='/_vercel/speed-insights/script.js'></script>{_inject_config()}</head><body>
 <div class="bg-shanshui"></div>
-<header><div><a href="/" class="logo-seal"><span class="seal">熊</span><span class="name">VisePanda<span class="name-ch">熊猫行</span></span></a></div><div id="authArea"><a href="#" class="lang-switch" onclick="event.preventDefault();setLang(LANG==='en'?'zh':'en')" data-i18n="langLabel">中</a><a href="#" onclick="event.preventDefault();signIn()" class="btn btn-accent" style="color:var(--gold-bright)" data-i18n="signIn">Sign in</a><a href="#" onclick="event.preventDefault();toggleTheme()" class="lang-switch" id="themeToggle" title="Toggle theme">🌓</a></div></header>
+<header><div><a href="/" class="logo-seal"><span class="seal">熊</span><span class="name">VisePanda</span></a></div><div id="authArea"><a href="#" class="lang-switch" onclick="event.preventDefault();setLang(LANG==='en'?'zh':'en')" data-i18n="langLabel">中</a><a href="#" onclick="event.preventDefault();signIn()" class="btn btn-accent" style="color:var(--gold-bright)" data-i18n="signIn">Sign in</a><a href="#" onclick="event.preventDefault();toggleTheme()" class="lang-switch" id="themeToggle" title="Toggle theme">🌓</a></div></header>
 <main style="position:relative;min-height:calc(100vh-56px);display:flex;align-items:center;justify-content:center;padding:24px 16px 90px;z-index:1">
-<div style="width:min(640px,96%);text-align:center">
-<h1 style="font-size:36px;margin:0 0 6px;letter-spacing:-.01em" data-i18n="heroTitle">🐼 Plan your China trip</h1>
-<p style="color:var(--gold-bright);font-size:14px;margin:0 0 20px;letter-spacing:.2em;font-weight:500" data-i18n="heroSubCN">✦ AI 中国旅行规划 ✦</p>
+<div style="width:min(680px,96%);text-align:center">
+<h1 style="font-size:36px;margin:0 0 6px;letter-spacing:-.02em;font-weight:700" data-i18n="heroTitle">🐼 Your personal guide to China</h1>
+<p style="color:var(--gold-bright);font-size:14px;margin:0 0 20px;font-weight:500" data-i18n="heroSub">Just say where and how long — we'll handle the rest. Day-by-day itineraries, local food, hotels, and insider tips.</p>
 
 <form onsubmit="event.preventDefault();const v=document.getElementById('q').value.trim();goChat(v||document.getElementById('q').placeholder)" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
-<input id="q" type="text" placeholder="北京5天/成都美食/云南7天…" data-i18n-placeholder="inputPlaceholder" style="width:min(480px,88vw);height:48px;padding:0 16px">
-<button type="submit" class="btn btn-red" style="height:48px;padding:0 24px;font-size:14px" data-i18n="startBtn">🚀 Start</button>
+<input id="q" type="text" placeholder="Beijing 5 days, food + history, mid-range budget…" data-i18n-placeholder="inputPlaceholder" style="width:min(480px,88vw);height:48px;padding:0 16px">
+<button type="submit" class="btn btn-red" style="height:48px;padding:0 24px;font-size:14px;font-weight:600" data-i18n="startBtn">🚀 Plan My Trip</button>
 </form>
-<div class="section-label">🔥 热门精选</div>
+<div class="section-label">🔥 Popular trips</div>
 <div class="hot-scroll">
-  <a class="hot-card" href="#" onclick="event.preventDefault();goChat('北京3天深度游,喜欢历史文化,中等预算')"><span class="hot-emoji">🏯</span><span class="hot-text">帝都历史 3天</span><span class="hot-sub">¥1500+</span></a>
-  <a class="hot-card" href="#" onclick="event.preventDefault();goChat('成都4天美食之旅,火锅串串,悠闲逛')"><span class="hot-emoji">🐼</span><span class="hot-text">成都美食 4天</span><span class="hot-sub">¥1200+</span></a>
-  <a class="hot-card" href="#" onclick="event.preventDefault();goChat('云南7天,大理丽江香格里拉,自然风光')"><span class="hot-emoji">🏔️</span><span class="hot-text">云南全景 7天</span><span class="hot-sub">¥3000+</span></a>
-  <a class="hot-card" href="#" onclick="event.preventDefault();goChat('西安3天历史游,兵马俑古城墙,中等预算')"><span class="hot-emoji">🏛️</span><span class="hot-text">古都西安 3天</span><span class="hot-sub">¥1500+</span></a>
-  <a class="hot-card" href="#" onclick="event.preventDefault();goChat('广州3天,早茶美食文化,市区逛')"><span class="hot-emoji">🥟</span><span class="hot-text">广州美食 3天</span><span class="hot-sub">¥1500+</span></a>
-  <a class="hot-card" href="#" onclick="event.preventDefault();goChat('重庆3天,山城美食夜景,魔幻8D')"><span class="hot-emoji">🌆</span><span class="hot-text">魔幻重庆 3天</span><span class="hot-sub">¥1000+</span></a>
+  <a class="hot-card" href="#" onclick="event.preventDefault();goChat('Beijing 3 days, history and culture, mid-range budget')"><span class="hot-emoji">🏯</span><span class="hot-text">Beijing History</span><span class="hot-sub">3 days · ¥1500+</span></a>
+  <a class="hot-card" href="#" onclick="event.preventDefault();goChat('Chengdu 4 days, food tour, hotpot and pandas, relaxed')"><span class="hot-emoji">🐼</span><span class="hot-text">Chengdu Food</span><span class="hot-sub">4 days · ¥1200+</span></a>
+  <a class="hot-card" href="#" onclick="event.preventDefault();goChat('Yunnan 7 days, Dali Lijiang Shangri-La, nature')"><span class="hot-emoji">🏔️</span><span class="hot-text">Yunnan Explorer</span><span class="hot-sub">7 days · ¥3000+</span></a>
+  <a class="hot-card" href="#" onclick="event.preventDefault();goChat('Xi\'an 3 days, Terracotta Warriors, history')"><span class="hot-emoji">🏛️</span><span class="hot-text">Xi'an Ancient</span><span class="hot-sub">3 days · ¥1500+</span></a>
+  <a class="hot-card" href="#" onclick="event.preventDefault();goChat('Guangzhou 3 days, dim sum and food culture')"><span class="hot-emoji">🥟</span><span class="hot-text">Guangzhou Eats</span><span class="hot-sub">3 days · ¥1500+</span></a>
+  <a class="hot-card" href="#" onclick="event.preventDefault();goChat('Chongqing 3 days, night views and hotpot')"><span class="hot-emoji">🌆</span><span class="hot-text">Chongqing Nights</span><span class="hot-sub">3 days · ¥1000+</span></a>
 </div>
-<div class="section-label">🏙️ 热门城市</div>
+<div class="section-label">🏙️ Popular cities</div>
 <div class="city-chips">
-  <a class="city-chip" href="#" onclick="event.preventDefault();goChat('北京')">北京</a>
-  <a class="city-chip" href="#" onclick="event.preventDefault();goChat('上海')">上海</a>
-  <a class="city-chip" href="#" onclick="event.preventDefault();goChat('成都')">成都</a>
-  <a class="city-chip" href="#" onclick="event.preventDefault();goChat('西安')">西安</a>
-  <a class="city-chip" href="#" onclick="event.preventDefault();goChat('广州')">广州</a>
-  <a class="city-chip" href="#" onclick="event.preventDefault();goChat('杭州')">杭州</a>
-  <a class="city-chip" href="#" onclick="event.preventDefault();goChat('重庆')">重庆</a>
-  <a class="city-chip" href="#" onclick="event.preventDefault();goChat('大理')">大理</a>
-  <a class="city-chip" href="#" onclick="event.preventDefault();goChat('桂林')">桂林</a>
-  <a class="city-chip" href="#" onclick="event.preventDefault();goChat('三亚')">三亚</a>
-  <a class="city-chip" href="#" onclick="event.preventDefault();goChat('长沙')">长沙</a>
-  <a class="city-chip" href="#" onclick="event.preventDefault();goChat('南京')">南京</a>
+  <a class="city-chip" href="#" onclick="event.preventDefault();goChat('Beijing')">Beijing</a>
+  <a class="city-chip" href="#" onclick="event.preventDefault();goChat('Shanghai')">Shanghai</a>
+  <a class="city-chip" href="#" onclick="event.preventDefault();goChat('Chengdu')">Chengdu</a>
+  <a class="city-chip" href="#" onclick="event.preventDefault();goChat('Xi\'an')">Xi'an</a>
+  <a class="city-chip" href="#" onclick="event.preventDefault();goChat('Guangzhou')">Guangzhou</a>
+  <a class="city-chip" href="#" onclick="event.preventDefault();goChat('Hangzhou')">Hangzhou</a>
+  <a class="city-chip" href="#" onclick="event.preventDefault();goChat('Chongqing')">Chongqing</a>
+  <a class="city-chip" href="#" onclick="event.preventDefault();goChat('Guilin')">Guilin</a>
+  <a class="city-chip" href="#" onclick="event.preventDefault();goChat('Kunming')">Kunming</a>
+  <a class="city-chip" href="#" onclick="event.preventDefault();goChat('Suzhou')">Suzhou</a>
+  <a class="city-chip" href="#" onclick="event.preventDefault();goChat('Zhangjiajie')">Zhangjiajie</a>
+  <a class="city-chip" href="#" onclick="event.preventDefault();goChat('Lhasa')">Lhasa</a>
 </div>
-<div class="cat-nav"><span class="cat-tag active" data-cat="all" onclick="filterCards('all')">🔥 全部</span><span class="cat-tag" data-cat="food" onclick="filterCards('food')">🍜 美食</span><span class="cat-tag" data-cat="history" onclick="filterCards('history')">🏯 历史</span><span class="cat-tag" data-cat="nature" onclick="filterCards('nature')">🏔️ 自然</span><span class="cat-tag" data-cat="city" onclick="filterCards('city')">🌃 都市</span></div>
+<div class="cat-nav"><span class="cat-tag active" data-cat="all" onclick="filterCards('all')">🔥 All</span><span class="cat-tag" data-cat="food" onclick="filterCards('food')">🍜 Food</span><span class="cat-tag" data-cat="history" onclick="filterCards('history')">🏯 History</span><span class="cat-tag" data-cat="nature" onclick="filterCards('nature')">🏔️ Nature</span><span class="cat-tag" data-cat="city" onclick="filterCards('city')">🌃 Cities</span></div>
 <div class="cards" id="cardGrid">
-<a class="card anim-fade-up" data-cat="history" href="#" onclick="event.preventDefault();goChat('北京3天深度游,喜欢历史文化,中等预算')"><div class="card-emoji">🏯</div><div class="card-title">北京 3天</div><div class="card-sub">故宫 · 长城 · 胡同</div></a>
-<a class="card anim-fade-up" data-cat="food" href="#" onclick="event.preventDefault();goChat('成都4天美食之旅,火锅串串,悠闲逛')"><div class="card-emoji">🐼</div><div class="card-title">成都 4天</div><div class="card-sub">火锅 · 熊猫 · 盖碗茶</div></a>
-<a class="card anim-fade-up" data-cat="nature" href="#" onclick="event.preventDefault();goChat('云南7天,大理丽江香格里拉,自然风光')"><div class="card-emoji">🏔️</div><div class="card-title">云南 7天</div><div class="card-sub">大理 · 丽江 · 香格里拉</div></a>
-<a class="card anim-fade-up" data-cat="city" href="#" onclick="event.preventDefault();goChat('上海3天,摩登都市,外滩迪士尼')"><div class="card-emoji">🌃</div><div class="card-title">上海 3天</div><div class="card-sub">外滩 · 迪士尼 · 法租界</div></a>
-<a class="card anim-fade-up" data-cat="history" href="#" onclick="event.preventDefault();goChat('西安3天历史游,兵马俑古城墙,中等预算')"><div class="card-emoji">🏛️</div><div class="card-title">西安 3天</div><div class="card-sub">兵马俑 · 城墙 · 回民街</div></a>
-<a class="card anim-fade-up" data-cat="nature" href="#" onclick="event.preventDefault();goChat('桂林4天,漓江阳朔,自然风光')"><div class="card-emoji">🛶</div><div class="card-title">桂林 4天</div><div class="card-sub">漓江 · 阳朔 · 梯田</div></a>
-<a class="card anim-fade-up" data-cat="food" href="#" onclick="event.preventDefault();goChat('广州3天,早茶美食文化,市区逛')"><div class="card-emoji">🥟</div><div class="card-title">广州 3天</div><div class="card-sub">早茶 · 沙面 · 小蛮腰</div></a>
-<a class="card anim-fade-up" data-cat="nature" href="#" onclick="event.preventDefault();goChat('重庆3天,山城美食夜景,魔幻8D')"><div class="card-emoji">🌆</div><div class="card-title">重庆 3天</div><div class="card-sub">洪崖洞 · 火锅 · 轻轨</div></a>
+<a class="card anim-fade-up" data-cat="history" href="#" onclick="event.preventDefault();goChat('Beijing 3 days, Forbidden City Great Wall hutongs, mid-range')"><div class="card-emoji">🏯</div><div class="card-title">Beijing</div><div class="card-sub">Forbidden City · Great Wall · Hutongs</div></a>
+<a class="card anim-fade-up" data-cat="food" href="#" onclick="event.preventDefault();goChat('Chengdu 4 days, hotpot street food pandas')"><div class="card-emoji">🐼</div><div class="card-title">Chengdu</div><div class="card-sub">Hotpot · Pandas · Tea Houses</div></a>
+<a class="card anim-fade-up" data-cat="nature" href="#" onclick="event.preventDefault();goChat('Yunnan 7 days, Dali Lijiang Shangri-La')"><div class="card-emoji">🏔️</div><div class="card-title">Yunnan</div><div class="card-sub">Dali Old Town · Jade Dragon · Shangri-La</div></a>
+<a class="card anim-fade-up" data-cat="city" href="#" onclick="event.preventDefault();goChat('Shanghai 3 days, The Bund Disney French Concession')"><div class="card-emoji">🌃</div><div class="card-title">Shanghai</div><div class="card-sub">The Bund · Disney · Art Deco</div></a>
+<a class="card anim-fade-up" data-cat="history" href="#" onclick="event.preventDefault();goChat('Xi\'an 3 days, Terracotta Warriors ancient capital')"><div class="card-emoji">🏛️</div><div class="card-title">Xi'an</div><div class="card-sub">Terracotta Warriors · Muslim Quarter</div></a>
+<a class="card anim-fade-up" data-cat="nature" href="#" onclick="event.preventDefault();goChat('Guilin 4 days, Li River Yangshuo rice terraces')"><div class="card-emoji">🛶</div><div class="card-title">Guilin</div><div class="card-sub">Li River · Yangshuo · Rice Terraces</div></a>
+<a class="card anim-fade-up" data-cat="food" href="#" onclick="event.preventDefault();goChat('Guangzhou 3 days, dim sum culinary tour')"><div class="card-emoji">🥟</div><div class="card-title">Guangzhou</div><div class="card-sub">Dim Sum · Cantonese · Night Markets</div></a>
+<a class="card anim-fade-up" data-cat="city" href="#" onclick="event.preventDefault();goChat('Chongqing 3 days, night views hotpot 8D city')"><div class="card-emoji">🌆</div><div class="card-title">Chongqing</div><div class="card-sub">Night Views · Hotpot · Hongyadong</div></a>
 </div>
 <div id="recentTrips" style="display:none;margin-top:20px;text-align:left"></div>
-<div style="margin-top:16px;font-size:12px;color:var(--muted)" data-i18n="guestHint">📧 Email · 📱 Phone · 🔑 Google · 👤 Guest</div>
+<div style="margin-top:16px;font-size:12px;color:var(--muted)" data-i18n="guestHint">✉️ Email · 📱 Phone · 🔑 Google · 👤 Guest mode</div>
 </div></main>
-<footer data-i18n="footer">🐼 VisePanda · AI China Travel · Try without login</footer>
+<footer data-i18n="footer">🐼 VisePanda · AI-powered China travel planner · Try it without signing up</footer>
 <script src="/static/i18n.js"></script>
 <script src="/static/landing.js"></script><script src="/static/pwa.js"></script></body></html>"""
 
@@ -832,7 +832,7 @@ def page_trips() -> str:
 @keyframes fadeInOut{{0%{{opacity:0;transform:translateX(-50%) translateY(8px)}}15%{{opacity:1;transform:translateX(-50%) translateY(0)}}85%{{opacity:1;transform:translateX(-50%) translateY(0)}}100%{{opacity:0;transform:translateX(-50%) translateY(-8px)}}}}
 </style><script defer src='/_vercel/insights/script.js'></script><script defer src='/_vercel/speed-insights/script.js'></script></head><body>
 <div class="bg-shanshui"></div>
-<header><div><a href="/" class="logo-seal"><span class="seal">熊</span><span class="name">VisePanda<span class="name-ch">熊猫行</span></span></a></div><div><a href="/" class="btn" data-i18n="homeBtn">Home</a><a href="#" class="lang-switch" onclick="event.preventDefault();setLang(LANG==='en'?'zh':'en')" data-i18n="langLabel">中</a><a href="#" onclick="event.preventDefault();toggleTheme()" class="lang-switch" id="themeToggle" title="Toggle theme">🌓</a></div></header>
+<header><div><a href="/" class="logo-seal"><span class="seal">熊</span><span class="name">VisePanda</span></a></div><div><a href="/" class="btn" data-i18n="homeBtn">Home</a><a href="#" class="lang-switch" onclick="event.preventDefault();setLang(LANG==='en'?'zh':'en')" data-i18n="langLabel">中</a><a href="#" onclick="event.preventDefault();toggleTheme()" class="lang-switch" id="themeToggle" title="Toggle theme">🌓</a></div></header>
 <main style="position:relative;z-index:1;min-height:calc(100vh-56px);padding:20px 16px 80px">
 <h2 style="text-align:center;color:var(--text);font-size:22px;margin:20px 0" data-i18n="tripsHeading">My Trips</h2>
 <div id="tripsList" class="trips-grid"><div class="skeleton" style="height:100px"></div></div>
@@ -899,7 +899,7 @@ def page_chat() -> str:
 .time{{font-size:10px;color:var(--muted);margin-top:4px}}
 </style><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"><script defer src='/_vercel/insights/script.js'></script><script defer src='/_vercel/speed-insights/script.js'></script>{_inject_config()}</head><body>
 <div class="bg-shanshui"></div>
-<header><div><a href="/" class="logo-seal"><span class="seal">熊</span><span class="name">VisePanda<span class="name-ch">熊猫行</span></span></a></div><div><a href="/trips" class="btn" style="margin-right:8px" data-i18n="tripsBtn">Trips</a><a href="#" onclick="event.preventDefault();clearChat()" class="btn" style="margin-right:8px" data-i18n="clearBtn">Clear</a><a href="/" class="btn" data-i18n="homeBtn">Home</a><a href="#" class="lang-switch" onclick="event.preventDefault();setLang(LANG==='en'?'zh':'en')" data-i18n="langLabel">中</a><a href="#" onclick="event.preventDefault();toggleTheme()" class="lang-switch" id="themeToggle" title="Toggle theme">🌓</a></div></header>
+<header><div><a href="/" class="logo-seal"><span class="seal">熊</span><span class="name">VisePanda</span></a></div><div><a href="/trips" class="btn" style="margin-right:8px" data-i18n="tripsBtn">Trips</a><a href="#" onclick="event.preventDefault();clearChat()" class="btn" style="margin-right:8px" data-i18n="clearBtn">Clear</a><a href="/" class="btn" data-i18n="homeBtn">Home</a><a href="#" class="lang-switch" onclick="event.preventDefault();setLang(LANG==='en'?'zh':'en')" data-i18n="langLabel">中</a><a href="#" onclick="event.preventDefault();toggleTheme()" class="lang-switch" id="themeToggle" title="Toggle theme">🌓</a></div></header>
 <div class="layout"><button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">☰</button>
 <aside id="sidebar">
   <h3>📋 行程概况</h3>
@@ -951,7 +951,7 @@ def page_profile(user_id: str) -> str:
 <meta name="apple-mobile-web-app-title" content="VisePanda">
 <link rel="apple-touch-icon" href="/static/icon.svg"><title data-i18n="profileTitle">Profile · VisePanda</title><meta name="description" content="Manage your VisePanda profile and preferences."><style>{CSS}</style><script defer src='/_vercel/insights/script.js'></script><script defer src='/_vercel/speed-insights/script.js'></script>{_inject_config()}</head><body>
 <div class="bg-shanshui"></div>
-<header><div><a href="/" class="logo-seal"><span class="seal">熊</span><span class="name">VisePanda<span class="name-ch">熊猫行</span></span></a></div><div><a href="/chat" class="btn" style="margin-right:8px" data-i18n="chatBtn">Chat</a><a href="/trips" class="btn" style="margin-right:8px" data-i18n="tripsBtn">Trips</a><a href="/" class="btn" data-i18n="homeBtn">Home</a><a href="#" class="lang-switch" onclick="event.preventDefault();setLang(LANG==='en'?'zh':'en')" data-i18n="langLabel">中</a><a href="#" onclick="event.preventDefault();toggleTheme()" class="lang-switch" id="themeToggle" title="Toggle theme">🌓</a></div></header>
+<header><div><a href="/" class="logo-seal"><span class="seal">熊</span><span class="name">VisePanda</span></a></div><div><a href="/chat" class="btn" style="margin-right:8px" data-i18n="chatBtn">Chat</a><a href="/trips" class="btn" style="margin-right:8px" data-i18n="tripsBtn">Trips</a><a href="/" class="btn" data-i18n="homeBtn">Home</a><a href="#" class="lang-switch" onclick="event.preventDefault();setLang(LANG==='en'?'zh':'en')" data-i18n="langLabel">中</a><a href="#" onclick="event.preventDefault();toggleTheme()" class="lang-switch" id="themeToggle" title="Toggle theme">🌓</a></div></header>
 <div class="profile-page">
 <div class="profile-header"><div class="profile-avatar">🐼</div><h1 data-i18n="profileH1">My Profile</h1><p data-i18n="profileSub">Manage your account and preferences</p></div>
 <div id="profileMsg" class="profile-msg"></div>

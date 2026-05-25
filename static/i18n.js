@@ -31,7 +31,7 @@ const I18N = {
         codeSent: 'Code sent! Check your phone',
         recentTrips: 'Your recent trips',
         heroTitle: 'Plan your China trip 🐼',
-        heroSub: 'AI-powered travel planner for China. Domestic or international, we\'ve got you covered.',
+        heroSub: 'AI-powered travel planner for China. Just say where and how long.',
         inputPlaceholder: 'e.g. Beijing 5 days, food+history, relaxed pace…',
         startBtn: 'Start',
         guestHint: 'Email · Phone · Google · Continue as guest',
