@@ -124,6 +124,14 @@ VP_MAP.loadItinerary = async function(containerId, tripData) {
                 opacity: 0.5,
                 dashArray: '6, 4',
             });
+            // Animate line drawing
+            const totalLen = line.getLatLngs().reduce(function(len, latlng, idx, arr) {
+                if (idx === 0) return 0;
+                return len + latlng.distanceTo(arr[idx - 1]);
+            }, 0);
+            line.setStyle({'dashOffset': totalLen});
+            line._animTotal = totalLen;
+            line._animStart = Date.now();
             allLayer.addLayer(line);
             
             // Dashed connector with arrow point
@@ -143,6 +151,21 @@ VP_MAP.loadItinerary = async function(containerId, tripData) {
     map.fitBounds(allLayer.getBounds().pad(0.3));
     allLayer.addTo(map);
     container._vpLayers['all'] = allLayer;
+    
+    // Start route animation loop
+    var animFrame = function() {
+        var any = false;
+        allLayer.eachLayer(function(l) {
+            if (l._animTotal && l._animStart) {
+                var elapsed = Date.now() - l._animStart;
+                var progress = Math.min(elapsed / 1500, 1);
+                l.setStyle({'dashOffset': l._animTotal * (1 - progress)});
+                if (progress < 1) any = true;
+            }
+        });
+        if (any) requestAnimationFrame(animFrame);
+    };
+    requestAnimationFrame(animFrame);
     
     // ── Per-day layers ──
     const days = itin.days || [];
