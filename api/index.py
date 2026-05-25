@@ -511,41 +511,53 @@ async def stream_llm(messages: list[dict]) -> AsyncGenerator[str, None]:
 # ══════════════════════════════════════════════════════════
 
 CSS = """
-:root{--bg0:#05070b;--bg1:#0a0f17;--line:rgba(255,255,255,.08);--muted:rgba(255,255,255,.62);--text:rgba(255,255,255,.92);--accent:#7dd3fc;font-family:ui-sans-serif,system-ui,-apple-system,sans-serif}
-body{margin:0;min-height:100vh;background:radial-gradient(1200px 800px at 30% 15%,#121826 0%,var(--bg1) 55%,var(--bg0) 100%);color:var(--text)}
-.bg-shanshui{position:fixed;inset:0;background:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400"><path d="M0 350 Q200 200 400 280 Q600 360 800 250 L800 400 L0 400Z" fill="%23ffffff" opacity=".03"/></svg>') center/cover;opacity:.15;filter:blur(6px);pointer-events:none}
-header{height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid var(--line);background:rgba(8,10,14,.55);backdrop-filter:blur(10px);position:relative;z-index:1}
-.dot{width:10px;height:10px;border-radius:99px;background:var(--accent);box-shadow:0 0 18px rgba(125,211,252,.45);display:inline-block;margin-right:10px}
-.name{font-weight:650;font-size:14px}
-.btn{font-size:12px;padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--text);cursor:pointer;text-decoration:none}
-.btn:hover{background:rgba(255,255,255,.06)}
+:root{--bg0:#05070b;--bg1:#0e0b14;--line:rgba(255,255,255,.07);--muted:rgba(255,255,255,.55);--text:rgba(255,255,255,.92);--accent:#7dd3fc;--red:#bc3a2c;--gold:#c9a96e;font-family:'Noto Sans SC','PingFang SC','Microsoft YaHei',ui-sans-serif,system-ui,-apple-system,sans-serif}
+body{margin:0;min-height:100vh;background:linear-gradient(175deg,#0e0b14 0,#120f1e 35%,#0a0f17 65%,#05070b 100%);color:var(--text);position:relative}
+.bg-shanshui{position:fixed;inset:0;background:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 800"><defs><linearGradient id="moonG" cx="50%" cy="40%" r="50%"><stop offset="0%" stop-color="%23ffe9c4" stop-opacity=".6"/><stop offset="100%" stop-color="%23ffe9c4" stop-opacity="0"/></linearGradient><linearGradient id="fog1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="%23fff" stop-opacity=".02"/><stop offset="100%" stop-color="%23fff" stop-opacity="0"/></linearGradient></defs><circle cx="1050" cy="140" r="48" fill="%23ffe9c4" opacity=".12"/><circle cx="1050" cy="140" r="60" fill="url(%23moonG)" opacity=".08"/><path d="M0 520 Q120 370 260 420 Q420 475 550 390 Q680 300 800 360 Q930 420 1050 340 Q1150 280 1300 310 Q1380 330 1400 320 L1400 800 L0 800Z" fill="%23fff" opacity=".016"/><path d="M0 580 Q180 440 320 490 Q480 545 600 460 Q720 375 860 430 Q980 480 1100 410 Q1220 350 1400 380 L1400 800 L0 800Z" fill="%23fff" opacity=".012"/><path d="M0 640 Q200 520 400 560 Q550 590 700 515 Q850 440 1000 490 Q1150 540 1300 475 Q1400 440 1400 450 L1400 800 L0 800Z" fill="%23fff" opacity=".008"/><rect x="0" y="680" width="1400" height="120" fill="%23fff" opacity=".004"/></svg>') center/cover;opacity:.2;filter:blur(5px);pointer-events:none;z-index:0}
+.bg-shanshui::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 1000px 600px at 1080px 140px, rgba(255,233,196,.04) 0%, transparent 70%);pointer-events:none}
+header{height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid var(--line);background:rgba(10,8,16,.6);backdrop-filter:blur(12px);position:relative;z-index:1}
+.dot{width:12px;height:12px;border-radius:99px;background:linear-gradient(135deg,var(--red),%23e06050);box-shadow:0 0 20px rgba(188,58,44,.4);display:inline-block;margin-right:10px;vertical-align:middle}
+.logo-seal{display:inline-flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)}
+.logo-seal .seal{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border:1.5px solid var(--red);border-radius:6px;background:linear-gradient(135deg,rgba(188,58,44,.08),rgba(188,58,44,.02));font-size:14px;color:var(--red);font-weight:700;font-family:'Songti SC','STSong','Georgia',serif;transform:rotate(-2deg);flex-shrink:0}
+.logo-seal .seal:hover{background:linear-gradient(135deg,rgba(188,58,44,.12),rgba(188,58,44,.04))}
+.name{font-weight:650;font-size:14px;letter-spacing:.02em}
+.name-ch{font-size:11px;color:var(--gold);margin-left:2px;font-weight:400}
+.btn{font-size:12px;padding:7px 14px;border-radius:8px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--text);cursor:pointer;text-decoration:none;transition:all .2s}
+.btn:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15)}
 .btn-accent{border-color:rgba(125,211,252,.35);background:rgba(125,211,252,.12)}
-.card{border:1px solid var(--line);border-radius:16px;padding:18px;background:rgba(255,255,255,.02);cursor:pointer;transition:all .2s;text-align:left;text-decoration:none;display:block}
-.card:hover{border-color:rgba(125,211,252,.35);background:rgba(125,211,252,.06);transform:translateY(-2px)}
+.btn-accent:hover{border-color:rgba(125,211,252,.55);background:rgba(125,211,252,.2)}
+.btn-red{border-color:rgba(188,58,44,.4);background:rgba(188,58,44,.12);color:rgba(255,255,255,.92)}
+.btn-red:hover{border-color:rgba(188,58,44,.6);background:rgba(188,58,44,.2)}
+.card{border:1px solid var(--line);border-radius:12px;padding:18px;background:linear-gradient(160deg,rgba(255,255,255,.025),rgba(255,255,255,.005));cursor:pointer;transition:all .25s;text-align:left;text-decoration:none;display:block;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(201,169,110,.12),transparent);opacity:0;transition:opacity .25s}
+.card:hover{background:linear-gradient(160deg,rgba(255,255,255,.04),rgba(255,255,255,.01));transform:translateY(-3px);box-shadow:0 8px 30px rgba(0,0,0,.3)}
+.card:hover::before{opacity:1}
 .card-title{font-weight:650;font-size:15px;color:var(--text);margin:0 0 4px}
 .card-sub{font-size:12px;color:var(--muted);margin:0}
-.card-emoji{font-size:28px;margin-bottom:8px}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-top:24px;max-width:560px;margin-left:auto;margin-right:auto}
-.lang-switch{font-size:11px;padding:5px 10px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--text);cursor:pointer;margin-left:6px;text-decoration:none}.lang-switch:hover{background:rgba(255,255,255,.06)}
+.card-emoji{font-size:28px;margin-bottom:8px;display:block}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:20px;max-width:530px;margin-left:auto;margin-right:auto}
+.lang-switch{font-size:11px;padding:5px 10px;border-radius:6px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--text);cursor:pointer;margin-left:6px;text-decoration:none;transition:all .2s}
+.lang-switch:hover{background:rgba(255,255,255,.08);border-color:rgba(201,169,110,.3);color:var(--gold)}
 .recent-title{font-size:13px;color:var(--muted);margin-bottom:8px;font-weight:600}
-.recent-trip{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border:1px solid var(--line);border-radius:12px;margin-bottom:6px;background:rgba(255,255,255,.02);text-decoration:none;color:var(--text);transition:all .15s}
+.recent-trip{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border:1px solid var(--line);border-radius:10px;margin-bottom:6px;background:rgba(255,255,255,.02);text-decoration:none;color:var(--text);transition:all .15s}
 .recent-trip:hover{border-color:rgba(125,211,252,.35);background:rgba(125,211,252,.06)}
 .recent-trip-label{font-size:14px;font-weight:500}
 .recent-trip-meta{font-size:11px;color:var(--muted)}
 .trip-card{border-left:3px solid var(--accent)!important;background:linear-gradient(135deg,rgba(125,211,252,.06),transparent)!important}
-.price-budget{color:#4ade80}
-.price-mid{color:#fbbf24}
-.price-luxury{color:#f87171}
+.price-budget{color:%234ade80}
+.price-mid{color:%23fbbf24}
+.price-luxury{color:%23f87171}
 code{background:rgba(0,0,0,.3);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono','Fira Code','Cascadia Code',monospace;font-size:.9em}
 pre{background:rgba(0,0,0,.4);padding:12px 16px;border-radius:10px;border:1px solid var(--line);overflow-x:auto;margin:8px 0}
 pre code{background:none;padding:0;border-radius:0}
 #quickReplies .chip{background:rgba(255,255,255,.05);border-color:var(--line);color:var(--muted)}
-.profile-page{max-width:560px;margin:60px auto;padding:0 20px}.profile-card{border:1px solid var(--line);border-radius:16px;padding:24px;background:rgba(255,255,255,.02);margin-bottom:16px}.profile-card h3{font-size:14px;color:var(--accent);margin:0 0 16px}.profile-field{margin-bottom:16px}.profile-field label{font-size:11px;color:var(--muted);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em}.profile-field input[type=text],.profile-field input[type=email],.profile-field input[type=password],.profile-field select{width:100%;padding:10px 14px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--text);outline:none;font-size:14px;box-sizing:border-box}.profile-field input:focus{border-color:rgba(125,211,252,.35)}.profile-field select option{background:#1a1f2e;color:var(--text)}.profile-save-btn{width:100%;padding:12px;border-radius:999px;border:1px solid rgba(125,211,252,.35);background:rgba(125,211,252,.12);color:var(--text);cursor:pointer;font-size:14px;font-weight:600}.profile-save-btn:hover{background:rgba(125,211,252,.2)}.profile-save-btn:disabled{opacity:.4;cursor:not-allowed}.profile-msg{padding:10px 14px;border-radius:10px;font-size:13px;margin-bottom:12px;display:none}.profile-msg.success{display:block;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.2);color:#4ade80}.profile-msg.error{display:block;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.2);color:#f87171}.profile-status{font-size:11px;color:var(--muted);margin-top:4px}.profile-divider{border:none;border-top:1px solid var(--line);margin:20px 0}.profile-header{text-align:center;margin-bottom:32px}.profile-avatar{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,rgba(125,211,252,.2),rgba(125,211,252,.05));border:2px solid rgba(125,211,252,.2);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:28px}.profile-header h1{font-size:18px;margin:0;color:var(--text)}.profile-header p{font-size:13px;color:var(--muted);margin:4px 0 0}.profile-nav{text-align:center;margin-top:24px}.profile-nav a{color:var(--muted);font-size:13px;text-decoration:none;margin:0 8px}.profile-nav a:hover{color:var(--text)}footer{position:fixed;left:0;right:0;bottom:0;padding:10px 16px;padding-bottom:calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:rgba(8,10,14,.55);backdrop-filter:blur(10px);font-size:12px;color:var(--muted);z-index:1}
-input[type=text]{border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--text);padding:12px 16px;outline:none;font-size:16px}
-input[type=text]:focus{border-color:rgba(125,211,252,.35);box-shadow:0 0 0 4px rgba(125,211,252,.12)}
-@media(max-width:640px){h1{font-size:24px!important}header{padding:0 12px}.btn{padding:6px 12px;font-size:11px}footer{font-size:11px;padding:8px 12px}.bubble{max-width:95%!important;font-size:15px}#msgForm{gap:6px}#msgInput{height:40px;font-size:16px}#sendBtn{height:44px;padding:0 20px;font-size:14px}.chat-footer{padding:10px 12px;padding-bottom:calc(10px + env(safe-area-inset-bottom))}#thread{padding:12px 12px 140px;padding-bottom:calc(140px + env(safe-area-inset-bottom))}input[type=text]{font-size:16px}.welcome-chips{gap:4px!important}}
+.profile-page{max-width:560px;margin:60px auto;padding:0 20px}.profile-card{border:1px solid var(--line);border-radius:12px;padding:24px;background:linear-gradient(160deg,rgba(255,255,255,.025),rgba(255,255,255,.005));margin-bottom:16px}.profile-card h3{font-size:14px;color:var(--accent);margin:0 0 16px}.profile-field{margin-bottom:16px}.profile-field label{font-size:11px;color:var(--muted);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em}.profile-field input[type=text],.profile-field input[type=email],.profile-field input[type=password],.profile-field select{width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--text);outline:none;font-size:14px;box-sizing:border-box}.profile-field input:focus{border-color:rgba(125,211,252,.35)}.profile-field select option{background:#1a1f2e;color:var(--text)}.profile-save-btn{width:100%;padding:12px;border-radius:8px;border:1px solid rgba(188,58,44,.4);background:rgba(188,58,44,.12);color:var(--text);cursor:pointer;font-size:14px;font-weight:600;transition:all .2s}.profile-save-btn:hover{background:rgba(188,58,44,.2);border-color:rgba(188,58,44,.6)}.profile-save-btn:disabled{opacity:.4;cursor:not-allowed}.profile-msg{padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:12px;display:none}.profile-msg.success{display:block;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.2);color:%234ade80}.profile-msg.error{display:block;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.2);color:%23f87171}.profile-status{font-size:11px;color:var(--muted);margin-top:4px}.profile-divider{border:none;border-top:1px solid var(--line);margin:20px 0}.profile-header{text-align:center;margin-bottom:32px}.profile-avatar{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,rgba(188,58,44,.15),rgba(188,58,44,.04));border:2px solid rgba(188,58,44,.15);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:28px}.profile-header h1{font-size:18px;margin:0;color:var(--text)}.profile-header p{color:var(--muted);font-size:13px;margin:4px 0 0}.profile-nav{text-align:center;margin-top:32px;font-size:13px}.profile-nav a{color:var(--muted);text-decoration:none;margin:0 8px}.profile-nav a:hover{color:var(--accent)}.profile-nav a:last-child{margin-left:8px}
+input[type=text]{border-radius:8px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--text);padding:12px 16px;outline:none;font-size:16px;transition:all .2s}
+input[type=text]:focus{border-color:rgba(125,211,252,.35);box-shadow:0 0 0 4px rgba(125,211,252,.08)}
+@media(max-width:640px){h1{font-size:24px!important}header{padding:0 12px}.btn{padding:6px 12px;font-size:11px}footer{font-size:11px;padding:8px 12px}.bubble{max-width:95%!important;font-size:15px}#msgForm{gap:6px}#msgInput{height:40px;font-size:16px}#sendBtn{height:44px;padding:0 20px;font-size:14px}.chat-footer{padding:10px 12px;padding-bottom:calc(10px + env(safe-area-inset-bottom))}#thread{padding:12px 12px 140px;padding-bottom:calc(140px + env(safe-area-inset-bottom))}input[type=text]{font-size:16px}.welcome-chips{gap:4px!important}.cards{grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}.card{padding:14px}.card-emoji{font-size:22px}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-@keyframes scaleIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.93)}to{opacity:1;transform:scale(1)}}
+@keyframes brushIn{0%{clip-path:inset(0 100% 0 0)}100%{clip-path:inset(0 0 0 0)}}
 """
 
 def _inject_config() -> str:
@@ -561,17 +573,18 @@ window.__SUPABASE_CONFIG__ = {{
 
 def page_landing() -> str:
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="manifest" href="/static/manifest.json">
-<meta name="theme-color" content="#7dd3fc">
+<meta name="theme-color" content="#bc3a2c">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="VisePanda">
 <link rel="apple-touch-icon" href="/static/icon.svg"><title data-i18n="title">VisePanda — AI China Travel Planner 🇨🇳</title><meta name="description" data-i18n-content="metaDesc" content="Plan your China trip with AI. Get personalized itineraries, local food recommendations, hotel tips. Beijing, Shanghai, Chengdu, Yunnan — tell us where and how long."><meta property="og:title" content="VisePanda — AI China Travel Planner"><meta property="og:description" content="Personalized China travel itineraries powered by AI"><meta property="og:type" content="website"><meta name="twitter:card" content="summary"><style>{CSS}</style><script defer src='/_vercel/insights/script.js'></script><script defer src='/_vercel/speed-insights/script.js'></script>{_inject_config()}</head><body>
 <div class="bg-shanshui"></div>
-<header><div><span class="dot"></span><span class="name">VisePanda</span></div><div id="authArea"><a href="#" class="lang-switch" onclick="event.preventDefault();setLang(LANG==='en'?'zh':'en')" data-i18n="langLabel">中</a><a href="#" onclick="event.preventDefault();signIn()" class="btn btn-accent" data-i18n="signIn">Sign in</a></div></header>
+<header><div><a href="/" class="logo-seal"><span class="seal">熊</span><span class="name">VisePanda<span class="name-ch">熊猫行</span></span></a></div><div id="authArea"><a href="#" class="lang-switch" onclick="event.preventDefault();setLang(LANG==='en'?'zh':'en')" data-i18n="langLabel">中</a><a href="#" onclick="event.preventDefault();signIn()" class="btn btn-accent" data-i18n="signIn">Sign in</a></div></header>
 <main style="position:relative;min-height:calc(100vh-56px);display:flex;align-items:center;justify-content:center;padding:24px 16px 90px;z-index:1">
 <div style="width:min(640px,96%);text-align:center">
-<h1 style="font-size:34px;margin:0 0 8px;letter-spacing:-.02em" data-i18n="heroTitle">Plan your China trip 🐼</h1>
-<p style="color:var(--muted);margin:0 0 24px;line-height:1.5" data-i18n="heroSub">Ask less, chat more. Just tell me where and how long.</p>
+<h1 style="font-size:36px;margin:0 0 6px;letter-spacing:-.01em" data-i18n="heroTitle">🐼 Plan your China trip</h1>
+<p style="color:var(--gold);font-size:13px;margin:0 0 20px;letter-spacing:.15em" data-i18n="heroSubCN">AI · 中国的旅行规划师</p>
+
 <form onsubmit="event.preventDefault();const v=document.getElementById('q').value.trim();goChat(v||document.getElementById('q').placeholder)" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
 <input id="q" type="text" placeholder="e.g. Beijing 5 days, food+history, relaxed pace…" data-i18n-placeholder="inputPlaceholder" style="width:min(480px,88vw);height:48px;padding:0 16px">
 <button type="submit" class="btn btn-accent" style="height:48px;padding:0 20px;font-size:14px" data-i18n="startBtn">Start</button>
@@ -585,7 +598,7 @@ def page_landing() -> str:
 <a class="card" href="#" onclick="event.preventDefault();goChat('桂林4天,漓江阳朔,自然风光')"><div class="card-emoji">🛶</div><div class="card-title">Guilin 4 Days</div><div class="card-sub">Li River · Yangshuo · Karst Mountains</div></a>
 </div>
 <div id="recentTrips" style="display:none;margin-top:20px;text-align:left"></div>
-<div style="margin-top:20px;font-size:12px;color:var(--muted)" data-i18n="guestHint">Email · Phone · Google · Continue as guest</div>
+<div style="margin-top:16px;font-size:12px;color:var(--muted)" data-i18n="guestHint">📧 Email · 📱 Phone · 🔑 Google · 👤 Guest</div>
 </div></main>
 <footer data-i18n="footer">Try without login — last 3 trips saved locally. Login to sync across devices.</footer>
 <script src="/static/i18n.js"></script>
@@ -624,7 +637,7 @@ def page_share(share_id: str) -> str:
     
     tid = trip.id
     html = f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="manifest" href="/static/manifest.json">
-<meta name="theme-color" content="#7dd3fc">
+<meta name="theme-color" content="#bc3a2c">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="VisePanda">
@@ -662,7 +675,7 @@ VP_MAP.loadItinerary('tripMap',d);
 
 def page_trips() -> str:
     return f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="manifest" href="/static/manifest.json">
-<meta name="theme-color" content="#7dd3fc">
+<meta name="theme-color" content="#bc3a2c">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="VisePanda">
@@ -681,7 +694,7 @@ def page_trips() -> str:
 @keyframes fadeInOut{{0%{{opacity:0;transform:translateX(-50%) translateY(8px)}}15%{{opacity:1;transform:translateX(-50%) translateY(0)}}85%{{opacity:1;transform:translateX(-50%) translateY(0)}}100%{{opacity:0;transform:translateX(-50%) translateY(-8px)}}}}
 </style><script defer src='/_vercel/insights/script.js'></script><script defer src='/_vercel/speed-insights/script.js'></script></head><body>
 <div class="bg-shanshui"></div>
-<header><div><span class="dot"></span><span class="name">VisePanda</span></div><div><a href="/" class="btn" data-i18n="homeBtn">Home</a><a href="#" class="lang-switch" onclick="event.preventDefault();setLang(LANG==='en'?'zh':'en')" data-i18n="langLabel">中</a></div></header>
+<header><div><a href="/" class="logo-seal"><span class="seal">熊</span><span class="name">VisePanda<span class="name-ch">熊猫行</span></span></a></div><div><a href="/" class="btn" data-i18n="homeBtn">Home</a><a href="#" class="lang-switch" onclick="event.preventDefault();setLang(LANG==='en'?'zh':'en')" data-i18n="langLabel">中</a></div></header>
 <main style="position:relative;z-index:1;min-height:calc(100vh-56px);padding:20px 16px 80px">
 <h2 style="text-align:center;color:var(--text);font-size:22px;margin:20px 0" data-i18n="tripsHeading">My Trips</h2>
 <div id="tripsList" class="trips-grid"><div class="skeleton" style="height:100px"></div></div>
@@ -692,7 +705,7 @@ def page_trips() -> str:
 
 def page_chat() -> str:
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="manifest" href="/static/manifest.json">
-<meta name="theme-color" content="#7dd3fc">
+<meta name="theme-color" content="#bc3a2c">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="VisePanda">
@@ -709,8 +722,8 @@ def page_chat() -> str:
 .chat-footer{{position:fixed;bottom:0;left:0;right:0;padding:12px 16px;padding-bottom:calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:rgba(8,10,14,.55);backdrop-filter:blur(10px);z-index:2}}
 #msgForm{{display:flex;gap:10px;align-items:center;max-width:800px;margin:0 auto}}
 #msgInput{{flex:1;height:44px;padding:0 14px;font-size:14px}}
-#sendBtn{{height:44px;padding:0 20px;background:rgba(125,211,252,.14);border:1px solid rgba(125,211,252,.35);border-radius:999px;color:var(--text);cursor:pointer;font-size:14px}}
-#sendBtn:hover{{background:rgba(125,211,252,.22)}}
+#sendBtn{{height:44px;padding:0 24px;background:rgba(188,58,44,.14);border:1px solid rgba(188,58,44,.35);border-radius:8px;color:var(--text);cursor:pointer;font-size:14px;font-weight:500;transition:all .2s}}
+#sendBtn:hover{{background:rgba(188,58,44,.22);border-color:rgba(188,58,44,.55)}}
 #quickReplies{{display:flex;flex-wrap:wrap;gap:4px;padding:6px 0;max-width:800px;margin:0 auto 8px}}
 .cursor{{animation:blink 1s step-end infinite}}
 @keyframes blink{{0%,100%{{opacity:1}}50%{{opacity:0}}}}
@@ -731,15 +744,15 @@ def page_chat() -> str:
 .time{{font-size:10px;color:var(--muted);margin-top:4px}}
 </style><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"><script defer src='/_vercel/insights/script.js'></script><script defer src='/_vercel/speed-insights/script.js'></script>{_inject_config()}</head><body>
 <div class="bg-shanshui"></div>
-<header><div><span class="dot"></span><span class="name">VisePanda</span></div><div><a href="/trips" class="btn" style="margin-right:8px" data-i18n="tripsBtn">Trips</a><a href="#" onclick="event.preventDefault();clearChat()" class="btn" style="margin-right:8px" data-i18n="clearBtn">Clear</a><a href="/" class="btn" data-i18n="homeBtn">Home</a><a href="#" class="lang-switch" onclick="event.preventDefault();setLang(LANG==='en'?'zh':'en')" data-i18n="langLabel">中</a></div></header>
-<div class="layout"><main style="flex:1;display:flex;flex-direction:column"><div id="thread"><div class="welcome" id="welcomeMsg"><h2 data-i18n="welcomeTitle">👋 Welcome to VisePanda</h2><p data-i18n="welcomeSub">Your AI travel planner for China. Ask me anything!</p><div class="welcome-chips"><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Beijing 3-day itinerary';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🏯 Beijing 3 days</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Chengdu food tour 4 days';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🐼 Chengdu food</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Yunnan 7 days nature trip';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🏔️ Yunnan 7 days</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Shanghai weekend guide';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🌃 Shanghai weekend</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Xi'an terracotta history 3 days';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🏛️ Xi'an history</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Guilin Li River Yangshuo 4 days';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🛶 Guilin nature</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Hangzhou West Lake relaxed 3 days';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🍵 Hangzhou relax</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Guangzhou dimsum food tour 3 days';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🥟 Guangzhou food</span></div></div></div><div id="tripMap" class="vp-map-container"></div></main></div>
+<header><div><a href="/" class="logo-seal"><span class="seal">熊</span><span class="name">VisePanda<span class="name-ch">熊猫行</span></span></a></div><div><a href="/trips" class="btn" style="margin-right:8px" data-i18n="tripsBtn">Trips</a><a href="#" onclick="event.preventDefault();clearChat()" class="btn" style="margin-right:8px" data-i18n="clearBtn">Clear</a><a href="/" class="btn" data-i18n="homeBtn">Home</a><a href="#" class="lang-switch" onclick="event.preventDefault();setLang(LANG==='en'?'zh':'en')" data-i18n="langLabel">中</a></div></header>
+<div class="layout"><main style="flex:1;display:flex;flex-direction:column"><div id="thread"><div class="welcome" id="welcomeMsg"><h2 data-i18n="welcomeTitle">🐼 Explorer</h2><p style="color:var(--gold);font-size:12px;letter-spacing:.08em;margin:0" data-i18n="welcomeSub">AI 中国旅行规划 · Tell me where</p><p style="font-size:13px;color:var(--muted);margin:8px 0 0" data-i18n="welcomeSub2">Pick a destination or describe your dream trip</p><div class="welcome-chips"><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Beijing 3-day itinerary';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🏯 Beijing 3 days</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Chengdu food tour 4 days';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🐼 Chengdu food</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Yunnan 7 days nature trip';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🏔️ Yunnan 7 days</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Shanghai weekend guide';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🌃 Shanghai weekend</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Xi'an terracotta history 3 days';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🏛️ Xi'an history</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Guilin Li River Yangshuo 4 days';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🛶 Guilin nature</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Hangzhou West Lake relaxed 3 days';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🍵 Hangzhou relax</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Guangzhou dimsum food tour 3 days';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🥟 Guangzhou food</span></div></div></div><div id="tripMap" class="vp-map-container"></div></main></div>
 <div class="chat-footer"><div id="quickReplies"></div><form id="msgForm"><input id="msgInput" type="text" placeholder="Type a message…" data-i18n-placeholder="inputMsgPlaceholder" autofocus><button id="sendBtn" type="submit" data-i18n="sendBtn">Send</button></form></div>
 <script src="/static/i18n.js"></script>
 <script src="/static/chat.js"></script><script src="/static/pwa.js"></script><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="/static/map.js"></script></body></html>"""
 
 def page_auth_callback() -> str:
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="manifest" href="/static/manifest.json">
-<meta name="theme-color" content="#7dd3fc">
+<meta name="theme-color" content="#bc3a2c">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="VisePanda">
@@ -763,13 +776,13 @@ def page_profile(user_id: str) -> str:
         name = user.name or ""
     db.close()
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="manifest" href="/static/manifest.json">
-<meta name="theme-color" content="#7dd3fc">
+<meta name="theme-color" content="#bc3a2c">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="VisePanda">
 <link rel="apple-touch-icon" href="/static/icon.svg"><title data-i18n="profileTitle">Profile · VisePanda</title><meta name="description" content="Manage your VisePanda profile and preferences."><style>{CSS}</style><script defer src='/_vercel/insights/script.js'></script><script defer src='/_vercel/speed-insights/script.js'></script>{_inject_config()}</head><body>
 <div class="bg-shanshui"></div>
-<header><div><span class="dot"></span><span class="name">VisePanda</span></div><div><a href="/chat" class="btn" style="margin-right:8px" data-i18n="chatBtn">Chat</a><a href="/trips" class="btn" style="margin-right:8px" data-i18n="tripsBtn">Trips</a><a href="/" class="btn" data-i18n="homeBtn">Home</a><a href="#" class="lang-switch" onclick="event.preventDefault();setLang(LANG==='en'?'zh':'en')" data-i18n="langLabel">中</a></div></header>
+<header><div><a href="/" class="logo-seal"><span class="seal">熊</span><span class="name">VisePanda<span class="name-ch">熊猫行</span></span></a></div><div><a href="/chat" class="btn" style="margin-right:8px" data-i18n="chatBtn">Chat</a><a href="/trips" class="btn" style="margin-right:8px" data-i18n="tripsBtn">Trips</a><a href="/" class="btn" data-i18n="homeBtn">Home</a><a href="#" class="lang-switch" onclick="event.preventDefault();setLang(LANG==='en'?'zh':'en')" data-i18n="langLabel">中</a></div></header>
 <div class="profile-page">
 <div class="profile-header"><div class="profile-avatar">🐼</div><h1 data-i18n="profileH1">My Profile</h1><p data-i18n="profileSub">Manage your account and preferences</p></div>
 <div id="profileMsg" class="profile-msg"></div>
@@ -1256,7 +1269,7 @@ async def not_found(request, exc):
     path = request.url.path
     if path.startswith("/api/"):
         return JSONResponse({"error": "not found"}, status_code=404)
-    return HTMLResponse('<html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><link rel="manifest" href="/static/manifest.json"><meta name="theme-color" content="#7dd3fc"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="VisePanda"><link rel="apple-touch-icon" href="/static/icon.svg"><title data-i18n="notFoundTitle">404 — VisePanda</title><style>body{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0a0f17;color:#fff;font-family:sans-serif;text-align:center;margin:0}h1{font-size:48px;margin:0;letter-spacing:-.02em}p{color:rgba(255,255,255,.5)}a{color:#7dd3fc}</style><h1>🐼</h1><p data-i18n="notFound">Page not found</p><a href=/>Back home</a><script src="/static/i18n.js"></script><script src="/static/pwa.js"></script>', status_code=404)
+    return HTMLResponse('<html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><link rel="manifest" href="/static/manifest.json"><meta name="theme-color" content="#bc3a2c"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="VisePanda"><link rel="apple-touch-icon" href="/static/icon.svg"><title data-i18n="notFoundTitle">404 — VisePanda</title><style>body{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0a0f17;color:#fff;font-family:sans-serif;text-align:center;margin:0}h1{font-size:48px;margin:0;letter-spacing:-.02em}p{color:rgba(255,255,255,.5)}a{color:#7dd3fc}</style><h1>🐼</h1><p data-i18n="notFound">Page not found</p><a href=/>Back home</a><script src="/static/i18n.js"></script><script src="/static/pwa.js"></script>', status_code=404)
 
 
 @app.get("/api/trips")
