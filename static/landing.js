@@ -341,3 +341,13 @@ async function loadRecentTrips() {
 }
 
 loadRecentTrips();
+
+// ── Category filter for landing page cards ──
+function filterCards(cat) {
+  document.querySelectorAll('.cat-tag').forEach(function(t) {
+    t.classList.toggle('active', t.dataset.cat === cat);
+  });
+  document.querySelectorAll('#cardGrid .card').forEach(function(c) {
+    c.style.display = cat === 'all' || c.dataset.cat === cat ? 'block' : 'none';
+  });
+}
