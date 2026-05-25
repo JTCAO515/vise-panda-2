@@ -197,7 +197,7 @@ CITIES = {
         "budget_tip": "沙漠防晒做好，鸣沙山月牙泉必去",
         "vibe": "丝绸之路 + 大漠风情",
         "keywords": ["莫高窟", "鸣沙山", "月牙泉", "玉门关", "雅丹"]
-    }
+    },
 
     "luoyang": {
         "name_en": "Luoyang",
