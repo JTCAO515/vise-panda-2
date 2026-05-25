@@ -533,6 +533,21 @@ input[type=text]{border-radius:6px;border:1px solid var(--line);background:rgba(
 input[type=text]:focus{border-color:var(--gold);box-shadow:0 0 0 4px rgba(212,168,75,.08)}
 .light footer,.light-theme footer{background:rgba(0,0,0,.03)!important}
 footer{border-top:1px solid rgba(212,168,75,.08);background:rgba(10,8,16,.4);color:var(--muted);font-size:12px;padding:10px 16px;text-align:center;position:relative;z-index:1}
+
+/* Landing v2 — Hot routes */
+.section-label{font-size:13px;color:var(--gold);margin:20px 0 10px;text-align:left;font-weight:600;letter-spacing:.05em}
+.hot-scroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;margin-bottom:4px;scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch}
+.hot-scroll::-webkit-scrollbar{display:none}
+.hot-card{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:4px;border:1px solid var(--line);border-radius:12px;padding:14px 18px;background:linear-gradient(160deg,rgba(255,255,255,.03),rgba(255,255,255,.008));cursor:pointer;text-decoration:none;color:var(--text);transition:all .25s;min-width:100px}
+.hot-card:hover{border-color:rgba(212,168,75,.3);background:rgba(212,168,75,.06);transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.2)}
+.hot-emoji{font-size:24px}
+.hot-text{font-size:12px;font-weight:600;white-space:nowrap}
+.hot-sub{font-size:10px;color:var(--muted)}
+
+/* City chips */
+.city-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.city-chip{font-size:12px;padding:6px 14px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.03);cursor:pointer;text-decoration:none;color:var(--text);transition:all .2s}
+.city-chip:hover{border-color:rgba(125,211,252,.35);background:rgba(125,211,252,.08);color:var(--accent)}
 @media(max-width:640px){h1{font-size:24px!important}header{padding:0 12px}.btn{padding:6px 12px;font-size:11px}footer{font-size:11px;padding:8px 12px}.bubble{max-width:95%!important;font-size:15px}#msgForm{gap:6px}#msgInput{height:40px;font-size:16px}#sendBtn{height:44px;padding:0 20px;font-size:14px}.chat-footer{padding:10px 12px;padding-bottom:calc(10px + env(safe-area-inset-bottom))}#thread{padding:12px 12px 140px;padding-bottom:calc(140px + env(safe-area-inset-bottom))}input[type=text]{font-size:16px}.welcome-chips{gap:4px!important}.cards{grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}.card{padding:14px}.card-emoji{font-size:22px}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes scaleIn{from{opacity:0;transform:scale(.93)}to{opacity:1;transform:scale(1)}}
@@ -647,6 +662,30 @@ def page_landing() -> str:
 <input id="q" type="text" placeholder="北京5天/成都美食/云南7天…" data-i18n-placeholder="inputPlaceholder" style="width:min(480px,88vw);height:48px;padding:0 16px">
 <button type="submit" class="btn btn-red" style="height:48px;padding:0 24px;font-size:14px" data-i18n="startBtn">🚀 Start</button>
 </form>
+<div class="section-label">🔥 热门精选</div>
+<div class="hot-scroll">
+  <a class="hot-card" href="#" onclick="event.preventDefault();goChat('北京3天深度游,喜欢历史文化,中等预算')"><span class="hot-emoji">🏯</span><span class="hot-text">帝都历史 3天</span><span class="hot-sub">¥1500+</span></a>
+  <a class="hot-card" href="#" onclick="event.preventDefault();goChat('成都4天美食之旅,火锅串串,悠闲逛')"><span class="hot-emoji">🐼</span><span class="hot-text">成都美食 4天</span><span class="hot-sub">¥1200+</span></a>
+  <a class="hot-card" href="#" onclick="event.preventDefault();goChat('云南7天,大理丽江香格里拉,自然风光')"><span class="hot-emoji">🏔️</span><span class="hot-text">云南全景 7天</span><span class="hot-sub">¥3000+</span></a>
+  <a class="hot-card" href="#" onclick="event.preventDefault();goChat('西安3天历史游,兵马俑古城墙,中等预算')"><span class="hot-emoji">🏛️</span><span class="hot-text">古都西安 3天</span><span class="hot-sub">¥1500+</span></a>
+  <a class="hot-card" href="#" onclick="event.preventDefault();goChat('广州3天,早茶美食文化,市区逛')"><span class="hot-emoji">🥟</span><span class="hot-text">广州美食 3天</span><span class="hot-sub">¥1500+</span></a>
+  <a class="hot-card" href="#" onclick="event.preventDefault();goChat('重庆3天,山城美食夜景,魔幻8D')"><span class="hot-emoji">🌆</span><span class="hot-text">魔幻重庆 3天</span><span class="hot-sub">¥1000+</span></a>
+</div>
+<div class="section-label">🏙️ 热门城市</div>
+<div class="city-chips">
+  <a class="city-chip" href="#" onclick="event.preventDefault();goChat('北京')">北京</a>
+  <a class="city-chip" href="#" onclick="event.preventDefault();goChat('上海')">上海</a>
+  <a class="city-chip" href="#" onclick="event.preventDefault();goChat('成都')">成都</a>
+  <a class="city-chip" href="#" onclick="event.preventDefault();goChat('西安')">西安</a>
+  <a class="city-chip" href="#" onclick="event.preventDefault();goChat('广州')">广州</a>
+  <a class="city-chip" href="#" onclick="event.preventDefault();goChat('杭州')">杭州</a>
+  <a class="city-chip" href="#" onclick="event.preventDefault();goChat('重庆')">重庆</a>
+  <a class="city-chip" href="#" onclick="event.preventDefault();goChat('大理')">大理</a>
+  <a class="city-chip" href="#" onclick="event.preventDefault();goChat('桂林')">桂林</a>
+  <a class="city-chip" href="#" onclick="event.preventDefault();goChat('三亚')">三亚</a>
+  <a class="city-chip" href="#" onclick="event.preventDefault();goChat('长沙')">长沙</a>
+  <a class="city-chip" href="#" onclick="event.preventDefault();goChat('南京')">南京</a>
+</div>
 <div class="cat-nav"><span class="cat-tag active" data-cat="all" onclick="filterCards('all')">🔥 全部</span><span class="cat-tag" data-cat="food" onclick="filterCards('food')">🍜 美食</span><span class="cat-tag" data-cat="history" onclick="filterCards('history')">🏯 历史</span><span class="cat-tag" data-cat="nature" onclick="filterCards('nature')">🏔️ 自然</span><span class="cat-tag" data-cat="city" onclick="filterCards('city')">🌃 都市</span></div>
 <div class="cards" id="cardGrid">
 <a class="card anim-fade-up" data-cat="history" href="#" onclick="event.preventDefault();goChat('北京3天深度游,喜欢历史文化,中等预算')"><div class="card-emoji">🏯</div><div class="card-title">北京 3天</div><div class="card-sub">故宫 · 长城 · 胡同</div></a>
@@ -661,7 +700,6 @@ def page_landing() -> str:
 <div id="recentTrips" style="display:none;margin-top:20px;text-align:left"></div>
 <div style="margin-top:16px;font-size:12px;color:var(--muted)" data-i18n="guestHint">📧 Email · 📱 Phone · 🔑 Google · 👤 Guest</div>
 </div></main>
-<script>
 <footer data-i18n="footer">🐼 VisePanda · AI China Travel · Try without login</footer>
 <script src="/static/i18n.js"></script>
 <script src="/static/landing.js"></script><script src="/static/pwa.js"></script></body></html>"""
