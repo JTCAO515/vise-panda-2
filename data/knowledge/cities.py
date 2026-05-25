@@ -198,4 +198,203 @@ CITIES = {
         "vibe": "丝绸之路 + 大漠风情",
         "keywords": ["莫高窟", "鸣沙山", "月牙泉", "玉门关", "雅丹"]
     }
+
+    "luoyang": {
+        "name_en": "Luoyang",
+        "name_zh": "洛阳",
+        "province": "河南",
+        "best_season": "4-5月（牡丹花会）, 9-10月",
+        "days_min": 2,
+        "days_max": 3,
+        "budget_tip": "龙门石窟必去，住宿便宜",
+        "vibe": "十三朝古都 · 牡丹花城",
+        "keywords": ["龙门石窟", "白马寺", "牡丹", "洛阳水席", "关林"]
+    },
+    "wuhan": {
+        "name_en": "Wuhan",
+        "name_zh": "武汉",
+        "province": "湖北",
+        "best_season": "3-5月, 9-10月",
+        "days_min": 2,
+        "days_max": 3,
+        "budget_tip": "过早文化丰富，热干面人均5元",
+        "vibe": "江城 · 美食小吃之都",
+        "keywords": ["黄鹤楼", "武汉大学", "东湖", "热干面", "长江大桥"]
+    },
+    "xiamen": {
+        "name_en": "Xiamen",
+        "name_zh": "厦门",
+        "province": "福建",
+        "best_season": "3-5月, 10-12月",
+        "days_min": 2,
+        "days_max": 4,
+        "budget_tip": "鼓浪屿住宿贵，建议住中山路",
+        "vibe": "海滨文艺 · 万国建筑",
+        "keywords": ["鼓浪屿", "曾厝垵", "环岛路", "厦门大学", "沙茶面"]
+    },
+    "qingdao": {
+        "name_en": "Qingdao",
+        "name_zh": "青岛",
+        "province": "山东",
+        "best_season": "5-10月（啤酒节8月）",
+        "days_min": 3,
+        "days_max": 4,
+        "budget_tip": "啤酒节期间住宿翻倍",
+        "vibe": "红瓦绿树 · 碧海蓝天",
+        "keywords": ["栈桥", "崂山", "八大关", "啤酒博物馆", "金沙滩"]
+    },
+    "dali": {
+        "name_en": "Dali",
+        "name_zh": "大理",
+        "province": "云南",
+        "best_season": "3-5月, 9-11月",
+        "days_min": 3,
+        "days_max": 5,
+        "budget_tip": "洱海骑行是经典，喜洲粑粑必吃",
+        "vibe": "风花雪月 · 慢生活",
+        "keywords": ["洱海", "大理古城", "苍山", "双廊", "喜洲"]
+    },
+    "lijiang": {
+        "name_en": "Lijiang",
+        "name_zh": "丽江",
+        "province": "云南",
+        "best_season": "3-5月, 9-11月",
+        "days_min": 3,
+        "days_max": 5,
+        "budget_tip": "古城维护费¥50，淡季客栈便宜",
+        "vibe": "高原水乡 · 纳西文化",
+        "keywords": ["丽江古城", "玉龙雪山", "束河古镇", "泸沽湖", "蓝月谷"]
+    },
+    "huangshan": {
+        "name_en": "Huangshan",
+        "name_zh": "黄山",
+        "province": "安徽",
+        "best_season": "4-6月, 9-11月",
+        "days_min": 3,
+        "days_max": 4,
+        "budget_tip": "山上住宿贵，建议住山下汤口",
+        "vibe": "天下第一奇山",
+        "keywords": ["黄山", "宏村", "屯溪老街", "西递", "徽菜"]
+    },
+    "jiuzhaigou": {
+        "name_en": "Jiuzhaigou",
+        "name_zh": "九寨沟",
+        "province": "四川",
+        "best_season": "10月（秋色最美）",
+        "days_min": 2,
+        "days_max": 4,
+        "budget_tip": "门票较贵¥169，住在沟口",
+        "vibe": "人间仙境 · 童话世界",
+        "keywords": ["五花海", "诺日朗瀑布", "长海", "五彩池", "原始森林"]
+    },
+    "lanzhou": {
+        "name_en": "Lanzhou",
+        "name_zh": "兰州",
+        "province": "甘肃",
+        "best_season": "5-10月",
+        "days_min": 1,
+        "days_max": 2,
+        "budget_tip": "兰州牛肉面¥8一碗，性价比之王",
+        "vibe": "黄河之都 · 西北枢纽",
+        "keywords": ["黄河铁桥", "白塔山", "兰州牛肉面", "正宁路夜市", "甘肃省博"]
+    },
+    "guiyang": {
+        "name_en": "Guiyang",
+        "name_zh": "贵阳",
+        "province": "贵州",
+        "best_season": "6-9月（避暑）",
+        "days_min": 2,
+        "days_max": 3,
+        "budget_tip": "夏天避暑胜地，酸汤鱼必吃",
+        "vibe": "避暑之都 · 山地城市",
+        "keywords": ["黔灵山", "甲秀楼", "青岩古镇", "酸汤鱼", "花溪牛肉粉"]
+    },
+    "lasa": {
+        "name_en": "Lhasa",
+        "name_zh": "拉萨",
+        "province": "西藏",
+        "best_season": "5-10月",
+        "days_min": 3,
+        "days_max": 5,
+        "budget_tip": "高反是第一关，慢慢适应",
+        "vibe": "日光之城 · 信仰之地",
+        "keywords": ["布达拉宫", "大昭寺", "八廓街", "色拉寺", "纳木错"]
+    },
+    "xining": {
+        "name_en": "Xining",
+        "name_zh": "西宁",
+        "province": "青海",
+        "best_season": "6-8月（环湖季）",
+        "days_min": 1,
+        "days_max": 2,
+        "budget_tip": "青海湖环湖租车方便",
+        "vibe": "青藏高原门户",
+        "keywords": ["青海湖", "塔尔寺", "茶卡盐湖", "东关清真寺", "手抓羊肉"]
+    },
+    "hohhot": {
+        "name_en": "Hohhot",
+        "name_zh": "呼和浩特",
+        "province": "内蒙古",
+        "best_season": "7-9月（草原季）",
+        "days_min": 2,
+        "days_max": 4,
+        "budget_tip": "草原体验项目价格不透明，提前问好",
+        "vibe": "草原之都 · 蒙族文化",
+        "keywords": ["希拉穆仁", "大召寺", "五当召", "烤全羊", "蒙古包"]
+    },
+    "nanchang": {
+        "name_en": "Nanchang",
+        "name_zh": "南昌",
+        "province": "江西",
+        "best_season": "春秋（3-5月, 9-11月）",
+        "days_min": 2,
+        "days_max": 3,
+        "budget_tip": "滕王阁必去，拌粉瓦罐汤超便宜",
+        "vibe": "军旗升起的地方",
+        "keywords": ["滕王阁", "八一起义纪念馆", "绳金塔", "南昌拌粉", "瓦罐汤"]
+    },
+    "fuzhou": {
+        "name_en": "Fuzhou",
+        "name_zh": "福州",
+        "province": "福建",
+        "best_season": "春秋（3-5月, 10-11月）",
+        "days_min": 2,
+        "days_max": 3,
+        "budget_tip": "三坊七巷免费，鱼丸肉燕必吃",
+        "vibe": "榕城 · 闽都文化",
+        "keywords": ["三坊七巷", "鼓山", "西湖公园", "鱼丸", "佛跳墙"]
+    },
+    "hainan": {
+        "name_en": "Hainan (Haikou)",
+        "name_zh": "海口",
+        "province": "海南",
+        "best_season": "10-4月",
+        "days_min": 2,
+        "days_max": 3,
+        "budget_tip": "比三亚便宜很多，骑楼老街值得逛",
+        "vibe": "椰城 · 慢生活",
+        "keywords": ["骑楼老街", "火山口", "假日海滩", "文昌鸡", "清补凉"]
+    },
+    "macau": {
+        "name_en": "Macau",
+        "name_zh": "澳门",
+        "province": "澳门",
+        "best_season": "10-12月, 2-4月",
+        "days_min": 1,
+        "days_max": 2,
+        "budget_tip": "免费赌场穿梭巴士可以省交通费",
+        "vibe": "东方拉斯维加斯 · 葡式风情",
+        "keywords": ["大三巴", "威尼斯人", "澳门塔", "葡式蛋挞", "路环岛"]
+    },
+    "taipei": {
+        "name_en": "Taipei",
+        "name_zh": "台北",
+        "province": "台湾",
+        "best_season": "春秋（3-5月, 10-12月）",
+        "days_min": 3,
+        "days_max": 5,
+        "budget_tip": "夜市人均¥30-60，性价比极高",
+        "vibe": "宝岛之心 · 夜市天堂",
+        "keywords": ["台北101", "故宫博物院", "士林夜市", "九份", "阳明山"]
+    },
 }
