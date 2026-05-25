@@ -577,6 +577,9 @@ form{animation:fadeUp .5s ease both;animation-delay:.15s}
 
 /* Skeleton shimmer */
 .skeleton{animation:shimmer 1.5s infinite;background:linear-gradient(90deg,rgba(255,255,255,.04)25%,rgba(255,255,255,.1)50%,rgba(255,255,255,.04)75%);background-size:200% 100%}
+.skel-block{padding:4px 0}
+.skel-line{height:14px;border-radius:7px;margin:8px 0;background:linear-gradient(90deg,rgba(255,255,255,.04)25%,rgba(255,255,255,.1)50%,rgba(255,255,255,.04)75%);background-size:200% 100%;animation:shimmer 1.5s infinite}
+.skel-w-10{width:10%}.skel-w-20{width:20%}.skel-w-30{width:30%}.skel-w-40{width:40%}.skel-w-50{width:50%}.skel-w-60{width:60%}.skel-w-70{width:70%}.skel-w-80{width:80%}.skel-w-90{width:90%}.skel-w-100{width:100%}
 
 /* Button press feedback */
 /* ── Micro-interactions ── */
@@ -795,7 +798,7 @@ def page_chat() -> str:
 .vp-map-label{{background:none!important;border:none!important;box-shadow:none!important;color:rgba(255,255,255,.7)!important;font-size:11px!important;font-weight:600}}
 .leaflet-container{{background:#0a0f17!important}}
 .leaflet-control-zoom a{{background:rgba(255,255,255,.05)!important;color:rgba(255,255,255,.8)!important;border-color:var(--line)!important}}
-.skeleton{{height:16px;border-radius:8px;background:linear-gradient(90deg,rgba(255,255,255,.04)25%,rgba(255,255,255,.08)50%,rgba(255,255,255,.04)75%);background-size:200%100%;animation:shimmer 1.5s infinite}}
+.skel-block{{padding:4px 0}}.skel-line{{height:14px;border-radius:7px;margin:8px 0}}.skel-w-10{{width:10%}}.skel-w-20{{width:20%}}.skel-w-30{{width:30%}}.skel-w-40{{width:40%}}.skel-w-50{{width:50%}}.skel-w-60{{width:60%}}.skel-w-70{{width:70%}}.skel-w-80{{width:80%}}
 @keyframes shimmer{{0%{{background-position:200%0}}100%{{background-position:-200%0}}}}
 .trip-card{{border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:12px;padding:14px 14px 14px 11px;margin:6px 0;background:linear-gradient(135deg,rgba(125,211,252,.06),transparent)}}
 .trip-card b{{color:var(--accent)}}

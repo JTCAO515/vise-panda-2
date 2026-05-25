@@ -88,9 +88,8 @@ async function send(text) {
     localStorage.setItem('vp_trip', tripId);
 
     const b = msg('bot',
-        '<div class=skeleton style=width:60%></div>' +
-        '<div class=skeleton style=width:40%;margin-top:8px></div>' +
-        '<div class=skeleton style=width:50%;margin-top:8px></div>'
+        '<div class="skel-block"><div class="skel-line skel-w-70"></div><div class="skel-line skel-w-50"></div><div class="skel-line skel-w-60"></div></div>' +
+        '<div class="skel-block" style="margin-top:12px"><div class="skel-line skel-w-40"></div><div class="skel-line skel-w-80"></div><div class="skel-line skel-w-30"></div></div>'
     );
 
     var getT = function(k) { return (typeof t === 'function') ? t(k) : {
