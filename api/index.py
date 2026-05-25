@@ -579,8 +579,32 @@ form{animation:fadeUp .5s ease both;animation-delay:.15s}
 .skeleton{animation:shimmer 1.5s infinite;background:linear-gradient(90deg,rgba(255,255,255,.04)25%,rgba(255,255,255,.1)50%,rgba(255,255,255,.04)75%);background-size:200% 100%}
 
 /* Button press feedback */
-.btn:active,.btn-accent:active,.btn-red:active,.cat-tag:active{transform:scale(.96)}
-.card:active{transform:scale(.98)}
+/* ── Micro-interactions ── */
+.btn{position:relative;overflow:hidden}
+.btn::after,.btn-accent::after,.btn-red::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(255,255,255,.15) 0%,transparent 70%);opacity:0;transition:opacity .3s;pointer-events:none}
+.btn:hover::after,.btn-accent:hover::after,.btn-red:hover::after{opacity:1}
+.btn:active,.btn-accent:active,.btn-red:active,.cat-tag:active{transform:scale(.96);transition:transform .1s}
+
+/* Link hover underline */
+.logo-seal::after{content:'';position:absolute;bottom:-2px;left:36px;right:0;height:1px;background:var(--gold);transform:scaleX(0);transform-origin:left;transition:transform .3s}
+.logo-seal:hover::after{transform:scaleX(1)}
+
+/* Card glow float enhancement */
+.card{transition:all .35s cubic-bezier(.25,.46,.45,.94)}
+.card:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,.4),0 0 30px rgba(212,168,75,.06)}
+.card:active{transform:scale(.97);transition:all .1s}
+
+/* Cat-tag hover underline */
+.cat-tag{position:relative}
+.cat-tag::after{content:'';position:absolute;bottom:0;left:20%;right:20%;height:1px;background:var(--gold-bright);transform:scaleX(0);transition:transform .2s}
+.cat-tag:hover::after{transform:scaleX(1)}
+
+/* Input focus glow */
+input[type=text]:focus{transform:scale(1.01)}
+
+/* Welcome chip hover */
+.welcome-chip{transition:all .25s cubic-bezier(.25,.46,.45,.94)}
+.welcome-chip:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(125,211,252,.1)}
 
 """
 
@@ -627,6 +651,7 @@ def page_landing() -> str:
 <div id="recentTrips" style="display:none;margin-top:20px;text-align:left"></div>
 <div style="margin-top:16px;font-size:12px;color:var(--muted)" data-i18n="guestHint">📧 Email · 📱 Phone · 🔑 Google · 👤 Guest</div>
 </div></main>
+<script>
 <footer data-i18n="footer">🐼 VisePanda · AI China Travel · Try without login</footer>
 <script src="/static/i18n.js"></script>
 <script src="/static/landing.js"></script><script src="/static/pwa.js"></script></body></html>"""

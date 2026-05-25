@@ -351,3 +351,13 @@ function filterCards(cat) {
     c.style.display = cat === 'all' || c.dataset.cat === cat ? 'block' : 'none';
   });
 }
+
+// ── Button ripple effect ──
+document.addEventListener('mousemove', function(e) {
+  var btn = e.target.closest('.btn, .btn-accent, .btn-red');
+  if (btn) {
+    var r = btn.getBoundingClientRect();
+    btn.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
+    btn.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100) + '%');
+  }
+});
