@@ -636,10 +636,12 @@ def page_share(share_id: str) -> str:
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 </style><script defer src='/_vercel/insights/script.js'></script><script defer src='/_vercel/speed-insights/script.js'></script></head><body><div class="bg-shanshui"></div>
-<div class="share-header"><h2>🐼 {title}</h2><p data-i18n="shareAI">AI-planned trip · {len(msgs)} messages</p><a href="/" class="btn btn-accent" style="margin-top:16px;display:inline-block" data-i18n="planYourOwn">🚀 Create your own trip</a></div>
-<div class="share-thread">{msgs_html}</div>
-<div class="share-footer"><a href="/" class="btn btn-accent" data-i18n="planYourOwn">Plan your own trip</a><script src="/static/i18n.js"></script></div>
-<script src="/static/pwa.js"></script></body></html>'''
+|<div class="share-header"><h2>🐼 {title}</h2><p data-i18n="shareAI">AI-planned trip · {len(msgs)} messages</p><a href="/" class="btn btn-accent" style="margin-top:16px;display:inline-block" data-i18n="planYourOwn">🚀 Create your own trip</a></div>
+|<div class="share-thread">{msgs_html}</div>
+|<div id="tripMap" class="vp-map-container" style="display:block;height:400px;margin:16px"></div>
+|<div class="share-footer"><a href="/" class="btn btn-accent" data-i18n="planYourOwn">Plan your own trip</a><script src="/static/i18n.js"></script></div>
+|<script src="/static/pwa.js"></script><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="/static/map.js"></script>
+<script>var _tid="{trip.id}";if(typeof VP_MAP!=='undefined'&&VP_MAP.loadItinerary){(async function(){{try{{var r=await fetch('/api/trips/'+_tid);var d=await r.json();if(d.current_itinerary&&d.current_itinerary.cities&&d.current_itinerary.cities.length>0){{VP_MAP.loadItinerary('tripMap',d);}}}}catch(e){{}}}})();}</script></body></html>'''
 
 
 def page_trips() -> str:
@@ -696,6 +698,10 @@ def page_chat() -> str:
 #quickReplies{{display:flex;flex-wrap:wrap;gap:4px;padding:6px 0;max-width:800px;margin:0 auto 8px}}
 .cursor{{animation:blink 1s step-end infinite}}
 @keyframes blink{{0%,100%{{opacity:1}}50%{{opacity:0}}}}
+.vp-map-container{{display:none;height:320px;border:1px solid var(--line);border-radius:12px;margin:8px 12px;overflow:hidden;z-index:1;position:relative}}
+.vp-map-label{{background:none!important;border:none!important;box-shadow:none!important;color:rgba(255,255,255,.7)!important;font-size:11px!important;font-weight:600}}
+.leaflet-container{{background:#0a0f17!important}}
+.leaflet-control-zoom a{{background:rgba(255,255,255,.05)!important;color:rgba(255,255,255,.8)!important;border-color:var(--line)!important}}
 .skeleton{{height:16px;border-radius:8px;background:linear-gradient(90deg,rgba(255,255,255,.04)25%,rgba(255,255,255,.08)50%,rgba(255,255,255,.04)75%);background-size:200%100%;animation:shimmer 1.5s infinite}}
 @keyframes shimmer{{0%{{background-position:200%0}}100%{{background-position:-200%0}}}}
 .trip-card{{border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:12px;padding:14px 14px 14px 11px;margin:6px 0;background:linear-gradient(135deg,rgba(125,211,252,.06),transparent)}}
@@ -707,13 +713,13 @@ def page_chat() -> str:
 .welcome-chip{{border:1px solid var(--line);border-radius:999px;padding:8px 16px;font-size:13px;color:var(--text);cursor:pointer;background:rgba(255,255,255,.03);transition:all .15s}}
 .welcome-chip:hover{{border-color:rgba(125,211,252,.35);background:rgba(125,211,252,.08)}}
 .time{{font-size:10px;color:var(--muted);margin-top:4px}}
-</style><script defer src='/_vercel/insights/script.js'></script><script defer src='/_vercel/speed-insights/script.js'></script>{_inject_config()}</head><body>
+</style><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"><script defer src='/_vercel/insights/script.js'></script><script defer src='/_vercel/speed-insights/script.js'></script>{_inject_config()}</head><body>
 <div class="bg-shanshui"></div>
 <header><div><span class="dot"></span><span class="name">VisePanda</span></div><div><a href="/trips" class="btn" style="margin-right:8px" data-i18n="tripsBtn">Trips</a><a href="#" onclick="event.preventDefault();clearChat()" class="btn" style="margin-right:8px" data-i18n="clearBtn">Clear</a><a href="/" class="btn" data-i18n="homeBtn">Home</a><a href="#" class="lang-switch" onclick="event.preventDefault();setLang(LANG==='en'?'zh':'en')" data-i18n="langLabel">中</a></div></header>
-<div class="layout"><main style="flex:1;display:flex;flex-direction:column"><div id="thread"><div class="welcome" id="welcomeMsg"><h2 data-i18n="welcomeTitle">👋 Welcome to VisePanda</h2><p data-i18n="welcomeSub">Your AI travel planner for China. Ask me anything!</p><div class="welcome-chips"><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Beijing 3-day itinerary';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🏯 Beijing 3 days</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Chengdu food tour 4 days';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🐼 Chengdu food</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Yunnan 7 days nature trip';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🏔️ Yunnan 7 days</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Shanghai weekend guide';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🌃 Shanghai weekend</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Xi'an terracotta history 3 days';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🏛️ Xi'an history</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Guilin Li River Yangshuo 4 days';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🛶 Guilin nature</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Hangzhou West Lake relaxed 3 days';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🍵 Hangzhou relax</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Guangzhou dimsum food tour 3 days';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🥟 Guangzhou food</span></div></div></div></main></div>
+<div class="layout"><main style="flex:1;display:flex;flex-direction:column"><div id="thread"><div class="welcome" id="welcomeMsg"><h2 data-i18n="welcomeTitle">👋 Welcome to VisePanda</h2><p data-i18n="welcomeSub">Your AI travel planner for China. Ask me anything!</p><div class="welcome-chips"><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Beijing 3-day itinerary';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🏯 Beijing 3 days</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Chengdu food tour 4 days';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🐼 Chengdu food</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Yunnan 7 days nature trip';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🏔️ Yunnan 7 days</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Shanghai weekend guide';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🌃 Shanghai weekend</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Xi'an terracotta history 3 days';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🏛️ Xi'an history</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Guilin Li River Yangshuo 4 days';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🛶 Guilin nature</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Hangzhou West Lake relaxed 3 days';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🍵 Hangzhou relax</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Guangzhou dimsum food tour 3 days';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🥟 Guangzhou food</span></div></div></div><div id="tripMap" class="vp-map-container"></div></main></div>
 <div class="chat-footer"><div id="quickReplies"></div><form id="msgForm"><input id="msgInput" type="text" placeholder="Type a message…" data-i18n-placeholder="inputMsgPlaceholder" autofocus><button id="sendBtn" type="submit" data-i18n="sendBtn">Send</button></form></div>
 <script src="/static/i18n.js"></script>
-<script src="/static/chat.js"></script><script src="/static/pwa.js"></script></body></html>"""
+<script src="/static/chat.js"></script><script src="/static/pwa.js"></script><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="/static/map.js"></script></body></html>"""
 
 def page_auth_callback() -> str:
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="manifest" href="/static/manifest.json">
@@ -1371,3 +1377,53 @@ def get_messages(trip_id: str):
         return [{"role": m.role, "content": m.content, "created_at": m.created_at.isoformat()} for m in msgs]
     finally:
         db.close()
+
+
+# ── Geocode API (Nominatim proxy with cache) ──
+
+_GEOCODE_CACHE: dict[str, list[float]] = {}
+_GEOCODE_LAST_CALL = 0.0
+
+class GeocodeIn(BaseModel):
+    places: list[str]
+
+@app.post("/api/geocode")
+def geocode(body: GeocodeIn):
+    """Convert place names to coordinates via Nominatim with caching."""
+    import time as _time
+    import urllib.request as _req
+    import urllib.parse as _parse
+    global _GEOCODE_LAST_CALL
+    
+    results = {}
+    for place in body.places:
+        place_stripped = place.strip()
+        if not place_stripped:
+            continue
+        
+        # Check cache
+        if place_stripped in _GEOCODE_CACHE:
+            results[place] = _GEOCODE_CACHE[place_stripped]
+            continue
+        
+        # Rate limit: 1 request per 1.2s
+        elapsed = _time.time() - _GEOCODE_LAST_CALL
+        if elapsed < 1.2:
+            _time.sleep(1.2 - elapsed)
+        
+        try:
+            url = f"https://nominatim.openstreetmap.org/search?q={_parse.quote(place_stripped)}&format=json&limit=1"
+            req = _req.Request(url, headers={"User-Agent": "VisePanda/1.0 (travel app)"})
+            with _req.urlopen(req, timeout=10) as resp:
+                data = json.loads(resp.read().decode())
+                _GEOCODE_LAST_CALL = _time.time()
+                if data:
+                    coords = [float(data[0]["lat"]), float(data[0]["lon"])]
+                    _GEOCODE_CACHE[place_stripped] = coords
+                    results[place] = coords
+                else:
+                    results[place] = None
+        except Exception:
+            results[place] = None
+    
+    return results

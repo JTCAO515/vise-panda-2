@@ -174,6 +174,24 @@ async function send(text) {
                         note.textContent = '📋 Itinerary saved — ' + (j.cities || []).join(', ') + ' · ' + j.days + ' days';
                         Q('#thread').appendChild(note);
                         smartScroll();
+                        
+                        // Show map with trip data
+                        const mapContainer = Q('#tripMap');
+                        if (mapContainer && tripId && !mapContainer._mapLoading) {
+                            mapContainer._mapLoading = true;
+                            mapContainer.style.display = 'block';
+                            (async () => {
+                                try {
+                                    const resp = await fetch('/api/trips/' + tripId);
+                                    const td = await resp.json();
+                                    if (td.current_itinerary && td.current_itinerary.cities && td.current_itinerary.cities.length > 0) {
+                                        await VP_MAP.loadItinerary('tripMap', td);
+                                        mapContainer.style.display = 'block';
+                                    }
+                                } catch (e) {}
+                                mapContainer._mapLoading = false;
+                            })();
+                        }
                     }
                     b.innerHTML = M(f);
                 } catch (_) {}
