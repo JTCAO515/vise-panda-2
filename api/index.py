@@ -350,6 +350,13 @@ class UserPreference(Base):
     created_at = Column(DateTime, default=lambda: dt.datetime.utcnow())
     updated_at = Column(DateTime, default=lambda: dt.datetime.utcnow(), onupdate=lambda: dt.datetime.utcnow())
 
+class Favorite(Base):
+    __tablename__ = "favorites"
+    id = Column(String, primary_key=True, default=lambda: _uid())
+    user_id = Column(String, nullable=False)
+    trip_id = Column(String, nullable=False)
+    created_at = Column(DateTime, default=lambda: dt.datetime.utcnow())
+
 class Trip(Base):
     __tablename__ = "trips"
     id: Mapped[str] = mapped_column(String, primary_key=True, default=_uid)
@@ -984,6 +991,34 @@ def share_view(share_id: str):
 
 
 @app.get("/api/trips/{trip_id}/card")
+@app.post("/api/favorites/toggle")
+def toggle_favorite(body: dict):
+    user_id = body.get("user_id")
+    trip_id = body.get("trip_id")
+    if not user_id or not trip_id:
+        raise HTTPException(400, "user_id and trip_id required")
+    db = get_db()
+    try:
+        existing = db.query(Favorite).filter(Favorite.user_id == user_id, Favorite.trip_id == trip_id).one_or_none()
+        if existing:
+            db.delete(existing)
+            db.commit()
+            return {"favorited": False}
+        db.add(Favorite(user_id=user_id, trip_id=trip_id))
+        db.commit()
+        return {"favorited": True}
+    finally:
+        db.close()
+
+@app.get("/api/favorites/{user_id}")
+def get_favorites(user_id: str):
+    db = get_db()
+    try:
+        favs = db.query(Favorite).filter(Favorite.user_id == user_id).all()
+        return [f.trip_id for f in favs]
+    finally:
+        db.close()
+
 def trip_card_image(trip_id: str):
     """Generate an SVG card image for trip sharing (used as og:image)."""
     db = get_db()
