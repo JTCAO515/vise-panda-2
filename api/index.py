@@ -647,6 +647,19 @@ input[type=text]:focus{transform:scale(1.01)}
 .welcome-chip{transition:all .25s cubic-bezier(.25,.46,.45,.94)}
 .welcome-chip:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(125,211,252,.1)}
 
+/* ── Chinese Theme Pack ── */
+[data-theme="hongjin"]{--bg0:#1A0A0A;--bg1:#2D1212;--line:rgba(212,168,75,.15);--muted:rgba(255,200,150,.5);--text:#F5E6C8;--accent:#C41E1E;--red:#C41E1E;--red-bright:#E83939;--gold:#D4A017;--gold-bright:#F0C848;}
+[data-theme="mogreen"]{--bg0:#0A1410;--bg1:#0F1E18;--line:rgba(100,200,150,.12);--muted:rgba(160,210,180,.5);--text:#D4E8D8;--accent:#2D8A4E;--red:#C43A3A;--red-bright:#D85A4A;--gold:#8AB84E;--gold-bright:#A8D86A;}
+[data-theme="qinghua"]{--bg0:#080E1A;--bg1:#0E1628;--line:rgba(130,180,220,.12);--muted:rgba(150,190,230,.5);--text:#D4E4F0;--accent:#3A7BBF;--red:#C43A3A;--red-bright:#D85A4A;--gold:#8AB8D4;--gold-bright:#A8D0E8;}
+/* Mobile improvements */
+.chat-wrapper{padding-bottom:env(safe-area-inset-bottom)}
+body{padding-bottom:env(safe-area-inset-bottom)}
+.city-chip,.cat-tag,.hot-card,.card{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+/* Accessibility */
+:focus-visible{outline:2px solid var(--gold-bright);outline-offset:2px;border-radius:4px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+@media(prefers-contrast:more){:root{--muted:rgba(255,255,255,.75)}.light-theme,.light{--muted:rgba(0,0,0,.65)}}
+
 """
 
 def _inject_config() -> str:
@@ -1626,6 +1639,62 @@ def get_messages(trip_id: str):
         return [{"role": m.role, "content": m.content, "created_at": m.created_at.isoformat()} for m in msgs]
     finally:
         db.close()
+
+
+# ── Weather API (wttr.in) ──
+@app.get("/api/weather/{city}")
+async def weather_route(city: str):
+    """GET /api/weather/Beijing → 3-day forecast JSON"""
+    try:
+        from weather import get_weather
+        data = await get_weather(city)
+        if data is None:
+            return JSONResponse({"error": "Weather unavailable"}, status_code=503)
+        return JSONResponse(data)
+    except Exception:
+        return JSONResponse({"error": "Weather service error"}, status_code=500)
+
+
+# ── Calendar export (.ics) ──
+@app.post("/api/calendar/export")
+async def calendar_export(request: Request):
+    """POST trip itinerary JSON → .ics file download"""
+    try:
+        from ics_export import generate_ics
+        body = await request.json()
+        ics = generate_ics(body)
+        return Response(
+            content=ics,
+            media_type="text/calendar",
+            headers={"Content-Disposition": "attachment; filename=trip.ics"}
+        )
+    except Exception:
+        return JSONResponse({"error": "Calendar generation failed"}, status_code=500)
+
+
+# ── Currency converter ──
+@app.get("/api/fx/{amount}/{from_curr}/{to_curr}")
+async def fx_route(amount: float, from_curr: str, to_curr: str = "CNY"):
+    """GET /api/fx/100/USD/CNY → converted amount"""
+    try:
+        from fx import convert
+        result = await convert(amount, from_curr, to_curr)
+        return JSONResponse(result)
+    except Exception:
+        return JSONResponse({"error": "Currency conversion failed"}, status_code=500)
+
+
+# ── Itinerary validation ──
+@app.post("/api/itinerary/validate")
+async def validate_route(request: Request):
+    """POST itinerary JSON → list of warnings"""
+    try:
+        from prompt import validate_itinerary
+        body = await request.json()
+        warnings = validate_itinerary(body)
+        return JSONResponse({"warnings": warnings, "safe": len(warnings) == 0})
+    except Exception:
+        return JSONResponse({"warnings": ["Validation failed"], "safe": False}, status_code=500)
 
 
 # ── Geocode API (Nominatim proxy with cache) ──

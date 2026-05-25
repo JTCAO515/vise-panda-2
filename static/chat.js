@@ -268,3 +268,22 @@ function updateSidebar(tripData) {
     if (cities) cities.textContent = (itin.cities || ['—']).join(' → ');
     if (days) days.textContent = (itin.day_count || '—') + ' days';
 }
+
+// ── Theme toggle ──
+function toggleTheme() {
+  var themes = ['dark', 'light', 'hongjin', 'mogreen', 'qinghua'];
+  var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+  var idx = themes.indexOf(cur);
+  var next = themes[(idx + 1) % themes.length];
+  if (next === 'light') document.body.classList.add('light');
+  else document.body.classList.remove('light');
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('vp_theme', next);
+}
+(function() {
+  var saved = localStorage.getItem('vp_theme');
+  if (saved && saved !== 'dark') {
+    if (saved === 'light') document.body.classList.add('light');
+    document.documentElement.setAttribute('data-theme', saved);
+  }
+})();

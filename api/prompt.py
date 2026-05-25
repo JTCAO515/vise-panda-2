@@ -119,3 +119,52 @@ def get_proactive_questions(missing_info: list) -> list:
         "season": ["打算什么时候去？不同季节体验差别很大"],
     }
     return q_map.get(missing_info[0], ["还有什么我可以帮你规划的？"]) if missing_info else []
+
+
+def validate_itinerary(itinerary: dict) -> list[str]:
+    """Check an itinerary for potential issues. Returns list of warnings."""
+    warnings = []
+    days = itinerary.get("itinerary", itinerary.get("days", []))
+    if not days:
+        warnings.append("行程中没有日程信息")
+        return warnings
+
+    city_name = itinerary.get("city", "")
+
+    for day in days:
+        day_num = day.get("day", 0)
+        activities = day.get("activities", day.get("items", []))
+
+        # Count activities for pacing
+        act_count = len(activities)
+        if act_count > 8:
+            warnings.append(f"Day {day_num}: 安排了 {act_count} 项活动，可能太紧凑")
+        elif act_count == 0:
+            warnings.append(f"Day {day_num}: 没有安排任何活动")
+
+        # Check for unrealistic meal times
+        for act in activities:
+            time_str = act.get("time", "")
+            name = act.get("name", "")
+            if "吃" in time_str or "餐" in time_str or "饭" in time_str:
+                if any(h in time_str for h in ["22:", "23:", "00:", "01:", "02:"]):
+                    warnings.append(f"Day {day_num}: '{name}' 安排在深夜 {time_str}，可能不合理")
+            if "起" in time_str or "出发" in time_str:
+                try:
+                    hour = int(time_str.split(":")[0])
+                    if hour < 5:
+                        warnings.append(f"Day {day_num}: '{name}' 出发时间 {time_str} 过早")
+                except (ValueError, IndexError):
+                    pass
+
+    # Check if restaurants are mentioned but no meal breaks
+    food_keywords = ["餐厅", "美食", "吃饭", "午餐", "晚餐", "早茶", "火锅", "烤"]
+    for day in days:
+        day_num = day.get("day", 0)
+        activities = day.get("activities", day.get("items", []))
+        all_text = " ".join(act.get("name", "") + act.get("time", "") for act in activities)
+        has_food_mention = any(k in all_text for k in food_keywords)
+        if not has_food_mention and activities:
+            warnings.append(f"Day {day_num}: 未提及餐饮安排")
+
+    return warnings
