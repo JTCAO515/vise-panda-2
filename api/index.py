@@ -913,6 +913,75 @@ def page_chat() -> str:
 <script src="/static/i18n.js"></script>
 <script src="/static/chat.js"></script><script src="/static/pwa.js"></script><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="/static/map.js"></script></body></html>"""
 
+def page_phrases() -> str:
+    """Language Emergency Cards reference page — screenshot-friendly card layout"""
+    from data.knowledge.phrases import get_category_list
+    cats = get_category_list()
+    cat_buttons = "".join(
+        f'<button class="cat-btn" data-cat="{c["id"]}" onclick="showCat(\'{c["id"]}\')">'
+        f'{c["icon"]} {c["title_en"]}</button>'
+        for c in cats
+    )
+    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Language Emergency Cards 🇨🇳 — VisePanda</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{{margin:0;padding:0;box-sizing:border-box}}
+body{{font-family:'Inter',sans-serif;background:#0d1117;color:#e6edf3;min-height:100vh}}
+.header{{background:linear-gradient(135deg,#1a1f2e 0%,#0d1117 100%);padding:32px 20px 24px;text-align:center;border-bottom:1px solid #30363d}}
+.header h1{{font-size:28px;font-weight:800;background:linear-gradient(135deg,#f0883e,#e05a2a);-webkit-background-clip:text;-webkit-text-fill-color:transparent}}
+.header p{{color:#8b949e;font-size:14px;margin-top:6px}}
+.cat-grid{{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:20px 16px 4px}}
+.cat-btn{{padding:10px 18px;border-radius:10px;border:1px solid #30363d;background:#161b22;color:#c9d1d9;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;font-family:inherit}}
+.cat-btn:hover{{border-color:#f0883e;background:#1c2128;color:#f0883e}}
+.cat-btn.active{{border-color:#f0883e;background:#2d1f12;color:#f0883e}}
+.card-container{{max-width:720px;margin:0 auto;padding:16px 16px 40px}}
+.card{{display:none;background:#161b22;border-radius:16px;border:1px solid #30363d;overflow:hidden;margin-bottom:16px}}
+.card.active{{display:block}}
+.card-header{{padding:18px 20px 14px;border-bottom:1px solid #21262d}}
+.card-header h2{{font-size:20px;font-weight:700}}
+.card-header .sub{{color:#8b949e;font-size:12px;margin-top:2px}}
+.phrase{{display:flex;align-items:flex-start;padding:14px 20px;border-bottom:1px solid #21262d;gap:12px}}
+.phrase:last-child{{border-bottom:none}}
+.phrase-num{{width:28px;height:28px;border-radius:50%;background:#1e2a3a;color:#f0883e;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}}
+.phrase-content{{flex:1;min-width:0}}
+.phrase-cn{{font-size:18px;font-weight:600;color:#e6edf3;line-height:1.4}}
+.phrase-pinyin{{font-size:13px;color:#8b949e;font-style:italic;margin-top:1px}}
+.phrase-en{{font-size:14px;color:#c9d1d9;margin-top:4px}}
+.tip{{text-align:center;padding-top:16px;color:#8b949e;font-size:13px}}
+.tip a{{color:#58a6ff;text-decoration:none}}
+@media(max-width:480px){{.header{{padding:24px 16px 18px}}.header h1{{font-size:24px}}.phrase{{padding:12px 16px}}.phrase-cn{{font-size:16px}}}}
+</style></head><body>
+<div class=header>
+<h1>🇨🇳 Language Emergency Cards</h1>
+<p>Chinese travel phrases — tap a category to view cards · Screenshot to save</p>
+</div>
+<div class=cat-grid>{cat_buttons}</div>
+<div class=card-container id=container></div>
+<div class=tip>💡 Screenshot a card to save it on your phone · <a href=/>← Back to VisePanda</a></div>
+<script>
+const DATA={{}};let cur=null;
+async function showCat(cat){{
+document.querySelectorAll('.cat-btn').forEach(b=>b.classList.toggle('active',b.dataset.cat===cat));
+if(DATA[cat]){{render(DATA[cat],cat);return}}
+const r=await fetch('/api/phrases/'+cat);const d=await r.json();DATA[cat]=d;render(d,cat)
+}}
+function render(d,cat){{
+const c=document.getElementById('container');c.innerHTML='<div class=card active>'
++'<div class=card-header><h2>'+d.icon+' '+d.title_en+'<span style=color:#8b949e;font-weight:400;margin-left:8px;font-size:14px>'+d.title_zh+'</span>'
++'</h2><div class=sub>'+d.phrases.length+' essential phrases · 截图保存</div></div>';
+d.phrases.forEach((p,i)=>{{
+c.innerHTML+='<div class=phrase><div class=phrase-num>'+(i+1)+'</div><div class=phrase-content>'
++'<div class=phrase-cn>'+p[0]+'</div><div class=phrase-pinyin>'+p[1]+'</div><div class=phrase-en>'+p[2]+'</div></div></div>'
+}});
+c.innerHTML+='</div>'
+}}
+showCat('taxi')
+</script></body></html>"""
+
+
 def page_auth_callback() -> str:
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="manifest" href="/static/manifest.json">
 <meta name="theme-color" content="#bc3a2c">
@@ -1085,6 +1154,29 @@ def trips_page():
 def chat_page():
     return page_chat()
 
+
+@app.get("/phrases", response_class=HTMLResponse)
+def phrases_page():
+    return page_phrases()
+
+@app.get("/api/phrases/{cat}", response_class=JSONResponse)
+def api_phrases(cat: str):
+    try:
+        from data.knowledge.phrases import get_category
+        data = get_category(cat)
+        if not data:
+            raise HTTPException(404, f"Category '{cat}' not found")
+        return data
+    except ImportError:
+        return JSONResponse({"error": "Phrases module not loaded"}, status_code=500)
+
+@app.get("/api/phrases", response_class=JSONResponse)
+def api_phrases_list():
+    try:
+        from data.knowledge.phrases import get_category_list
+        return {"categories": get_category_list()}
+    except ImportError:
+        return JSONResponse({"error": "Phrases module not loaded"}, status_code=500)
 
 @app.get("/auth/callback", response_class=HTMLResponse)
 def auth_callback():
