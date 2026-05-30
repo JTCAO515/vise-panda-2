@@ -36,7 +36,7 @@ const M = text => {
         })
         .replace(/\n\n/g, '</p><p>')
         .replace(/\n/g, '<br>');
-    if (text.includes('**Day ')) h = '<div class=trip-card>' + h + '</div>';
+    if (text.includes('**Day ')) h = '<div class=trip-highlight>' + h + '</div>';
     return h;
 };
 

@@ -237,38 +237,79 @@ async def stream_llm(messages: list[dict]) -> AsyncGenerator[str, None]:
 # ══════════════════════════════════════════════════════════
 
 CSS = """
-:root{--bg0:#05070b;--bg1:#0a0f17;--line:rgba(255,255,255,.08);--muted:rgba(255,255,255,.62);--text:rgba(255,255,255,.92);--accent:#7dd3fc;font-family:ui-sans-serif,system-ui,-apple-system,sans-serif}
-body{margin:0;min-height:100vh;background:radial-gradient(1200px 800px at 30% 15%,#121826 0%,var(--bg1) 55%,var(--bg0) 100%);color:var(--text)}
-.bg-shanshui{position:fixed;inset:0;background:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400"><path d="M0 350 Q200 200 400 280 Q600 360 800 250 L800 400 L0 400Z" fill="%23ffffff" opacity=".03"/></svg>') center/cover;opacity:.15;filter:blur(6px);pointer-events:none}
-header{height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid var(--line);background:rgba(8,10,14,.55);backdrop-filter:blur(10px);position:relative;z-index:1}
-.dot{width:10px;height:10px;border-radius:99px;background:var(--accent);box-shadow:0 0 18px rgba(125,211,252,.45);display:inline-block;margin-right:10px}
-.name{font-weight:650;font-size:14px}
-.btn{font-size:12px;padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--text);cursor:pointer;text-decoration:none}
-.btn:hover{background:rgba(255,255,255,.06)}
-.btn-accent{border-color:rgba(125,211,252,.35);background:rgba(125,211,252,.12)}
-.card{border:1px solid var(--line);border-radius:16px;padding:18px;background:rgba(255,255,255,.02);cursor:pointer;transition:all .2s;text-align:left;text-decoration:none;display:block}
-.card:hover{border-color:rgba(125,211,252,.35);background:rgba(125,211,252,.06);transform:translateY(-2px)}
-.card-title{font-weight:650;font-size:15px;color:var(--text);margin:0 0 4px}
-.card-sub{font-size:12px;color:var(--muted);margin:0}
-.card-emoji{font-size:28px;margin-bottom:8px}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-top:24px;max-width:560px;margin-left:auto;margin-right:auto}
-footer{position:fixed;left:0;right:0;bottom:0;padding:10px 16px;padding-bottom:calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:rgba(8,10,14,.55);backdrop-filter:blur(10px);font-size:12px;color:var(--muted);z-index:1}
-input[type=text]{border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--text);padding:12px 16px;outline:none;font-size:16px}
-input[type=text]:focus{border-color:rgba(125,211,252,.35);box-shadow:0 0 0 4px rgba(125,211,252,.12)}
-.recent-title{font-size:13px;color:var(--muted);margin-bottom:8px;font-weight:600}
-.recent-trip{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border:1px solid var(--line);border-radius:12px;margin-bottom:6px;background:rgba(255,255,255,.02);text-decoration:none;color:var(--text);transition:all .15s}
-.recent-trip:hover{border-color:rgba(125,211,252,.35);background:rgba(125,211,252,.06)}
+@import url('https://fonts.cdnfonts.com/css/geist');
+:root{--bg0:#05070b;--bg1:#0a0f17;--bg2:#0e1520;--line:rgba(255,255,255,.06);--line-hover:rgba(125,211,252,.25);--muted:rgba(255,255,255,.5);--text:rgba(255,255,255,.92);--accent:#7dd3fc;--accent-dim:rgba(125,211,252,.12);--card-bg:rgba(255,255,255,.02);--card-hover:rgba(125,211,252,.04);--font-display:'Geist','Geist Fallback',system-ui,-apple-system,sans-serif;--font-mono:'Geist Mono','JetBrains Mono','Fira Code',monospace}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;min-height:100dvh;background:radial-gradient(1400px 900px at 30% 10%,#121826 0%,var(--bg1) 45%,var(--bg0) 100%);color:var(--text);font-family:var(--font-display);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+.bg-shanshui{position:fixed;inset:0;background:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400"><path d="M0 350 Q200 200 400 280 Q600 360 800 250 L800 400 L0 400Z" fill="%23ffffff" opacity=".02"/></svg>') center/cover;opacity:.12;filter:blur(8px);pointer-events:none}
+.bg-glow{position:fixed;top:-30%;right:-20%;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(125,211,252,.06),transparent 70%);pointer-events:none;z-index:0}
+header{height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-bottom:1px solid var(--line);background:rgba(15,20,30,.45);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);position:relative;z-index:10}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)}
+.brand-dot{width:8px;height:8px;border-radius:99px;background:var(--accent);box-shadow:0 0 14px rgba(125,211,252,.4);flex-shrink:0}
+.brand-name{font-weight:600;font-size:13px;letter-spacing:-.01em}
+.btn{font-size:12px;padding:8px 16px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--text);cursor:pointer;text-decoration:none;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.12)}
+.btn-accent{border-color:rgba(125,211,252,.3);background:rgba(125,211,252,.1)}
+.btn-accent:hover{border-color:rgba(125,211,252,.5);background:rgba(125,211,252,.18);box-shadow:0 0 24px rgba(125,211,252,.12)}
+.hero{position:relative;z-index:1;min-height:calc(100dvh - 56px);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px 100px;text-align:center}
+.hero-inner{max-width:680px;width:100%}
+.hero-eyebrow{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:16px;font-weight:500;opacity:.8}
+.hero h1{font-size:clamp(28px,5vw,44px);font-weight:600;letter-spacing:-.03em;line-height:1.15;margin:0 0 12px;color:var(--text)}
+.hero h1 span{background:linear-gradient(135deg,var(--accent),#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero p{font-size:15px;line-height:1.6;color:var(--muted);margin:0 auto 28px;max-width:480px}
+.search-box{display:flex;gap:8px;max-width:520px;margin:0 auto;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:999px;padding:4px;transition:all .2s}
+.search-box:focus-within{border-color:rgba(125,211,252,.35);box-shadow:0 0 0 3px rgba(125,211,252,.08);background:rgba(255,255,255,.05)}
+.search-box input{flex:1;border:none;background:transparent;color:var(--text);padding:0 16px;font-size:14px;outline:none;font-family:var(--font-display)}
+.search-box input::placeholder{color:var(--muted)}
+.search-box button{height:40px;padding:0 20px;border-radius:999px;border:none;background:rgba(125,211,252,.14);color:var(--text);font-size:13px;cursor:pointer;transition:all .2s;font-weight:500;font-family:var(--font-display);white-space:nowrap}
+.search-box button:hover{background:rgba(125,211,252,.24)}
+.trust-bar{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:20px;font-size:11px;color:var(--muted)}
+.trust-bar .dot-sep{width:3px;height:3px;border-radius:50%;background:var(--line);flex-shrink:0}
+.destinations{padding:0 24px 80px;position:relative;z-index:1}
+.destinations-inner{max-width:900px;margin:0 auto}
+.section-label{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:20px;font-weight:500}
+.dest-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.dest-card{position:relative;border:1px solid var(--line);border-radius:14px;padding:18px;background:var(--card-bg);cursor:pointer;transition:all .25s ease;text-decoration:none;display:block;overflow:hidden}
+.dest-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(125,211,252,.04),transparent 60%);opacity:0;transition:opacity .25s;border-radius:inherit}
+.dest-card:hover{border-color:var(--line-hover);background:var(--card-hover);transform:translateY(-3px)}
+.dest-card:hover::before{opacity:1}
+.dest-card:hover .dest-emoji{transform:scale(1.1)}
+.dest-emoji{font-size:26px;margin-bottom:10px;display:block;transition:transform .25s}
+.dest-title{font-weight:600;font-size:14px;color:var(--text);margin:0 0 3px}
+.dest-sub{font-size:11px;color:var(--muted);margin:0;line-height:1.4}
+.dest-accent{position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(125,211,252,.3),transparent);opacity:0;transition:opacity .25s}
+.dest-card:hover .dest-accent{opacity:1}
+.featured-grid{display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-top:10px}
+.featured-card{position:relative;border:1px solid var(--line);border-radius:14px;padding:20px;background:linear-gradient(135deg,rgba(125,211,252,.06),transparent);cursor:pointer;transition:all .25s ease;text-decoration:none;display:block}
+.featured-card:hover{border-color:var(--line-hover);transform:translateY(-3px)}
+.featured-emoji{font-size:28px;margin-bottom:8px;display:block}
+.featured-title{font-weight:600;font-size:15px;color:var(--text);margin:0 0 4px}
+.featured-sub{font-size:12px;color:var(--muted);margin:0;line-height:1.4}
+footer{position:fixed;left:0;right:0;bottom:0;padding:10px 20px;padding-bottom:calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:rgba(15,20,30,.35);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);font-size:11px;color:var(--muted);z-index:10;display:flex;align-items:center;gap:12px;justify-content:center}
+input[type=text]{border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--text);padding:12px 16px;outline:none;font-size:16px;font-family:var(--font-display);transition:all .2s}
+input[type=text]:focus{border-color:rgba(125,211,252,.35);box-shadow:0 0 0 3px rgba(125,211,252,.08)}
+.recent-title{font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:600;letter-spacing:.05em}
+.recent-trip{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border:1px solid var(--line);border-radius:12px;margin-bottom:6px;background:rgba(255,255,255,.02);text-decoration:none;color:var(--text);transition:all .2s}
+.recent-trip:hover{border-color:var(--line-hover);background:var(--card-hover)}
 .recent-trip-label{font-size:14px;font-weight:500}
 .recent-trip-meta{font-size:11px;color:var(--muted)}
-.trip-card{border-left:3px solid var(--accent)!important;background:linear-gradient(135deg,rgba(125,211,252,.06),transparent)!important}
+.trip-highlight{border-left:2px solid var(--accent)!important;background:linear-gradient(135deg,rgba(125,211,252,.06),transparent)!important}
 .price-budget{color:#4ade80}
 .price-mid{color:#fbbf24}
 .price-luxury{color:#f87171}
-code{background:rgba(0,0,0,.3);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono','Fira Code','Cascadia Code',monospace;font-size:.9em}
+code{background:rgba(0,0,0,.3);padding:2px 6px;border-radius:4px;font-family:var(--font-mono);font-size:.9em}
 pre{background:rgba(0,0,0,.4);padding:12px 16px;border-radius:10px;border:1px solid var(--line);overflow-x:auto;margin:8px 0}
 pre code{background:none;padding:0;border-radius:0}
-#quickReplies .chip{background:rgba(255,255,255,.05);border-color:var(--line);color:var(--muted)}
-@media(max-width:640px){h1{font-size:24px!important}header{padding:0 12px}.btn{padding:6px 12px;font-size:11px}footer{font-size:11px;padding:8px 12px}.bubble{max-width:95%!important;font-size:15px}#msgForm{gap:6px}#msgInput{height:40px;font-size:16px}#sendBtn{height:44px;padding:0 20px;font-size:14px}.chat-footer{padding:10px 12px;padding-bottom:calc(10px + env(safe-area-inset-bottom))}#thread{padding:12px 12px 140px;padding-bottom:calc(140px + env(safe-area-inset-bottom))}input[type=text]{font-size:16px}.welcome-chips{gap:4px!important}}
+#quickReplies .chip{font-size:11px;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--muted);cursor:pointer;white-space:nowrap;margin:4px 4px 0 0;display:inline-block;transition:all .15s}
+#quickReplies .chip:hover{border-color:var(--line-hover);color:var(--text)}
+.animate-in{animation:fadeUp .6s cubic-bezier(.16,1,.3,1) both}
+.animate-in-d1{animation-delay:.1s}
+.animate-in-d2{animation-delay:.2s}
+.animate-in-d3{animation-delay:.3s}
+.animate-in-d4{animation-delay:.4s}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:800px){.dest-grid{grid-template-columns:repeat(2,1fr)}.featured-grid{grid-template-columns:1fr}}
+@media(max-width:480px){.dest-grid{grid-template-columns:1fr}.hero{padding:30px 16px 80px}.search-box{flex-direction:column;border-radius:16px;background:transparent;border:none;gap:8px;padding:0}.search-box input{border:1px solid var(--line);border-radius:999px;padding:12px 16px;height:44px;background:rgba(255,255,255,.03)}.search-box button{width:100%;height:44px}.hero h1{font-size:26px}.destinations{padding:0 16px 60px}.trust-bar{flex-wrap:wrap;gap:8px}}
 """
 
 def _inject_config() -> str:
@@ -283,27 +324,35 @@ window.__SUPABASE_CONFIG__ = {{
 def page_landing() -> str:
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>VisePanda — AI China Travel Planner 🇨🇳</title><meta name="description" content="Plan your China trip with AI. Get personalized itineraries, local food recommendations, hotel tips. Beijing, Shanghai, Chengdu, Yunnan — tell us where and how long."><meta property="og:title" content="VisePanda — AI China Travel Planner"><meta property="og:description" content="Personalized China travel itineraries powered by AI"><meta property="og:type" content="website"><meta name="twitter:card" content="summary"><style>{CSS}</style><script defer src='/_vercel/insights/script.js'></script><script defer src='/_vercel/speed-insights/script.js'></script>{_inject_config()}</head><body>
 <div class="bg-shanshui"></div>
-<header><div><span class="dot"></span><span class="name">VisePanda</span></div><div id="authArea"><a href="#" onclick="event.preventDefault();signIn()" class="btn btn-accent">Sign in</a></div></header>
-<main style="position:relative;min-height:calc(100vh-56px);display:flex;align-items:center;justify-content:center;padding:24px 16px 90px;z-index:1">
-<div style="width:min(640px,96%);text-align:center">
-<h1 style="font-size:34px;margin:0 0 8px;letter-spacing:-.02em">Plan your China trip 🐼</h1>
-<p style="color:var(--muted);margin:0 0 24px;line-height:1.5">Ask less, chat more. Just tell me where and how long.</p>
-<form onsubmit="event.preventDefault();const v=document.getElementById('q').value.trim();goChat(v||document.getElementById('q').placeholder)" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
-<input id="q" type="text" placeholder="e.g. Beijing 5 days, food+history, relaxed pace…" style="width:min(480px,88vw);height:48px;padding:0 16px">
-<button type="submit" class="btn btn-accent" style="height:48px;padding:0 20px;font-size:14px">Start</button>
+<div class="bg-glow"></div>
+<header><a href="/" class="brand"><span class="brand-dot"></span><span class="brand-name">VisePanda</span></a><div id="authArea"><a href="#" onclick="event.preventDefault();signIn()" class="btn btn-accent">Sign in</a></div></header>
+<div class="hero">
+<div class="hero-inner">
+<div class="hero-eyebrow animate-in">AI Travel Planner</div>
+<h1 class="animate-in animate-in-d1">Plan your <span>China trip</span> 🐼</h1>
+<p class="animate-in animate-in-d2">Just tell me where and how long. I'll craft a personalized itinerary with local tips.</p>
+<form onsubmit="event.preventDefault();const v=document.getElementById('q').value.trim();goChat(v||document.getElementById('q').placeholder)" class="search-box animate-in animate-in-d3">
+<input id="q" type="text" placeholder="e.g. Beijing 5 days, food+history, relaxed pace…">
+<button type="submit">Start Planning →</button>
 </form>
-<div class="cards">
-<a class="card" href="#" onclick="event.preventDefault();goChat('北京3天深度游,喜欢历史文化,中等预算')"><div class="card-emoji">🏯</div><div class="card-title">Beijing 3 Days</div><div class="card-sub">Forbidden City · Wall · Hutongs</div></a>
-<a class="card" href="#" onclick="event.preventDefault();goChat('成都4天美食之旅,火锅串串,悠闲逛')"><div class="card-emoji">🐼</div><div class="card-title">Chengdu Food Tour</div><div class="card-sub">Hotpot · Pandas · Tea houses</div></a>
-<a class="card" href="#" onclick="event.preventDefault();goChat('云南7天,大理丽江香格里拉,自然风光')"><div class="card-emoji">🏔️</div><div class="card-title">Yunnan 7 Days</div><div class="card-sub">Dali · Lijiang · Shangri-La</div></a>
-<a class="card" href="#" onclick="event.preventDefault();goChat('上海3天,摩登都市,外滩迪士尼')"><div class="card-emoji">🌃</div><div class="card-title">Shanghai 3 Days</div><div class="card-sub">Bund · Disney · French Concession</div></a>
-<a class="card" href="#" onclick="event.preventDefault();goChat('西安3天历史游,兵马俑古城墙,中等预算')"><div class="card-emoji">🏛️</div><div class="card-title">Xi'an 3 Days</div><div class="card-sub">Terracotta · City Wall · Muslim Quarter</div></a>
-<a class="card" href="#" onclick="event.preventDefault();goChat('桂林4天,漓江阳朔,自然风光')"><div class="card-emoji">🛶</div><div class="card-title">Guilin 4 Days</div><div class="card-sub">Li River · Yangshuo · Karst Mountains</div></a>
+<div class="trust-bar animate-in animate-in-d4"><span>No sign-up needed</span><span class="dot-sep"></span><span>AI-powered</span><span class="dot-sep"></span><span>Local insights</span></div>
+</div>
+</div>
+<div class="destinations">
+<div class="destinations-inner">
+<div class="section-label">Popular destinations</div>
+<div class="dest-grid">
+<a class="dest-card" href="#" onclick="event.preventDefault();goChat('北京3天深度游,喜欢历史文化,中等预算')"><div class="dest-accent"></div><span class="dest-emoji">🏯</span><div class="dest-title">Beijing</div><div class="dest-sub">Forbidden City · Wall · Hutongs</div></a>
+<a class="dest-card" href="#" onclick="event.preventDefault();goChat('成都4天美食之旅,火锅串串,悠闲逛')"><div class="dest-accent"></div><span class="dest-emoji">🐼</span><div class="dest-title">Chengdu</div><div class="dest-sub">Hotpot · Pandas · Tea houses</div></a>
+<a class="dest-card" href="#" onclick="event.preventDefault();goChat('云南7天,大理丽江香格里拉,自然风光')"><div class="dest-accent"></div><span class="dest-emoji">🏔️</span><div class="dest-title">Yunnan</div><div class="dest-sub">Dali · Lijiang · Shangri-La</div></a>
+<a class="dest-card" href="#" onclick="event.preventDefault();goChat('上海3天,摩登都市,外滩迪士尼')"><div class="dest-accent"></div><span class="dest-emoji">🌃</span><div class="dest-title">Shanghai</div><div class="dest-sub">Bund · Disney · French Concession</div></a>
+<a class="dest-card" href="#" onclick="event.preventDefault();goChat('西安3天历史游,兵马俑古城墙,中等预算')"><div class="dest-accent"></div><span class="dest-emoji">🏛️</span><div class="dest-title">Xi'an</div><div class="dest-sub">Terracotta · City Wall · Muslim Quarter</div></a>
+<a class="dest-card" href="#" onclick="event.preventDefault();goChat('桂林4天,漓江阳朔,自然风光')"><div class="dest-accent"></div><span class="dest-emoji">🛶</span><div class="dest-title">Guilin</div><div class="dest-sub">Li River · Yangshuo · Karst Mountains</div></a>
 </div>
 <div id="recentTrips" style="display:none;margin-top:20px;text-align:left"></div>
-<div style="margin-top:20px;font-size:12px;color:var(--muted)">Open chat · Sign in with Google · Continue as guest</div>
-</div></main>
-<footer>Try without login — last 3 trips saved locally. Login to sync across devices.</footer>
+</div>
+</div>
+<footer><span>No login required</span><span class="dot-sep"></span><span>Last 3 trips saved locally</span><span class="dot-sep"></span><span>Sign in to sync across devices</span></footer>
 <script src="https://esm.sh/@supabase/supabase-js@2"></script>
 <script src="/static/landing.js"></script></body></html>"""
 
@@ -353,7 +402,7 @@ def page_trips() -> str:
 @keyframes fadeInOut{{0%{{opacity:0;transform:translateX(-50%) translateY(8px)}}15%{{opacity:1;transform:translateX(-50%) translateY(0)}}85%{{opacity:1;transform:translateX(-50%) translateY(0)}}100%{{opacity:0;transform:translateX(-50%) translateY(-8px)}}}}
 </style><script defer src='/_vercel/insights/script.js'></script><script defer src='/_vercel/speed-insights/script.js'></script></head><body>
 <div class="bg-shanshui"></div>
-<header><div><span class="dot"></span><span class="name">VisePanda</span></div><div><a href="/" class="btn">Home</a></div></header>
+<header><a href="/" class="brand"><span class="brand-dot"></span><span class="brand-name">VisePanda</span></a><div><a href="/" class="btn">Home</a></div></header>
 <main style="position:relative;z-index:1;min-height:calc(100vh-56px);padding:20px 16px 80px">
 <h2 style="text-align:center;color:var(--text);font-size:22px;margin:20px 0">My Trips</h2>
 <div id="tripsList" class="trips-grid"><div class="skeleton" style="height:100px"></div></div>
@@ -394,7 +443,7 @@ def page_chat() -> str:
 .time{{font-size:10px;color:var(--muted);margin-top:4px}}
 </style><script defer src='/_vercel/insights/script.js'></script><script defer src='/_vercel/speed-insights/script.js'></script>{_inject_config()}</head><body>
 <div class="bg-shanshui"></div>
-<header><div><span class="dot"></span><span class="name">VisePanda</span></div><div><a href="/trips" class="btn" style="margin-right:8px">Trips</a><a href="#" onclick="event.preventDefault();clearChat()" class="btn" style="margin-right:8px">Clear</a><a href="/" class="btn">Home</a></div></header>
+<header><a href="/" class="brand"><span class="brand-dot"></span><span class="brand-name">VisePanda</span></a><div><a href="/trips" class="btn" style="margin-right:8px">Trips</a><a href="#" onclick="event.preventDefault();clearChat()" class="btn" style="margin-right:8px">Clear</a><a href="/" class="btn">Home</a></div></header>
 <div class="layout"><main style="flex:1;display:flex;flex-direction:column"><div id="thread"><div class="welcome" id="welcomeMsg"><h2>👋 Welcome to VisePanda</h2><p>Your AI travel planner for China. Ask me anything!</p><div class="welcome-chips"><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Beijing 3-day itinerary';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🏯 Beijing 3 days</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Chengdu food tour 4 days';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🐼 Chengdu food</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Yunnan 7 days nature trip';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🏔️ Yunnan 7 days</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Shanghai weekend guide';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🌃 Shanghai weekend</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Xi'an terracotta history 3 days';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🏛️ Xi'an history</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Guilin Li River Yangshuo 4 days';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🛶 Guilin nature</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Hangzhou West Lake relaxed 3 days';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🍵 Hangzhou relax</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Guangzhou dimsum food tour 3 days';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🥟 Guangzhou food</span></div></div></div></main></div>
 <div class="chat-footer"><div id="quickReplies"></div><form id="msgForm"><input id="msgInput" type="text" placeholder="Type a message…" autofocus><button id="sendBtn" type="submit">Send</button></form></div>
 <script src="https://esm.sh/@supabase/supabase-js@2"></script>
