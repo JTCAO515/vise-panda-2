@@ -246,7 +246,7 @@ body{margin:0;min-height:100dvh;background:radial-gradient(1400px 900px at 30% 1
 .bg-glow{position:fixed;top:-30%;right:-20%;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(125,211,252,.06),transparent 70%);pointer-events:none;z-index:0;will-change:transform}
 header{height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-bottom:1px solid var(--line);background:rgba(15,20,30,.45);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);position:relative;z-index:10}
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)}
-.brand-dot{width:8px;height:8px;border-radius:99px;background:var(--accent);box-shadow:0 0 14px rgba(125,211,252,.4);flex-shrink:0}
+.brand-logo{width:22px;height:22px;background:url("data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="rgba(125,211,252,.12)"/><circle cx="50" cy="46" r="28" fill="%23fff"/><ellipse cx="37" cy="42" rx="8" ry="7" fill="%23111"/><ellipse cx="63" cy="42" rx="8" ry="7" fill="%23111"/><circle cx="37" cy="41" r="3" fill="%23fff"/><circle cx="63" cy="41" r="3" fill="%23fff"/><ellipse cx="50" cy="52" rx="4" ry="3" fill="%23111"/><path d="M38 62 Q44 70 50 62 Q56 70 62 62" stroke="%23111" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="20" cy="20" r="10" fill="rgba(125,211,252,.12)"/><circle cx="80" cy="20" r="10" fill="rgba(125,211,252,.12)"/></svg>") center/contain no-repeat;flex-shrink:0}
 .brand-name{font-weight:600;font-size:13px;letter-spacing:-.01em}
 .btn{font-size:12px;padding:8px 16px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--text);cursor:pointer;text-decoration:none;transition:all .2s cubic-bezier(.16,1,.3,1);display:inline-flex;align-items:center;gap:6px;backface-visibility:hidden}
 .btn:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.12)}
@@ -269,7 +269,12 @@ header{height:56px;display:flex;align-items:center;justify-content:space-between
 .destinations{padding:0 24px 80px;position:relative;z-index:1}
 .destinations-inner{max-width:900px;margin:0 auto}
 .section-label{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:20px;font-weight:500}
-.dest-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;content-visibility:auto;contain-intrinsic-size:300px}
+.dest-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;content-visibility:auto;contain-intrinsic-size:320px}
+.dest-grid .dest-card.featured{grid-row:1/3}
+.dest-grid .dest-card.wide{grid-column:1/4;display:flex;align-items:center;gap:16px;padding:14px 20px}
+.dest-grid .dest-card.wide .dest-emoji{font-size:32px;margin-bottom:0}
+.dest-grid .dest-card.wide .dest-title{font-size:16px}
+.dest-grid .dest-card.wide .dest-sub{font-size:12px}
 .dest-card{position:relative;border:1px solid var(--line);border-radius:14px;padding:18px;background:var(--card-bg);cursor:pointer;transition:all .25s ease;text-decoration:none;display:block;overflow:hidden}
 .dest-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(125,211,252,.04),transparent 60%);opacity:0;transition:opacity .25s;border-radius:inherit}
 .dest-card:hover{border-color:var(--line-hover);background:var(--card-hover);transform:translateY(-3px);backface-visibility:hidden}
@@ -317,7 +322,18 @@ pre code{background:none;padding:0;border-radius:0}
 @keyframes breathe{0%,100%{opacity:.5}50%{opacity:1}}
 @media(prefers-reduced-motion:no-preference){.bg-glow{animation:breathe 6s ease-in-out infinite}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-@media(max-width:800px){.dest-grid{grid-template-columns:repeat(2,1fr)}.featured-grid{grid-template-columns:1fr}}
+@media(max-width:800px){.dest-grid{grid-template-columns:repeat(2,1fr)}.dest-grid .dest-card.featured{grid-row:auto}.dest-grid .dest-card.wide{grid-column:auto;flex-direction:column;text-align:center;padding:18px;gap:8px}.dest-grid .dest-card.wide .dest-emoji{font-size:26px;margin-bottom:10px}.featured-grid{grid-template-columns:1fr}}
+/* Hero decorative elements */
+.hero-decor{position:absolute;top:50%;right:-5%;width:400px;height:400px;pointer-events:none;z-index:0;opacity:.35}
+.hero-decor-circle{position:absolute;top:50%;left:50%;width:300px;height:300px;border-radius:50%;border:1px solid rgba(125,211,252,.12);transform:translate(-50%,-50%);animation:float 8s ease-in-out infinite}
+.hero-decor-dot{position:absolute;border-radius:50%;background:var(--accent);opacity:.15}
+.hero-decor-dot.dot-1{width:12px;height:12px;top:20%;right:30%;animation:float 6s ease-in-out infinite 1s}
+.hero-decor-dot.dot-2{width:8px;height:8px;top:60%;right:10%;animation:float 7s ease-in-out infinite 2s}
+.hero-decor-dot.dot-3{width:6px;height:6px;top:40%;left:10%;animation:float 5s ease-in-out infinite .5s}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+/* Adjust hero position for decor */
+.hero{overflow:hidden}
+@media(max-width:800px){.hero-decor{display:none}}
 @media(max-width:480px){.dest-grid{grid-template-columns:1fr}.hero{padding:30px 16px 80px}.search-box{flex-direction:column;border-radius:16px;background:transparent;border:none;gap:8px;padding:0}.search-box input{border:1px solid var(--line);border-radius:999px;padding:12px 16px;height:44px;background:rgba(255,255,255,.03)}.search-box button{width:100%;height:44px}.hero h1{font-size:26px}.destinations{padding:0 16px 60px}.trust-bar{flex-wrap:wrap;gap:8px}}
 """
 
@@ -341,7 +357,7 @@ def page_landing() -> str:
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>VisePanda — AI China Travel Planner 🇨🇳</title><meta name="description" content="Plan your China trip with AI. Get personalized itineraries, local food recommendations, hotel tips. Beijing, Shanghai, Chengdu, Yunnan — tell us where and how long."><meta property="og:title" content="VisePanda — AI China Travel Planner"><meta property="og:description" content="Personalized China travel itineraries powered by AI"><meta property="og:type" content="website"><meta name="twitter:card" content="summary">{_font_links()}<style>{CSS}</style>{_inject_config()}</head><body>
 <div class="bg-shanshui"></div>
 <div class="bg-glow"></div>
-<header><a href="/" class="brand"><span class="brand-dot"></span><span class="brand-name">VisePanda</span></a><div id="authArea"><a href="#" onclick="event.preventDefault();signIn()" class="btn btn-accent">Sign in</a></div></header>
+<header><a href="/" class="brand"><span class="brand-logo"></span><span class="brand-name">VisePanda</span></a><div id="authArea"><a href="#" onclick="event.preventDefault();signIn()" class="btn btn-accent">Sign in</a></div></header>
 <div class="hero">
 <div class="hero-inner">
 <div class="hero-eyebrow animate-in">AI Travel Planner</div>
@@ -352,18 +368,19 @@ def page_landing() -> str:
 <button type="submit">Start Planning →</button>
 </form>
 <div class="trust-bar animate-in animate-in-d4"><span>No sign-up needed</span><span class="dot-sep"></span><span>AI-powered</span><span class="dot-sep"></span><span>Local insights</span></div>
+<div class="hero-decor"><div class="hero-decor-circle"></div><div class="hero-decor-dot dot-1"></div><div class="hero-decor-dot dot-2"></div><div class="hero-decor-dot dot-3"></div></div>
 </div>
 </div>
 <div class="destinations">
 <div class="destinations-inner">
 <div class="section-label">Popular destinations</div>
 <div class="dest-grid">
-<a class="dest-card" href="#" onclick="event.preventDefault();goChat('北京3天深度游,喜欢历史文化,中等预算')"><div class="dest-accent"></div><span class="dest-emoji">🏯</span><div class="dest-title">Beijing</div><div class="dest-sub">Forbidden City · Wall · Hutongs</div></a>
+<a class="dest-card featured" href="#" onclick="event.preventDefault();goChat('北京3天深度游,喜欢历史文化,中等预算')"><div class="dest-accent"></div><span class="dest-emoji">🏯</span><div class="dest-title">Beijing</div><div class="dest-sub">Forbidden City · Wall · Hutongs</div></a>
 <a class="dest-card" href="#" onclick="event.preventDefault();goChat('成都4天美食之旅,火锅串串,悠闲逛')"><div class="dest-accent"></div><span class="dest-emoji">🐼</span><div class="dest-title">Chengdu</div><div class="dest-sub">Hotpot · Pandas · Tea houses</div></a>
 <a class="dest-card" href="#" onclick="event.preventDefault();goChat('云南7天,大理丽江香格里拉,自然风光')"><div class="dest-accent"></div><span class="dest-emoji">🏔️</span><div class="dest-title">Yunnan</div><div class="dest-sub">Dali · Lijiang · Shangri-La</div></a>
 <a class="dest-card" href="#" onclick="event.preventDefault();goChat('上海3天,摩登都市,外滩迪士尼')"><div class="dest-accent"></div><span class="dest-emoji">🌃</span><div class="dest-title">Shanghai</div><div class="dest-sub">Bund · Disney · French Concession</div></a>
 <a class="dest-card" href="#" onclick="event.preventDefault();goChat('西安3天历史游,兵马俑古城墙,中等预算')"><div class="dest-accent"></div><span class="dest-emoji">🏛️</span><div class="dest-title">Xi'an</div><div class="dest-sub">Terracotta · City Wall · Muslim Quarter</div></a>
-<a class="dest-card" href="#" onclick="event.preventDefault();goChat('桂林4天,漓江阳朔,自然风光')"><div class="dest-accent"></div><span class="dest-emoji">🛶</span><div class="dest-title">Guilin</div><div class="dest-sub">Li River · Yangshuo · Karst Mountains</div></a>
+<a class="dest-card wide" href="#" onclick="event.preventDefault();goChat('桂林4天,漓江阳朔,自然风光')"><div class="dest-accent"></div><span class="dest-emoji">🛶</span><div class="dest-title">Guilin</div><div class="dest-sub">Li River · Yangshuo · Karst Mountains</div></a>
 </div>
 <div id="recentTrips" style="display:none;margin-top:20px;text-align:left"></div>
 </div>
@@ -417,7 +434,7 @@ def page_trips() -> str:
 @keyframes fadeInOut{{0%{{opacity:0;transform:translateX(-50%) translateY(8px)}}15%{{opacity:1;transform:translateX(-50%) translateY(0)}}85%{{opacity:1;transform:translateX(-50%) translateY(0)}}100%{{opacity:0;transform:translateX(-50%) translateY(-8px)}}}}
 </style></head><body>
 <div class="bg-shanshui"></div>
-<header><a href="/" class="brand"><span class="brand-dot"></span><span class="brand-name">VisePanda</span></a><div><a href="/" class="btn">Home</a></div></header>
+<header><a href="/" class="brand"><span class="brand-logo"></span><span class="brand-name">VisePanda</span></a><div><a href="/" class="btn">Home</a></div></header>
 <main style="position:relative;z-index:1;min-height:calc(100vh-56px);padding:20px 16px 80px">
 <h2 style="text-align:center;color:var(--text);font-size:22px;margin:20px 0">My Trips</h2>
 <div id="tripsList" class="trips-grid"><div class="skeleton" style="height:100px"></div></div>
@@ -430,11 +447,24 @@ def page_chat() -> str:
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Chat · VisePanda — AI China Travel Planner</title><meta name="description" content="Chat with VisePanda AI to plan your China trip. Get day-by-day itineraries, food guides, and practical travel tips.">{_font_links()}<style>{CSS}
 .layout{{display:flex;height:calc(100vh-56px);position:relative;z-index:1}}
 #thread{{flex:1;overflow:auto;padding:18px 16px 120px}}
-.msg{{display:flex;margin:8px 0}}
-.msg.user{{justify-content:flex-end}}
-.bubble{{max-width:min(700px,88%);border:1px solid var(--line);border-radius:14px;padding:10px 14px;line-height:1.4;background:rgba(255,255,255,.03);white-space:pre-wrap}}
+/* Chat avatars + bubbles */
+.avatar{{width:30px;height:30px;border-radius:50%;flex-shrink:0;margin-top:4px}}
+.avatar-bot{{background:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="rgba(125,211,252,.12)"/><circle cx="50" cy="46" r="28" fill="%23fff"/><ellipse cx="37" cy="42" rx="8" ry="7" fill="%23111"/><ellipse cx="63" cy="42" rx="8" ry="7" fill="%23111"/><circle cx="37" cy="41" r="3" fill="%23fff"/><circle cx="63" cy="41" r="3" fill="%23fff"/><ellipse cx="50" cy="52" rx="4" ry="3" fill="%23111"/><path d="M38 62 Q44 70 50 62 Q56 70 62 62" stroke="%23111" stroke-width="2" fill="none" stroke-linecap="round"/></svg>') center/contain no-repeat}}
+.avatar-user{{background:linear-gradient(135deg,rgba(125,211,252,.2),rgba(167,139,250,.2));display:flex;align-items:center;justify-content:center}}
+.avatar-user span{{font-size:13px;font-weight:600;color:var(--accent)}}
+.msg{{display:flex;margin:12px 0;gap:8px}}
+.msg.user{{flex-direction:row-reverse}}
+.msg-body{{max-width:min(660px,80%)}}
+.bubble{{max-width:100%;border:1px solid var(--line);border-radius:14px;padding:10px 14px;line-height:1.4;background:rgba(255,255,255,.03);white-space:pre-wrap}}
+.msg.user .msg-body{{display:flex;flex-direction:column;align-items:flex-end}}
 .msg.user .bubble{{background:rgba(125,211,252,.10);border-color:rgba(125,211,252,.18)}}
 .msg.bot .bubble p{{margin:0}}
+/* Typing indicator */
+@keyframes typing{{0%,60%,100%{{transform:translateY(0)}}30%{{transform:translateY(-4px)}}}}
+.typing-indicator{{display:inline-flex;align-items:center;gap:3px;padding:8px 4px}}
+.typing-indicator span{{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.3);animation:typing 1.4s ease-in-out infinite}}
+.typing-indicator span:nth-child(2){{animation-delay:.2s}}
+.typing-indicator span:nth-child(3){{animation-delay:.4s}}
 .chip{{font-size:11px;padding:5px 10px;border-radius:999px;border:1px solid rgba(125,211,252,.2);background:rgba(125,211,252,.06);color:rgba(255,255,255,.8);cursor:pointer;white-space:nowrap;margin:4px 4px 0 0;display:inline-block}}
 #quickReplies .chip{{background:rgba(255,255,255,.05);border-color:var(--line);color:var(--muted);padding:8px 14px;border-radius:10px;font-size:12px}}
 .chat-footer{{position:fixed;bottom:0;left:0;right:0;padding:12px 16px;padding-bottom:calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:rgba(8,10,14,.55);backdrop-filter:blur(10px);z-index:2}}
@@ -466,7 +496,7 @@ def page_chat() -> str:
 .time{{font-size:10px;color:var(--muted);margin-top:4px}}
 </style><script defer src='/_vercel/insights/script.js'></script><script defer src='/_vercel/speed-insights/script.js'></script>{_inject_config()}</head><body>
 <div class="bg-shanshui"></div>
-<header><a href="/" class="brand"><span class="brand-dot"></span><span class="brand-name">VisePanda</span></a><div><a href="/trips" class="btn" style="margin-right:8px">Trips</a><a href="#" onclick="event.preventDefault();clearChat()" class="btn" style="margin-right:8px">Clear</a><a href="/" class="btn">Home</a></div></header>
+<header><a href="/" class="brand"><span class="brand-logo"></span><span class="brand-name">VisePanda</span></a><div><a href="/trips" class="btn" style="margin-right:8px">Trips</a><a href="#" onclick="event.preventDefault();clearChat()" class="btn" style="margin-right:8px">Clear</a><a href="/" class="btn">Home</a></div></header>
 <div class="layout"><main style="flex:1;display:flex;flex-direction:column"><div id="thread"><div class="welcome" id="welcomeMsg"><h2>👋 Welcome to VisePanda</h2><p>Your AI travel planner for China. Ask me anything!</p><div class="welcome-chips"><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Beijing 3-day itinerary';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🏯 Beijing 3 days</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Chengdu food tour 4 days';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🐼 Chengdu food</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Yunnan 7 days nature trip';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🏔️ Yunnan 7 days</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Shanghai weekend guide';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🌃 Shanghai weekend</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Xi'an terracotta history 3 days';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🏛️ Xi'an history</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Guilin Li River Yangshuo 4 days';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🛶 Guilin nature</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Hangzhou West Lake relaxed 3 days';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🍵 Hangzhou relax</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Guangzhou dimsum food tour 3 days';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🥟 Guangzhou food</span></div></div></div></main></div>
 <div class="chat-footer"><div id="quickReplies"></div><form id="msgForm"><input id="msgInput" type="text" placeholder="Type a message…" autofocus><button id="sendBtn" type="submit">Send</button></form></div>
 <script src="https://esm.sh/@supabase/supabase-js@2"></script>

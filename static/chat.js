@@ -44,7 +44,10 @@ function msg(r, c) {
     const d = document.createElement('div');
     d.className = 'msg ' + r;
     const tm = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    d.innerHTML = '<div class=bubble>' + M(c) + '</div><div class=time>' + tm + '</div>';
+    const avatar = r === 'bot'
+        ? '<div class=avatar avatar-bot></div>'
+        : '<div class=avatar avatar-user><span>Y</span></div>';
+    d.innerHTML = avatar + '<div class=msg-body><div class=bubble>' + M(c) + '</div><div class=time>' + tm + '</div></div>';
     Q('#thread').appendChild(d);
     smartScroll();
     return d;

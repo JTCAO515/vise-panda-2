@@ -187,20 +187,20 @@ cards=4 | goChat=1 | skeleton=2 | trip=3 | btnDisable=2 | mobile=1
 
 ---
 
-## Iteration 14-19 — 美观+速度 Phase 1
+## Iteration 107-112 — 美观+速度 Phase 1
 
 **日期**: 2026-05-30
 **目标**: 加载速度优化 + CSS 动画系统 + 微交互 + 骨架屏 v2
 **状态**: ✅ 完成
 
-### Iter 14 — 字体加载优化 ⭐
+### Iter 107 — 字体加载优化 ⭐
 | 改动 | 效果 |
 |------|------|
 | 删除 `@import url('geist')`（阻塞渲染） | 消除字体加载的渲染阻塞 |
 | 新增 `_font_links()` 异步加载（preconnect + preload + noscript fallback） | 字体异步下载，文字立即以系统回退字体显示 |
 | 所有页面 `<head>` 集成 `{_font_links()}` | Geist 加载完成后自动替换，无闪烁 |
 
-### Iter 15 — 脚本按需加载 ⭐
+### Iter 108 — 脚本按需加载 ⭐
 | 改动 | 效果 |
 |------|------|
 | Landing 页去掉 2 个 Vercel Analytics 脚本 | -2 个 HTTP 请求，Landing 首屏更快 |
@@ -210,7 +210,7 @@ cards=4 | goChat=1 | skeleton=2 | trip=3 | btnDisable=2 | mobile=1
 | Chat 页保留 Analytics + supabase-js | 核心交互页面，数据有用 |
 | Share 页保留 Analytics | 公开分享页，追踪分享转化 |
 
-### Iter 16 — CSS 关键内联优化 ⭐
+### Iter 109 — CSS 关键内联优化 ⭐
 | 改动 | 效果 |
 |------|------|
 | bg-shanshui 修复双 opacity（SVG opacity + CSS opacity 叠乘） | 视觉正确性修复 |
@@ -218,7 +218,7 @@ cards=4 | goChat=1 | skeleton=2 | trip=3 | btnDisable=2 | mobile=1
 | 添加 `content-visibility: auto` 到目的网格 | 首屏不渲染下方元素，加快 LCP |
 | dest-card hover 添加 `backface-visibility: hidden` | hover 上浮更平滑 |
 
-### Iter 17 — CSS 动画系统增强 ⭐⭐
+### Iter 110 — CSS 动画系统增强 ⭐⭐
 | 改动 | 效果 |
 |------|------|
 | 新增 `@keyframes slideUp` + `.msg-enter` 类 | 聊天消息从底部滑入动画 |
@@ -227,7 +227,7 @@ cards=4 | goChat=1 | skeleton=2 | trip=3 | btnDisable=2 | mobile=1
 | fadeUp 添加 `scale(.98)` → `scale(1)` | 入场效果更丰富 |
 | 所有动效遵循 `prefers-reduced-motion` | 无障碍兼容 |
 
-### Iter 18 — 微交互增强 ⭐
+### Iter 111 — 微交互增强 ⭐
 | 改动 | 效果 |
 |------|------|
 | Send 按钮: hover scale(1.04) + glow, active scale(.96) | 点击反馈更自然 |
@@ -236,7 +236,7 @@ cards=4 | goChat=1 | skeleton=2 | trip=3 | btnDisable=2 | mobile=1
 | .btn 使用 `cubic-bezier(.16,1,.3,1)` 缓动 | 按钮动画更弹手 |
 | .btn 添加 `backface-visibility: hidden` | hover 时避免像素抖动 |
 
-### Iter 19 — 骨架屏 v2 ⭐⭐
+### Iter 112 — 骨架屏 v2 ⭐⭐
 | 改动 | 效果 |
 |------|------|
 | `.skel-text` — 文字骨架变体 | 不同场景使用更精准的骨架 |
