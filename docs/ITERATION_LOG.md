@@ -578,3 +578,22 @@ python -m py_compile api/index.py ✅
 |------|------|
 | 去除核心页面中的零散中文字符串 | 例如 placeholder 示例、提示文案等改为英文 |
 | `POST /api/itinerary/validate` 返回 warning 全英文化 | 避免英文站点下接口返回中文提示 |
+
+---
+
+## Iteration 133 — 品牌落地（YS Panda 视觉系统）
+
+**日期**: 2026-05-30  
+**目标**: 统一全站品牌资产（Logo/Favicon/PWA/OG），并补充品牌使用规范  
+**状态**: ✅ 完成
+
+### Iter 133 — OG 分享图 ⭐⭐
+| 改动 | 说明 |
+|------|------|
+| 新增 `static/img/og-image.png`（1200×630） | 用 YS Panda Logo + 暗色渐变背景生成 |
+| Landing 的 `og:image` 更新为本地 `/static/img/og-image.png` | 避免依赖外部域名资源 |
+
+### Iter 133 — 品牌规范文档 ⭐
+| 改动 | 说明 |
+|------|------|
+| 新增 `BRAND.md` | 记录 Logo/Favicon/OG/PWA 资产与使用建议 |
