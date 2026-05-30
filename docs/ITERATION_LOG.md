@@ -254,3 +254,39 @@ Supabase JS (仅保留 Chat): 1 ✅
 CSS animations: fadeUp ✓ slideUp ✓ shimmer ✓ breathe ✓ blink ✓ fadeIn ✓ scaleIn ✓ fadeInOut ✓
 ```
 
+---
+
+## Iteration 113-115 — 美观+速度 Phase 2
+
+**日期**: 2026-05-30
+**目标**: Hero视觉升级 + Logo + Bento网格 + Chat气泡
+**状态**: ✅ 完成
+
+### Iter 113 — Panda SVG Logo + Hero 装饰 ⭐⭐
+| 改动 | 效果 |
+|------|------|
+| 创建 Panda SVG 头像（熊猫脸 SVG data URI）替换 `.brand-dot` | 品牌从抽象圆点变为具象熊猫 Logo |
+| 所有页面 Header 统一更新 | 品牌一致性 |
+| 新增 Hero 浮动装饰圈（`hero-decor`） | 背景更丰富，有层次感 |
+| 新增 `@keyframes float` 轻轻浮动动画 | 微交互增加页面活力 |
+| 移动端自动隐藏装饰（`display:none`） | 不干扰小屏体验 |
+
+### Iter 114 — Bento 目的网格 ⭐⭐⭐
+| 改动 | 效果 |
+|------|------|
+| 北京卡片 `.featured` 跨越 2 行（`grid-row:1/3`） | 打破均匀网格，视觉层次 |
+| 桂林卡片 `.wide` 佔满第 3 行全宽（`grid-column:1/4`） + flex 横排布局 | 底部横向宽卡收尾，更像 Bento |
+| 移动端 responsive 降级为普通 2 列 | 不破坏小屏体验 |
+
+### Iter 115 — Chat 气泡升级 ⭐⭐
+| 改动 | 效果 |
+|------|------|
+| AI 消息：30px 熊猫 SVG 头像 | 品牌识别，对话沉浸感 |
+| 用户消息：渐变色圆 + "Y" 首字母 | 区分自己 vs AI |
+| 新增 `.msg-body` 包裹层 | 排版结构清晰 |
+| 新增 `@keyframes typing` + `.typing-indicator` | 三圆点弹跳等待动画 |
+| 消息间距从 8px → 12px，增加间隙呼吸感 | 阅读舒适度 |
+
+### 测试结果
+```
+
