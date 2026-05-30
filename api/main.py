@@ -26,6 +26,8 @@ from pydantic import BaseModel
 from sqlalchemy import JSON, DateTime, ForeignKey, String, Text, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship, sessionmaker
 from jose import jwt
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.gzip import GZipMiddleware
 
 # ══════════════════════════════════════════════════════════
 # CONFIG
@@ -354,7 +356,7 @@ def _font_links() -> str:
 <noscript><link rel="stylesheet" href="https://fonts.cdnfonts.com/css/geist"></noscript>'''
 
 def page_landing() -> str:
-    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>VisePanda — AI China Travel Planner 🇨🇳</title><meta name="description" content="Plan your China trip with AI. Get personalized itineraries, local food recommendations, hotel tips. Beijing, Shanghai, Chengdu, Yunnan — tell us where and how long."><meta property="og:title" content="VisePanda — AI China Travel Planner"><meta property="og:description" content="Personalized China travel itineraries powered by AI"><meta property="og:type" content="website"><meta name="twitter:card" content="summary">{_font_links()}<style>{CSS}</style>{_inject_config()}</head><body>
+    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>VisePanda — AI China Travel Planner 🇨🇳</title><meta name="description" content="Plan your China trip with AI. Get personalized itineraries, local food recommendations, hotel tips. Beijing, Shanghai, Chengdu, Yunnan — tell us where and how long."><meta property="og:title" content="VisePanda — AI China Travel Planner"><meta property="og:description" content="Personalized China travel itineraries powered by AI"><meta property="og:type" content="website"><meta name="twitter:card" content="summary">{_font_links()}<style>{CSS}</style>{_inject_config()}<script>navigator.serviceWorker&&navigator.serviceWorker.register("/sw.js")</script></head><body>
 <div class="bg-shanshui"></div>
 <div class="bg-glow"></div>
 <header><a href="/" class="brand"><span class="brand-logo"></span><span class="brand-name">VisePanda</span></a><div id="authArea"><a href="#" onclick="event.preventDefault();signIn()" class="btn btn-accent">Sign in</a></div></header>
@@ -411,7 +413,7 @@ def page_share(share_id: str) -> str:
     msgs_html = ''.join(f'<div class="msg {m.role}"><div class=bubble>{_render_msg(m.content)}</div></div>' for m in msgs)
     title = trip.title or 'Shared Trip'
     return f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{title} · VisePanda</title><meta name="description" content="AI-planned China trip itinerary"><meta property="og:title" content="{title}">{_font_links()}<style>{CSS}.share-header{{text-align:center;padding:24px 16px 12px;position:relative;z-index:1}}.share-header h2{{font-size:20px;margin:0;color:var(--text)}}.share-header p{{color:var(--muted);font-size:14px;margin:4px 0}}.share-thread{{max-width:700px;margin:0 auto;padding:12px 16px 100px;position:relative;z-index:1}}.share-footer{{text-align:center;padding:20px;position:relative;z-index:1}}.msg{{margin:8px 0}}.msg.assistant .bubble{{border:1px solid var(--line);border-radius:14px;padding:10px 14px;line-height:1.5;background:rgba(255,255,255,.03);white-space:pre-wrap}}.msg.user .bubble{{background:rgba(125,211,252,.10);border-color:rgba(125,211,252,.18)}}.bubble{{max-width:700px}}
-</style><script defer src='/_vercel/insights/script.js'></script><script defer src='/_vercel/speed-insights/script.js'></script></head><body><div class="bg-shanshui"></div>
+</style><script defer src='/_vercel/insights/script.js'></script><script defer src='/_vercel/speed-insights/script.js'></script><script>navigator.serviceWorker&&navigator.serviceWorker.register("/sw.js")</script></head><body><div class="bg-shanshui"></div>
 <div class="share-header"><h2>🐼 {title}</h2><p>AI-planned trip · {len(msgs)} messages</p><a href="/" class="btn btn-accent" style="margin-top:16px;display:inline-block">🚀 Create your own trip</a></div>
 <div class="share-thread">{msgs_html}</div>
 <div class="share-footer"><a href="/" class="btn btn-accent">Plan your own trip</a></div>
@@ -432,7 +434,7 @@ def page_trips() -> str:
 @keyframes fadeIn{{from{{opacity:0}}to{{opacity:1}}}}
 @keyframes scaleIn{{from{{opacity:0;transform:scale(.95)}}to{{opacity:1;transform:scale(1)}}}}
 @keyframes fadeInOut{{0%{{opacity:0;transform:translateX(-50%) translateY(8px)}}15%{{opacity:1;transform:translateX(-50%) translateY(0)}}85%{{opacity:1;transform:translateX(-50%) translateY(0)}}100%{{opacity:0;transform:translateX(-50%) translateY(-8px)}}}}
-</style></head><body>
+</style><script>navigator.serviceWorker&&navigator.serviceWorker.register("/sw.js")</script></head><body>
 <div class="bg-shanshui"></div>
 <header><a href="/" class="brand"><span class="brand-logo"></span><span class="brand-name">VisePanda</span></a><div><a href="/" class="btn">Home</a></div></header>
 <main style="position:relative;z-index:1;min-height:calc(100vh-56px);padding:20px 16px 80px">
@@ -494,12 +496,11 @@ def page_chat() -> str:
 .welcome-chip{{border:1px solid var(--line);border-radius:999px;padding:8px 16px;font-size:13px;color:var(--text);cursor:pointer;background:rgba(255,255,255,.03);transition:all .15s}}
 .welcome-chip:hover{{border-color:rgba(125,211,252,.35);background:rgba(125,211,252,.08)}}
 .time{{font-size:10px;color:var(--muted);margin-top:4px}}
-</style><script defer src='/_vercel/insights/script.js'></script><script defer src='/_vercel/speed-insights/script.js'></script>{_inject_config()}</head><body>
+</style><script defer src='/_vercel/insights/script.js'></script><script defer src='/_vercel/speed-insights/script.js'></script>{_inject_config()}<script>navigator.serviceWorker&&navigator.serviceWorker.register("/sw.js")</script></head><body>
 <div class="bg-shanshui"></div>
 <header><a href="/" class="brand"><span class="brand-logo"></span><span class="brand-name">VisePanda</span></a><div><a href="/trips" class="btn" style="margin-right:8px">Trips</a><a href="#" onclick="event.preventDefault();clearChat()" class="btn" style="margin-right:8px">Clear</a><a href="/" class="btn">Home</a></div></header>
 <div class="layout"><main style="flex:1;display:flex;flex-direction:column"><div id="thread"><div class="welcome" id="welcomeMsg"><h2>👋 Welcome to VisePanda</h2><p>Your AI travel planner for China. Ask me anything!</p><div class="welcome-chips"><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Beijing 3-day itinerary';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🏯 Beijing 3 days</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Chengdu food tour 4 days';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🐼 Chengdu food</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Yunnan 7 days nature trip';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🏔️ Yunnan 7 days</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Shanghai weekend guide';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🌃 Shanghai weekend</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Xi'an terracotta history 3 days';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🏛️ Xi'an history</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Guilin Li River Yangshuo 4 days';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🛶 Guilin nature</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Hangzhou West Lake relaxed 3 days';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🍵 Hangzhou relax</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Guangzhou dimsum food tour 3 days';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🥟 Guangzhou food</span></div></div></div></main></div>
 <div class="chat-footer"><div id="quickReplies"></div><form id="msgForm"><input id="msgInput" type="text" placeholder="Type a message…" autofocus><button id="sendBtn" type="submit">Send</button></form></div>
-<script src="https://esm.sh/@supabase/supabase-js@2"></script>
 <script src="/static/chat.js"></script></body></html>"""
 
 def page_auth_callback() -> str:
@@ -523,6 +524,22 @@ app = FastAPI(title="VisePanda", version="0.1.0", lifespan=lifespan)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
+class CacheControlMiddleware(BaseHTTPMiddleware):
+    """Add aggressive caching for static assets."""
+    async def dispatch(self, request, call_next):
+        resp = await call_next(request)
+        path = request.url.path
+        if path.startswith("/static/") or path in ("/favicon.ico", "/favicon.png"):
+            resp.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+        elif path.startswith("/sw.js"):
+            resp.headers["Cache-Control"] = "no-cache, must-revalidate"
+        return resp
+
+
+app.add_middleware(GZipMiddleware, minimum_size=500)
+app.add_middleware(CacheControlMiddleware)
+
+
 @app.get("/api/health")
 def health():
     return {"ok": True, "version": "0.1.0", "db": "postgres" if DB_URL else "sqlite"}
@@ -531,6 +548,15 @@ def health():
 @app.get("/favicon.png")
 def favicon():
     return Response(status_code=204)
+
+
+SW_JS = open("static/sw.js").read()
+
+
+@app.get("/sw.js")
+def service_worker():
+    return Response(SW_JS, media_type="application/javascript",
+                    headers={"Service-Worker-Allowed": "/", "Cache-Control": "no-cache"})
 
 
 @app.get("/", response_class=HTMLResponse)
