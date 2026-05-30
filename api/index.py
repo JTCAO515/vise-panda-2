@@ -1303,6 +1303,32 @@ async def attach_request_id(request: Request, call_next):
         pass
     return resp
 
+@app.middleware("http")
+async def cache_control_middleware(request: Request, call_next):
+    """
+    Conservative cache headers to improve repeat-load speed while avoiding
+    stale HTML/app-shell issues (no hashed filenames).
+    """
+    resp = await call_next(request)
+    path = request.url.path
+
+    # Never cache service worker / manifest (update must be immediate)
+    if path in ("/sw.js", "/static/sw.js", "/static/manifest.json", "/manifest.json"):
+        resp.headers.setdefault("Cache-Control", "no-cache")
+        return resp
+
+    # Long cache for images (versioned by filename or SW cache bump)
+    if path.startswith("/static/img/"):
+        resp.headers.setdefault("Cache-Control", "public, max-age=31536000, immutable")
+        return resp
+
+    # Moderate cache for scripts (we still rely on SW version bumps)
+    if path.startswith("/static/") and (path.endswith(".js") or path.endswith(".css")):
+        resp.headers.setdefault("Cache-Control", "public, max-age=86400, must-revalidate")
+        return resp
+
+    return resp
+
 
 @app.exception_handler(404)
 async def not_found(request, exc):

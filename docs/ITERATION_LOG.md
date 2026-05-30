@@ -648,3 +648,18 @@ python -m py_compile api/index.py ✅
 | 改动 | 说明 |
 |------|------|
 | 全站移除 `fonts.googleapis.com / fonts.gstatic.com` 的 `<link>` 引用 | 统一回退到系统字体栈，减少外部网络依赖 |
+
+---
+
+## Iteration 137 — 静态资源缓存策略（速度 + 稳定性）
+
+**日期**: 2026-05-30  
+**目标**: 提升二次打开速度并减少资源抖动，同时避免 HTML/manifest/SW 被错误缓存  
+**状态**: ✅ 完成
+
+### Iter 137 — Cache-Control 分层 ⭐⭐⭐
+| 改动 | 说明 |
+|------|------|
+| `/sw.js`、`/static/manifest.json` 禁用缓存 | 确保 SW/manifest 更新及时生效 |
+| `/static/img/*` 长缓存（immutable） | 图片资源稳定、减少重复下载 |
+| `/static/*.js/.css` 中等缓存（1 天） | 提升二次打开速度，配合 SW 版本滚动更新 |
