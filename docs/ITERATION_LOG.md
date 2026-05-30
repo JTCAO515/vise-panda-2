@@ -508,3 +508,20 @@ python -m py_compile api/index.py ✅
 | 改动 | 说明 |
 |------|------|
 | SW cache name `vp-v4` | 确保线上立即拿到最新 chat.js |
+
+---
+
+## Iteration 129 — VisePanda Logo 替换（YS Panda）
+
+**日期**: 2026-05-30  
+**目标**: 将你提供的 YS Panda 图片作为 VisePanda 全站 logo / favicon / PWA 图标  
+**状态**: ✅ 完成
+
+### Iter 129 — 资源与图标 ⭐⭐⭐
+| 改动 | 说明 |
+|------|------|
+| 新增 `static/img/logo-{32,64,192,512,1024}.png` | 透明背景，多尺寸适配 |
+| 新增 `static/img/favicon.ico` | 浏览器 favicon |
+| `static/manifest.json` icons 更新为 png（192/512 + maskable） | PWA 安装图标正确显示 |
+| 全站 `<header>` seal 替换为新 logo 图片 | 视觉统一，替代原 emoji |
+| `/favicon.ico` 与 `/favicon.png` 路由返回真实图标文件 | 不再 204，占位变为可用 favicon |

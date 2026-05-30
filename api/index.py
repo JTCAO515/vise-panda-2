@@ -768,9 +768,9 @@ def page_landing() -> str:
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="VisePanda">
-<link rel="icon" type="image/jpeg" href="/static/img/logo-icon.jpg"><link rel="apple-touch-icon" href="/static/img/logo-icon.jpg"><title data-i18n="title">VisePanda — AI China Travel Planner</title><meta name="description" data-i18n-content="metaDesc" content="Your AI-powered guide to traveling China. Get personalized day-by-day itineraries, food recommendations, hotel tips, and local insights — just tell us where and how long."><meta property="og:title" content="VisePanda — AI China Travel Planner"><meta property="og:description" content="Personalized China travel itineraries powered by AI — built by travelers, for travelers."><meta property="og:type" content="website"><meta property="og:image" content="https://go2china.space/static/img/og-image.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><style>{CSS}</style><script defer src='/_vercel/insights/script.js'></script><script defer src='/_vercel/speed-insights/script.js'></script>{_inject_config()}</head><body>
+<link rel="icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/static/img/logo-192.png"><title data-i18n="title">VisePanda — AI China Travel Planner</title><meta name="description" data-i18n-content="metaDesc" content="Your AI-powered guide to traveling China. Get personalized day-by-day itineraries, food recommendations, hotel tips, and local insights — just tell us where and how long."><meta property="og:title" content="VisePanda — AI China Travel Planner"><meta property="og:description" content="Personalized China travel itineraries powered by AI — built by travelers, for travelers."><meta property="og:type" content="website"><meta property="og:image" content="https://go2china.space/static/img/og-image.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><style>{CSS}</style><script defer src='/_vercel/insights/script.js'></script><script defer src='/_vercel/speed-insights/script.js'></script>{_inject_config()}</head><body>
 <div class="bg-shanshui"></div>
-<header><div><a href="/" class="logo-seal"><span class="seal">🐼</span><span class="name">VisePanda</span></a></div><div id="authArea"><a href="#" class="lang-switch" onclick="event.preventDefault();setLang(LANG==='en'?'zh':'en')" data-i18n="langLabel">ZH</a><a href="#" onclick="event.preventDefault();signIn()" class="btn btn-accent" style="color:var(--gold-bright)" data-i18n="signIn">Sign in</a><a href="#" onclick="event.preventDefault();toggleTheme()" class="lang-switch" id="themeToggle" title="Toggle theme">🌓</a></div></header>
+<header><div><a href="/" class="logo-seal"><span class="seal"><img src="/static/img/logo-32.png" alt="VisePanda" style="width:22px;height:22px;display:block"></span><span class="name">VisePanda</span></a></div><div id="authArea"><a href="#" class="lang-switch" onclick="event.preventDefault();setLang(LANG==='en'?'zh':'en')" data-i18n="langLabel">ZH</a><a href="#" onclick="event.preventDefault();signIn()" class="btn btn-accent" style="color:var(--gold-bright)" data-i18n="signIn">Sign in</a><a href="#" onclick="event.preventDefault();toggleTheme()" class="lang-switch" id="themeToggle" title="Toggle theme">🌓</a></div></header>
 <main style="position:relative;min-height:calc(100vh-56px);display:flex;align-items:center;justify-content:center;padding:24px 16px 90px;z-index:1">
 <div style="width:min(680px,96%);text-align:center">
 <h1 style="font-size:36px;margin:0 0 6px;letter-spacing:-.02em;font-weight:700" data-i18n="heroTitle">🐼 Your personal guide to China</h1>
@@ -904,7 +904,7 @@ def page_share(share_id: str) -> str:
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="VisePanda">
-<link rel="apple-touch-icon" href="/static/icon.svg"><title>{title} · VisePanda</title>
+<link rel="apple-touch-icon" href="/static/img/logo-192.png"><title>{title} · VisePanda</title>
 <meta name="description" content="{summary}">
 <meta property="og:title" content="{title}">
 <meta property="og:description" content="{summary}">
@@ -945,7 +945,7 @@ def page_trips() -> str:
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="VisePanda">
-<link rel="apple-touch-icon" href="/static/icon.svg"><title data-i18n="tripsTitle">My Trips · VisePanda</title><style>{CSS}
+<link rel="apple-touch-icon" href="/static/img/logo-192.png"><title data-i18n="tripsTitle">My Trips · VisePanda</title><style>{CSS}
 .trips-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding:20px;max-width:900px;margin:0 auto}}
 .trip-item{{border:1px solid var(--line);border-radius:14px;padding:18px;background:rgba(255,255,255,.02);cursor:pointer;transition:all .2s;text-decoration:none;display:block}}
 .trip-item:hover{{border-color:rgba(125,211,252,.35);background:rgba(125,211,252,.04)}}
@@ -960,7 +960,7 @@ def page_trips() -> str:
 @keyframes fadeInOut{{0%{{opacity:0;transform:translateX(-50%) translateY(8px)}}15%{{opacity:1;transform:translateX(-50%) translateY(0)}}85%{{opacity:1;transform:translateX(-50%) translateY(0)}}100%{{opacity:0;transform:translateX(-50%) translateY(-8px)}}}}
 </style><script defer src='/_vercel/insights/script.js'></script><script defer src='/_vercel/speed-insights/script.js'></script></head><body>
 <div class="bg-shanshui"></div>
-<header><div><a href="/" class="logo-seal"><span class="seal">🐼</span><span class="name">VisePanda</span></a></div><div><a href="/" class="btn" data-i18n="homeBtn">Home</a><a href="#" class="lang-switch" onclick="event.preventDefault();setLang(LANG==='en'?'zh':'en')" data-i18n="langLabel">ZH</a><a href="#" onclick="event.preventDefault();toggleTheme()" class="lang-switch" id="themeToggle" title="Toggle theme">🌓</a></div></header>
+<header><div><a href="/" class="logo-seal"><span class="seal"><img src="/static/img/logo-32.png" alt="VisePanda" style="width:22px;height:22px;display:block"></span><span class="name">VisePanda</span></a></div><div><a href="/" class="btn" data-i18n="homeBtn">Home</a><a href="#" class="lang-switch" onclick="event.preventDefault();setLang(LANG==='en'?'zh':'en')" data-i18n="langLabel">ZH</a><a href="#" onclick="event.preventDefault();toggleTheme()" class="lang-switch" id="themeToggle" title="Toggle theme">🌓</a></div></header>
 <main style="position:relative;z-index:1;min-height:calc(100vh-56px);padding:20px 16px 80px">
 <h2 style="text-align:center;color:var(--text);font-size:22px;margin:20px 0" data-i18n="tripsHeading">My Trips</h2>
 <div id="tripsList" class="trips-grid"><div class="skeleton" style="height:100px"></div></div>
@@ -978,7 +978,7 @@ def page_chat() -> str:
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="VisePanda">
-<link rel="apple-touch-icon" href="/static/icon.svg"><title data-i18n="chatTitle">Chat · VisePanda — AI China Travel Planner</title><meta name="description" data-i18n-content="chatMeta" content="Chat with VisePanda AI to plan your China trip. Get day-by-day itineraries, food guides, and practical travel tips."><style>{CSS}
+<link rel="apple-touch-icon" href="/static/img/logo-192.png"><title data-i18n="chatTitle">Chat · VisePanda — AI China Travel Planner</title><meta name="description" data-i18n-content="chatMeta" content="Chat with VisePanda AI to plan your China trip. Get day-by-day itineraries, food guides, and practical travel tips."><style>{CSS}
 .layout{{display:flex;height:calc(100vh-56px);position:relative;z-index:1}}
 #sidebar{{width:280px;flex-shrink:0;background:rgba(10,8,16,.3);border-right:1px solid var(--line);padding:16px;overflow-y:auto;display:none}}
 #sidebar.visible{{display:block}}
@@ -1027,7 +1027,7 @@ def page_chat() -> str:
 .time{{font-size:10px;color:var(--muted);margin-top:4px}}
 </style><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"><script defer src='/_vercel/insights/script.js'></script><script defer src='/_vercel/speed-insights/script.js'></script>{_inject_config()}</head><body>
 <div class="bg-shanshui"></div>
-<header><div><a href="/" class="logo-seal"><span class="seal">🐼</span><span class="name">VisePanda</span></a></div><div><a href="/trips" class="btn" style="margin-right:8px" data-i18n="tripsBtn">Trips</a><a href="#" onclick="event.preventDefault();clearChat()" class="btn" style="margin-right:8px" data-i18n="clearBtn">Clear</a><a href="/" class="btn" data-i18n="homeBtn">Home</a><a href="#" class="lang-switch" onclick="event.preventDefault();setLang(LANG==='en'?'zh':'en')" data-i18n="langLabel">ZH</a><a href="#" onclick="event.preventDefault();toggleTheme()" class="lang-switch" id="themeToggle" title="Toggle theme">🌓</a></div></header>
+<header><div><a href="/" class="logo-seal"><span class="seal"><img src="/static/img/logo-32.png" alt="VisePanda" style="width:22px;height:22px;display:block"></span><span class="name">VisePanda</span></a></div><div><a href="/trips" class="btn" style="margin-right:8px" data-i18n="tripsBtn">Trips</a><a href="#" onclick="event.preventDefault();clearChat()" class="btn" style="margin-right:8px" data-i18n="clearBtn">Clear</a><a href="/" class="btn" data-i18n="homeBtn">Home</a><a href="#" class="lang-switch" onclick="event.preventDefault();setLang(LANG==='en'?'zh':'en')" data-i18n="langLabel">ZH</a><a href="#" onclick="event.preventDefault();toggleTheme()" class="lang-switch" id="themeToggle" title="Toggle theme">🌓</a></div></header>
 <div class="layout"><button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">☰</button>
 <aside id="sidebar">
   <h3 data-i18n="tripOverview">Trip overview</h3>
@@ -1187,7 +1187,7 @@ def page_auth_callback() -> str:
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="VisePanda">
-<link rel="apple-touch-icon" href="/static/icon.svg"><title data-i18n="signingIn">Signing in…</title><style>body{{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a0f17;color:#fff;font-family:sans-serif;text-align:center}}.muted{{color:rgba(255,255,255,.5);font-size:14px}}</style><script defer src='/_vercel/insights/script.js'></script><script defer src='/_vercel/speed-insights/script.js'></script>{_inject_config()}</head><body>
+<link rel="apple-touch-icon" href="/static/img/logo-192.png"><title data-i18n="signingIn">Signing in…</title><style>body{{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a0f17;color:#fff;font-family:sans-serif;text-align:center}}.muted{{color:rgba(255,255,255,.5);font-size:14px}}</style><script defer src='/_vercel/insights/script.js'></script><script defer src='/_vercel/speed-insights/script.js'></script>{_inject_config()}</head><body>
 <div><div style="font-size:18px;font-weight:650;margin-bottom:8px" data-i18n="signingIn">Signing in…</div><div class="muted" data-i18n="redirecting">Redirecting…</div></div>
 <script src="https://esm.sh/@supabase/supabase-js@2"></script>
 <script src="/static/i18n.js"></script>
@@ -1214,9 +1214,9 @@ def page_profile(user_id: str) -> str:
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="VisePanda">
-<link rel="apple-touch-icon" href="/static/icon.svg"><title data-i18n="profileTitle">Profile · VisePanda</title><meta name="description" content="Manage your VisePanda profile and preferences."><style>{CSS}</style><script defer src='/_vercel/insights/script.js'></script><script defer src='/_vercel/speed-insights/script.js'></script>{_inject_config()}</head><body>
+<link rel="apple-touch-icon" href="/static/img/logo-192.png"><title data-i18n="profileTitle">Profile · VisePanda</title><meta name="description" content="Manage your VisePanda profile and preferences."><style>{CSS}</style><script defer src='/_vercel/insights/script.js'></script><script defer src='/_vercel/speed-insights/script.js'></script>{_inject_config()}</head><body>
 <div class="bg-shanshui"></div>
-<header><div><a href="/" class="logo-seal"><span class="seal">🐼</span><span class="name">VisePanda</span></a></div><div><a href="/chat" class="btn" style="margin-right:8px" data-i18n="chatBtn">Chat</a><a href="/trips" class="btn" style="margin-right:8px" data-i18n="tripsBtn">Trips</a><a href="/" class="btn" data-i18n="homeBtn">Home</a><a href="#" class="lang-switch" onclick="event.preventDefault();setLang(LANG==='en'?'zh':'en')" data-i18n="langLabel">ZH</a><a href="#" onclick="event.preventDefault();toggleTheme()" class="lang-switch" id="themeToggle" title="Toggle theme">🌓</a></div></header>
+<header><div><a href="/" class="logo-seal"><span class="seal"><img src="/static/img/logo-32.png" alt="VisePanda" style="width:22px;height:22px;display:block"></span><span class="name">VisePanda</span></a></div><div><a href="/chat" class="btn" style="margin-right:8px" data-i18n="chatBtn">Chat</a><a href="/trips" class="btn" style="margin-right:8px" data-i18n="tripsBtn">Trips</a><a href="/" class="btn" data-i18n="homeBtn">Home</a><a href="#" class="lang-switch" onclick="event.preventDefault();setLang(LANG==='en'?'zh':'en')" data-i18n="langLabel">ZH</a><a href="#" onclick="event.preventDefault();toggleTheme()" class="lang-switch" id="themeToggle" title="Toggle theme">🌓</a></div></header>
 <div class="profile-page">
 <div class="profile-header"><div class="profile-avatar">🐼</div><h1 data-i18n="profileH1">My Profile</h1><p data-i18n="profileSub">Manage your account and preferences</p></div>
 <div id="profileMsg" class="profile-msg"></div>
@@ -1320,9 +1320,20 @@ def service_worker():
     )
 
 @app.get("/favicon.ico")
+def favicon_ico():
+    return FileResponse(
+        "static/img/favicon.ico",
+        media_type="image/x-icon",
+        headers={"Cache-Control": "public, max-age=31536000, immutable"},
+    )
+
 @app.get("/favicon.png")
-def favicon():
-    return Response(status_code=204)
+def favicon_png():
+    return FileResponse(
+        "static/img/logo-192.png",
+        media_type="image/png",
+        headers={"Cache-Control": "public, max-age=31536000, immutable"},
+    )
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -2233,7 +2244,7 @@ async def not_found(request, exc):
     path = request.url.path
     if path.startswith("/api/"):
         return JSONResponse({"error": "not found"}, status_code=404)
-    return HTMLResponse('<html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><link rel="manifest" href="/static/manifest.json"><meta name="theme-color" content="#bc3a2c"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="VisePanda"><link rel="apple-touch-icon" href="/static/icon.svg"><title data-i18n="notFoundTitle">404 — VisePanda</title><style>body{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0a0f17;color:#fff;font-family:sans-serif;text-align:center;margin:0}h1{font-size:48px;margin:0;letter-spacing:-.02em}p{color:rgba(255,255,255,.5)}a{color:#7dd3fc}</style><h1>🐼</h1><p data-i18n="notFound">Page not found</p><a href=/>Back home</a><script src="/static/i18n.js"></script><script src="/static/pwa.js"></script>', status_code=404)
+    return HTMLResponse('<html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><link rel="manifest" href="/static/manifest.json"><meta name="theme-color" content="#bc3a2c"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="VisePanda"><link rel="apple-touch-icon" href="/static/img/logo-192.png"><title data-i18n="notFoundTitle">404 — VisePanda</title><style>body{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0a0f17;color:#fff;font-family:sans-serif;text-align:center;margin:0}h1{font-size:48px;margin:0;letter-spacing:-.02em}p{color:rgba(255,255,255,.5)}a{color:#7dd3fc}</style><h1><img src="/static/img/logo-64.png" alt="VisePanda" style="width:56px;height:56px"></h1><p data-i18n="notFound">Page not found</p><a href=/>Back home</a><script src="/static/i18n.js"></script><script src="/static/pwa.js"></script>', status_code=404)
 
 
 @app.get("/api/trips")
