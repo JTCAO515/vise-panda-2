@@ -635,3 +635,16 @@ python -m py_compile api/index.py ✅
 |------|------|
 | Chat 页移除 Leaflet CSS/JS 的默认引入 | 首屏不加载地图相关大资源 |
 | 仅在检测到 itinerary 且需要展示地图时，按需加载 Leaflet + `/static/map.js` | 加速首屏、减少外部 CDN 失败对核心对话的影响 |
+
+---
+
+## Iteration 136 — 页面加载稳定性（去第三方字体阻塞）
+
+**日期**: 2026-05-30  
+**目标**: 减少第三方资源导致的首屏阻塞与不稳定（尤其是 fonts.google 访问不稳定的场景）  
+**状态**: ✅ 完成
+
+### Iter 136 — 移除 Google Fonts 引用 ⭐⭐⭐
+| 改动 | 说明 |
+|------|------|
+| 全站移除 `fonts.googleapis.com / fonts.gstatic.com` 的 `<link>` 引用 | 统一回退到系统字体栈，减少外部网络依赖 |
