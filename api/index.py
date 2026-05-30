@@ -2270,16 +2270,29 @@ async def chat_endpoint(payload: ChatIn, request: Request):
     async def generate():
         full_text = ""
         event_id = 0
+        started = time.time()
+        first_token_ts: float | None = None
+        token_chars = 0
+        last_error: dict | None = None
         async for chunk in stream_llm(messages, request_id=rid):
             if "token" in chunk:
                 try:
                     token = json.loads(chunk.split("data: ")[1].strip())["token"]
                     full_text += token
+                    token_chars += len(token)
+                    if first_token_ts is None:
+                        first_token_ts = time.time()
                     event_id += 1
                     yield f"id: {event_id}\n{chunk}"
                 except:
                     yield chunk
             else:
+                # Try to capture structured errors for logging
+                if chunk.startswith("data: "):
+                    try:
+                        last_error = json.loads(chunk.split("data: ", 1)[1].strip())
+                    except Exception:
+                        pass
                 yield chunk
 
         # Save assistant message + track preferences
@@ -2354,6 +2367,27 @@ async def chat_endpoint(payload: ChatIn, request: Request):
                 )
             finally:
                 db2.close()
+
+        # Log basic metrics (helps debugging on Vercel)
+        try:
+            dur_ms = int((time.time() - started) * 1000)
+            first_ms = int((first_token_ts - started) * 1000) if first_token_ts else None
+            err_code = (last_error or {}).get("code") if last_error else None
+            print(
+                json.dumps(
+                    {
+                        "event": "chat_stream_done",
+                        "request_id": rid,
+                        "duration_ms": dur_ms,
+                        "first_token_ms": first_ms,
+                        "token_chars": token_chars,
+                        "error_code": err_code,
+                    }
+                ),
+                flush=True,
+            )
+        except Exception:
+            pass
 
     return StreamingResponse(
         generate(),

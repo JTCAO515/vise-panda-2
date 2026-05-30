@@ -546,3 +546,21 @@ python -m py_compile api/index.py ✅
 |------|------|
 | `GET /api/llm/diag` | 返回 LLM 配置状态（不泄露密钥） |
 | `GET /api/llm/diag?test=1` | 发起最小化请求测试连通性，返回 status/错误摘要 |
+
+---
+
+## Iteration 131 — DeepSeek 兼容与对话体验增强
+
+**日期**: 2026-05-30  
+**目标**: 提升 DeepSeek 流式返回兼容性与首包等待体验，便于线上排障  
+**状态**: ✅ 完成
+
+### Iter 131 — 前端：首包慢提示 ⭐⭐
+| 改动 | 说明 |
+|------|------|
+| 8s 未收到首 token 自动显示 “Still working…” 提示 | 避免用户误以为卡死；不覆盖骨架屏 |
+
+### Iter 131 — 后端：流式指标日志 ⭐⭐
+| 改动 | 说明 |
+|------|------|
+| 输出 `chat_stream_done` 日志（duration/first_token/token_chars/error_code/request_id） | Vercel logs 可直接定位“是否首包、耗时、是否有错误码” |

@@ -96,6 +96,19 @@ async function send(text) {
     );
     const bubble = b.querySelector('.bubble') || b;
 
+    // If the first token takes too long, show a gentle hint (without wiping skeleton).
+    let firstTokenSeen = false;
+    const slowTimer = setTimeout(() => {
+        if (firstTokenSeen) return;
+        if (bubble && !bubble.querySelector('.vp-slow')) {
+            const tip = document.createElement('div');
+            tip.className = 'vp-slow';
+            tip.style.cssText = 'margin-top:10px;font-size:12px;color:rgba(255,255,255,.55)';
+            tip.textContent = 'Still working… If this takes too long, verify LLM settings and try again.';
+            bubble.appendChild(tip);
+        }
+    }, 8000);
+
     var getT = function(k) { return (typeof t === 'function') ? t(k) : {
         connFailed: 'Connection failed. Check your network.',
         retry: 'Retry', sendBtn: 'Send', error: 'Error', loading: 'Loading services… please wait or ',
@@ -205,6 +218,7 @@ async function send(text) {
                         return;
                     }
                     if (j.token) f += j.token;
+                    if (j.token && !firstTokenSeen) firstTokenSeen = true;
                     if (j.trip_update) {
                         // Notify user that itinerary was detected and saved
                         const note = document.createElement('div');
@@ -248,6 +262,7 @@ async function send(text) {
                 'Please verify <code>LLM_API_KEY</code> and model settings on Vercel, then try again.' +
                 '</small>';
         }
+        clearTimeout(slowTimer);
 
         const sm = f.split('---SUGGESTIONS---');
         if (sm[1]) {
