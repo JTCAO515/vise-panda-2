@@ -289,4 +289,40 @@ CSS animations: fadeUp ✓ slideUp ✓ shimmer ✓ breathe ✓ blink ✓ fadeIn 
 
 ### 测试结果
 ```
+syntax: ✅ AST clean
+SW: ✅ stale-while-revalidate + cache-first
+Cache: ✅ max-age=31536000 immutable
+GZip: ✅ middleware
+supabase-js: ✅ 0 script tags (dynamic import only)
+```
 
+---
+
+## Iteration 116-119 — 速度专项
+
+**日期**: 2026-05-30
+**目标**: Service Worker + 懒加载 + 缓存策略 + 传输优化
+**状态**: ✅ 完成
+
+### Iter 116 — Service Worker v2 ⭐⭐
+| 改动 | 效果 |
+|------|------|
+| 重写 SW：HTML stale-while-revalidate + 静态 cache-first + 字体CDN runtime cache | 二次访问秒开 |
+| `Promise.allSettled` + `skipWaiting()` + `clients.claim()` | 可靠注册 + 立即生效 |
+
+### Iter 117 — 冗余supabase-js移除 ⭐
+| 改动 | 效果 |
+|------|------|
+| Chat页删掉 `<script src="supabase-js">`（chat.js已用动态import） | 首屏省1 HTTP + 60KB |
+
+### Iter 118 — 浏览器缓存策略 ⭐
+| 改动 | 效果 |
+|------|------|
+| 静态文件 `max-age=31536000, immutable` | 浏览器永久缓存 |
+| `/sw.js` 路由 + `Service-Worker-Allowed: /` | SW 覆盖全站 |
+
+### Iter 119 — GZip压缩 ⭐
+| 改动 | 效果 |
+|------|------|
+| `GZipMiddleware(minimum_size=500)` | HTML/CSS减5-10倍 |
+| 删除废弃 `static/pwa.js` | 清理 |
