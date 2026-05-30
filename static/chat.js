@@ -156,9 +156,11 @@ async function send(text) {
         if (!r || !r.ok) {
             let detail = '';
             try { detail = (await r.text()).slice(0, 500); } catch (_) {}
+            const rid = r && r.headers ? (r.headers.get('x-request-id') || r.headers.get('X-Request-Id') || '') : '';
             bubble.innerHTML =
                 '<span style=color:#fca5a5>Request failed.</span><br>' +
                 '<small style=color:rgba(255,255,255,.55)>' +
+                (rid ? ('request_id: ' + H(rid) + '<br>') : '') +
                 'HTTP ' + (r ? r.status : '0') + (detail ? (': ' + H(detail)) : '') +
                 '</small>';
             sbb.disabled = false;
@@ -193,7 +195,10 @@ async function send(text) {
                 try {
                     const j = JSON.parse(d);
                     if (j.error) {
-                        bubble.innerHTML = '<span style=color:#fca5a5>' + H(j.error) + '</span>';
+                        const rid = j.request_id ? ('<br><small style="color:rgba(255,255,255,.45)">request_id: ' + H(j.request_id) + '</small>') : '';
+                        bubble.innerHTML = '<span style=color:#fca5a5>' + H(j.error) + '</span>' + rid + ' ' +
+                          '<a href=# onclick="W.send(\'' + text.replace(/'/g, '\\x27') + '\');return false" ' +
+                          'style=color:var(--accent);text-decoration:underline>' + getT('retry') + '</a>';
                         sbb.disabled = false;
                         sbb.textContent = 'Send';
                         smartScroll();

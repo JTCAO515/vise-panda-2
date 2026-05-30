@@ -517,9 +517,19 @@ from data.tools.travel_tools import recommend_destination, generate_caption
 from data.tools.pricing import estimate_trip_cost, get_weather_advice
 from data.tools.visa_guide import VISA_INFO
 
-async def stream_llm(messages: list[dict]) -> AsyncGenerator[str, None]:
+async def stream_llm(messages: list[dict], request_id: str | None = None) -> AsyncGenerator[str, None]:
     if not LLM_ENABLED or not LLM_API_KEY:
-        yield f"data: {json.dumps({'error': 'LLM not configured. Please set LLM_API_KEY.'})}\n\n"
+        yield (
+            "data: "
+            + json.dumps(
+                {
+                    "error": "LLM not configured. Please set LLM_API_KEY.",
+                    "code": "llm_not_configured",
+                    "request_id": request_id,
+                }
+            )
+            + "\n\n"
+        )
         yield "data: [DONE]\n\n"
         return
 
@@ -540,7 +550,24 @@ async def stream_llm(messages: list[dict]) -> AsyncGenerator[str, None]:
                 json=payload,
             ) as resp:
                 if resp.status_code != 200:
-                    yield f"data: {json.dumps({'error': f'LLM {resp.status_code}'})}\n\n"
+                    body = ""
+                    try:
+                        body = (await resp.aread()).decode(errors="ignore")[:300]
+                    except Exception:
+                        body = ""
+                    yield (
+                        "data: "
+                        + json.dumps(
+                            {
+                                "error": f"LLM request failed ({resp.status_code}).",
+                                "code": "llm_http_error",
+                                "status": resp.status_code,
+                                "detail": body,
+                                "request_id": request_id,
+                            }
+                        )
+                        + "\n\n"
+                    )
                     yield "data: [DONE]\n\n"
                     return
 
@@ -575,7 +602,17 @@ async def stream_llm(messages: list[dict]) -> AsyncGenerator[str, None]:
                     except (KeyError, json.JSONDecodeError):
                         continue
     except Exception as e:
-        yield f"data: {json.dumps({'error': str(e)})}\n\n"
+        yield (
+            "data: "
+            + json.dumps(
+                {
+                    "error": f"LLM call failed: {str(e)[:200]}",
+                    "code": "llm_exception",
+                    "request_id": request_id,
+                }
+            )
+            + "\n\n"
+        )
 
     yield "data: [DONE]\n\n"
 
@@ -1254,6 +1291,17 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="VisePanda", version="0.1.0", lifespan=lifespan)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+@app.middleware("http")
+async def attach_request_id(request: Request, call_next):
+    rid = request.headers.get("x-request-id") or str(uuid.uuid4())
+    request.state.request_id = rid
+    resp = await call_next(request)
+    try:
+        resp.headers["X-Request-Id"] = rid
+    except Exception:
+        pass
+    return resp
+
 
 @app.exception_handler(404)
 async def not_found(request, exc):
@@ -1304,7 +1352,66 @@ def health():
             db = "postgres"
         elif DATABASE_URL.startswith("sqlite"):
             db = "sqlite"
-    return {"ok": True, "version": "0.1.0", "db": db}
+    return {
+        "ok": True,
+        "version": "0.1.0",
+        "db": db,
+        "llm": {
+            "enabled": bool(LLM_ENABLED),
+            "api_key_present": bool(LLM_API_KEY),
+            "base_url": LLM_BASE_URL,
+            "model": LLM_MODEL,
+        },
+    }
+
+@app.get("/api/llm/diag")
+async def llm_diag(test: int = 0):
+    """
+    Lightweight LLM diagnostics endpoint.
+    - Does NOT return secrets.
+    - Optional ?test=1 runs a minimal request to validate connectivity.
+    """
+    result = {
+        "enabled": bool(LLM_ENABLED),
+        "api_key_present": bool(LLM_API_KEY),
+        "base_url": LLM_BASE_URL,
+        "model": LLM_MODEL,
+        "test_ran": bool(test),
+        "test_ok": None,
+        "test_status": None,
+        "test_error": None,
+    }
+    if not test:
+        return result
+
+    if not LLM_ENABLED or not LLM_API_KEY:
+        result["test_ok"] = False
+        result["test_error"] = "LLM not configured"
+        return result
+
+    payload = {
+        "model": LLM_MODEL,
+        "messages": [{"role": "user", "content": "ping"}],
+        "stream": False,
+        "max_tokens": 1,
+        "temperature": 0,
+    }
+    try:
+        async with httpx.AsyncClient(timeout=20) as client:
+            r = await client.post(
+                f"{LLM_BASE_URL}/chat/completions",
+                headers={"Authorization": f"Bearer {LLM_API_KEY}"},
+                json=payload,
+            )
+        result["test_status"] = r.status_code
+        result["test_ok"] = r.status_code == 200
+        if r.status_code != 200:
+            result["test_error"] = (r.text or "")[:300]
+        return result
+    except Exception as e:
+        result["test_ok"] = False
+        result["test_error"] = str(e)[:200]
+        return result
 
 @app.get("/sw.js")
 def service_worker():
@@ -2092,6 +2199,8 @@ class ChatIn(BaseModel):
 
 @app.post("/api/chat")
 async def chat_endpoint(payload: ChatIn, request: Request):
+    rid = getattr(getattr(request, "state", None), "request_id", None) or str(uuid.uuid4())
+
     # Rate limit check
     ip = request.headers.get("x-forwarded-for", "unknown").split(",")[0].strip()
     now = time.time()
@@ -2161,7 +2270,7 @@ async def chat_endpoint(payload: ChatIn, request: Request):
     async def generate():
         full_text = ""
         event_id = 0
-        async for chunk in stream_llm(messages):
+        async for chunk in stream_llm(messages, request_id=rid):
             if "token" in chunk:
                 try:
                     token = json.loads(chunk.split("data: ")[1].strip())["token"]
@@ -2232,11 +2341,25 @@ async def chat_endpoint(payload: ChatIn, request: Request):
                         )
             except Exception as e:
                 # Best effort: surface error to client but do not break the stream silently
-                yield f"data: {json.dumps({'error': f'post_process_failed: {str(e)[:200]}'})}\n\n"
+                yield (
+                    "data: "
+                    + json.dumps(
+                        {
+                            "error": f"post_process_failed: {str(e)[:200]}",
+                            "code": "post_process_failed",
+                            "request_id": rid,
+                        }
+                    )
+                    + "\n\n"
+                )
             finally:
                 db2.close()
 
-    return StreamingResponse(generate(), media_type="text/event-stream")
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream",
+        headers={"X-Request-Id": rid, "Cache-Control": "no-cache"},
+    )
 
 
 @app.exception_handler(404)

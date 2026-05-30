@@ -525,3 +525,24 @@ python -m py_compile api/index.py ✅
 | `static/manifest.json` icons 更新为 png（192/512 + maskable） | PWA 安装图标正确显示 |
 | 全站 `<header>` seal 替换为新 logo 图片 | 视觉统一，替代原 emoji |
 | `/favicon.ico` 与 `/favicon.png` 路由返回真实图标文件 | 不再 204，占位变为可用 favicon |
+
+---
+
+## Iteration 130 — 对话兜底可用性（可诊断）
+
+**日期**: 2026-05-30  
+**目标**: 让“无回复/配置错误/后端异常”变成可见、可定位、可重试的问题  
+**状态**: ✅ 完成
+
+### Iter 130 — Request ID + 结构化错误 ⭐⭐⭐
+| 改动 | 说明 |
+|------|------|
+| 全站中间件注入 `X-Request-Id` | 每个请求都有可追踪 request_id（可用于 Vercel 日志定位） |
+| `/api/chat` 的错误事件增加 `code` + `request_id` | 前端可以展示更明确的错误原因与追踪 ID |
+| 前端在错误气泡中展示 `request_id` + Retry | 方便你直接用 request_id 去 Vercel logs 对齐排查 |
+
+### Iter 130 — 诊断接口 ⭐⭐
+| 改动 | 说明 |
+|------|------|
+| `GET /api/llm/diag` | 返回 LLM 配置状态（不泄露密钥） |
+| `GET /api/llm/diag?test=1` | 发起最小化请求测试连通性，返回 status/错误摘要 |
