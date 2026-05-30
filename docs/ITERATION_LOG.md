@@ -564,3 +564,17 @@ python -m py_compile api/index.py ✅
 | 改动 | 说明 |
 |------|------|
 | 输出 `chat_stream_done` 日志（duration/first_token/token_chars/error_code/request_id） | Vercel logs 可直接定位“是否首包、耗时、是否有错误码” |
+
+---
+
+## Iteration 132 — 英文原生一致性（核心页面无中文泄漏）
+
+**日期**: 2026-05-30  
+**目标**: 核心页面（Landing/Chat/Trips/Profile/Share/404）英文模式下不出现中文文案  
+**状态**: ✅ 完成
+
+### Iter 132 — 文案清理 ⭐⭐
+| 改动 | 说明 |
+|------|------|
+| 去除核心页面中的零散中文字符串 | 例如 placeholder 示例、提示文案等改为英文 |
+| `POST /api/itinerary/validate` 返回 warning 全英文化 | 避免英文站点下接口返回中文提示 |

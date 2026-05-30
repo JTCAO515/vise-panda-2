@@ -1137,7 +1137,7 @@ const r=await fetch('/api/phrases/'+cat);const d=await r.json();DATA[cat]=d;rend
 function render(d,cat){{
 const c=document.getElementById('container');c.innerHTML='<div class=card active>'
 +'<div class=card-header><h2>'+d.icon+' '+d.title_en+'<span style=color:#8b949e;font-weight:400;margin-left:8px;font-size:14px>'+d.title_zh+'</span>'
-+'</h2><div class=sub>'+d.phrases.length+' essential phrases · 截图保存</div></div>';
++'</h2><div class=sub>'+d.phrases.length+' essential phrases · Screenshot to save</div></div>';
 d.phrases.forEach((p,i)=>{{
 c.innerHTML+='<div class=phrase><div class=phrase-num>'+(i+1)+'</div><div class=phrase-content>'
 +'<div class=phrase-cn>'+p[0]+'</div><div class=phrase-pinyin>'+p[1]+'</div><div class=phrase-en>'+p[2]+'</div></div></div>'
@@ -1735,7 +1735,7 @@ def hotels_page():
 @media(max-width:480px){{.header h1{{font-size:24px}}.grid{{grid-template-columns:1fr}}}}
 </style></head><body>
 <div class=header><h1>🏨 Hotel Price Guide</h1><p>Budget · Mid-range · Luxury — 16 major Chinese cities</p></div>
-<div class=search><input id=s type=text placeholder="🔍 Search city... e.g. Beijing, 上海" oninput="f()"></div>
+<div class=search><input id=s type=text placeholder="🔍 Search city... e.g. Beijing, Shanghai" oninput="f()"></div>
 <div class=grid id=grid>{cards_html}</div>
 <div class=footer><a href=/>← Back to VisePanda</a> · Prices are approximate, actual rates vary by season</div>
 <script>
@@ -2611,18 +2611,18 @@ async def validate_route(request: Request):
             dn = day.get("day", 0)
             acts = day.get("activities", day.get("items", []))
             if len(acts) > 8:
-                warnings.append(f"Day {dn}: 安排了 {len(acts)} 项活动，可能太紧凑")
+                warnings.append(f"Day {dn}: {len(acts)} activities planned — may be too packed")
             elif len(acts) == 0:
-                warnings.append(f"Day {dn}: 没有安排任何活动")
+                warnings.append(f"Day {dn}: no activities found")
             for a in acts:
                 t, n = a.get("time", ""), a.get("name", "")
                 if "餐" in t or "饭" in t:
                     if any(h in t for h in ["22:", "23:", "00:", "01:", "02:"]):
-                        warnings.append(f"Day {dn}: '{n}' 安排在深夜 {t}")
+                        warnings.append(f"Day {dn}: '{n}' scheduled very late at {t}")
                 if "出发" in t or "起" in t:
                     try:
                         if int(t.split(":")[0]) < 5:
-                            warnings.append(f"Day {dn}: '{n}' 出发时间 {t} 过早")
+                            warnings.append(f"Day {dn}: '{n}' departure time {t} may be too early")
                     except: pass
         return JSONResponse({"warnings": warnings, "safe": len(warnings) == 0})
     except Exception as e:
