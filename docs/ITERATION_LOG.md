@@ -382,3 +382,23 @@ supabase-js: ✅ 0 script tags (dynamic import only)
 | `localStorage.setItem('vp_theme')` | 刷新/下次访问保留偏好 |
 | `*{transition:background/border/color}` | 切换时全站平滑过渡，无闪烁 |
 | onload自动匹配图标 | 切到light显示🌙，切到dark显示☀️ |
+
+---
+
+## Iteration 124 — 移动端深度适配
+
+**日期**: 2026-05-30
+**目标**: iOS/Android触屏优化、交互修复
+**状态**: ✅ 完成
+
+### 改动
+| 项 | 说明 |
+|----|------|
+| `*{touch-action:manipulation}` | 防双击缩放（文字太小不会意外放大） |
+| `-webkit-tap-highlight-color:transparent` | 去掉点击灰色半透明框 |
+| `#thread{-webkit-overflow-scrolling:touch}` | iOS弹性滚动 |
+| `#thread{overscroll-behavior:contain}` | 下拉到顶不触发页面刷新 |
+| `@media(hover:none)` | 触屏取消hover变形动画 |
+| `input{font-size:16px}` | 防iOS自动缩放（<16px会放大） |
+| `@media(max-width:480px)` header隐藏品牌名 | 小屏省空间 |
+| `.chip/.welcome-chip` tap target增大 | 更容易触碰 |
