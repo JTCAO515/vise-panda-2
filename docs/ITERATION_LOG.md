@@ -682,3 +682,16 @@ python -m py_compile api/index.py ✅
 | 改动 | 说明 |
 |------|------|
 | `navigate` 采用 network-first + 3s 超时回退缓存 | 弱网时避免白屏，优先展示可用页面 |
+
+---
+
+## Iteration 139 — 关键资源预加载（关键路径优化）
+
+**日期**: 2026-05-30  
+**目标**: 加速首屏与路由切换时的关键资源获取，降低“首次交互前等待”  
+**状态**: ✅ 完成
+
+### Iter 139 — preload 关键脚本 ⭐⭐
+| 改动 | 说明 |
+|------|------|
+| Landing/Chat/Trips/Profile head 增加 `preload` | 预加载 `i18n.js` 与对应页面脚本（landing/chat/trips/profile）及 `pwa.js` |
