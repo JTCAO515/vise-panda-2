@@ -663,3 +663,22 @@ python -m py_compile api/index.py ✅
 | `/sw.js`、`/static/manifest.json` 禁用缓存 | 确保 SW/manifest 更新及时生效 |
 | `/static/img/*` 长缓存（immutable） | 图片资源稳定、减少重复下载 |
 | `/static/*.js/.css` 中等缓存（1 天） | 提升二次打开速度，配合 SW 版本滚动更新 |
+
+---
+
+## Iteration 138 — Service Worker 缓存升级（更稳更快）
+
+**日期**: 2026-05-30  
+**目标**: 提升重复访问速度，并在弱网/抖动场景下让页面更稳定可用  
+**状态**: ✅ 完成
+
+### Iter 138 — Precache 扩展 ⭐⭐
+| 改动 | 说明 |
+|------|------|
+| Precache 增加 trips/profile/manifest 与核心品牌图片 | 让关键资源更容易命中缓存 |
+| 缓存版本滚动 `vp-v4` → `vp-v6` | 避免旧缓存导致资源不一致 |
+
+### Iter 138 — 导航请求策略 ⭐⭐⭐
+| 改动 | 说明 |
+|------|------|
+| `navigate` 采用 network-first + 3s 超时回退缓存 | 弱网时避免白屏，优先展示可用页面 |
