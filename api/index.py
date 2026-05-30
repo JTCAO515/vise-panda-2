@@ -2068,27 +2068,49 @@ async def chat_endpoint(payload: ChatIn, request: Request):
 
         # Save assistant message + track preferences
         if full_text:
-            # Simple preference extraction from user messages
-            user_prefs = db2.query(UserPreference).filter(UserPreference.user_id == user_id).one_or_none()
-            if not user_prefs:
-                user_prefs = UserPreference(user_id=user_id, preferences={})
-                db2.add(user_prefs)
-            # Extract budget/style from context
-            pref = user_prefs.preferences or {}
-            for msg in context_msgs[-3:]:
-                if msg["role"] == "user":
-                    txt = msg["content"]
-                    if "穷游" in txt or "省钱" in txt or "经济" in txt: pref["budget"] = "budget"
-                    elif "豪华" in txt or "五星" in txt: pref["budget"] = "luxury"
-                    else: pref["budget"] = "mid"
-                    if "美食" in txt: pref["style"] = "food"
-                    elif "历史" in txt: pref["style"] = "history"
-                    elif "自然" in txt: pref["style"] = "nature"
-            user_prefs.preferences = pref
-            db2.commit()
+            # NOTE: This runs after the stream finishes. Any exception here would
+            # abort SSE and leave the frontend stuck in "loading", so we guard it.
             db2 = get_db()
             try:
-                db2.add(ChatMessage(user_id=user_id, trip_id=payload.trip_id, role="assistant", content=full_text))
+                # Simple preference extraction from recent user messages
+                user_prefs = (
+                    db2.query(UserPreference)
+                    .filter(UserPreference.user_id == user_id)
+                    .one_or_none()
+                )
+                if not user_prefs:
+                    user_prefs = UserPreference(user_id=user_id, preferences={})
+                    db2.add(user_prefs)
+
+                pref = user_prefs.preferences or {}
+                for msg in context_msgs[-3:]:
+                    if msg["role"] == "user":
+                        txt = msg["content"]
+                        if "穷游" in txt or "省钱" in txt or "经济" in txt:
+                            pref["budget"] = "budget"
+                        elif "豪华" in txt or "五星" in txt:
+                            pref["budget"] = "luxury"
+                        else:
+                            pref["budget"] = "mid"
+
+                        if "美食" in txt:
+                            pref["style"] = "food"
+                        elif "历史" in txt:
+                            pref["style"] = "history"
+                        elif "自然" in txt:
+                            pref["style"] = "nature"
+
+                user_prefs.preferences = pref
+
+                # Persist assistant message
+                db2.add(
+                    ChatMessage(
+                        user_id=user_id,
+                        trip_id=payload.trip_id,
+                        role="assistant",
+                        content=full_text,
+                    )
+                )
                 db2.commit()
 
                 # Auto-detect structured itinerary and save to trip
@@ -2098,7 +2120,12 @@ async def chat_endpoint(payload: ChatIn, request: Request):
                     if parsed:
                         trip2.current_itinerary = parsed
                         db2.commit()
-                        yield f"data: {json.dumps({'trip_update': True, 'cities': parsed.get('cities', []), 'days': len(parsed.get('days', []))})}\n\n"
+                        yield (
+                            f"data: {json.dumps({'trip_update': True, 'cities': parsed.get('cities', []), 'days': len(parsed.get('days', []))})}\n\n"
+                        )
+            except Exception as e:
+                # Best effort: surface error to client but do not break the stream silently
+                yield f"data: {json.dumps({'error': f'post_process_failed: {str(e)[:200]}'})}\n\n"
             finally:
                 db2.close()
 

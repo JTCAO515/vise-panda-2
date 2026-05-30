@@ -402,3 +402,21 @@ supabase-js: ✅ 0 script tags (dynamic import only)
 | `input{font-size:16px}` | 防iOS自动缩放（<16px会放大） |
 | `@media(max-width:480px)` header隐藏品牌名 | 小屏省空间 |
 | `.chip/.welcome-chip` tap target增大 | 更容易触碰 |
+
+---
+
+## Iteration 125 — 聊天/SSE 稳定性修复
+
+**日期**: 2026-05-30  
+**目标**: 修复“页面无法对话/一直加载”的潜在后端异常，保证 SSE 流不会被后处理阶段打断  
+**状态**: ✅ 完成
+
+### Iter 125 — Bug 修复（SSE 后处理） ⭐⭐
+| 问题 | 根因 | 修复 |
+|------|------|------|
+| SSE 流结束后可能异常中断，前端表现为一直 loading/无回复 | `generate()` 后处理阶段使用了未定义变量 `db2`（UnboundLocalError），异常会直接终止 SSE | 重排 DB 操作：先 `db2 = get_db()` 再使用；并用 `try/except` 保护后处理，失败时向前端返回 `post_process_failed` 错误事件而不是静默断流 |
+
+### 测试
+```
+python -m py_compile api/index.py ✅
+```
