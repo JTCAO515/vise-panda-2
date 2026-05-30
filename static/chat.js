@@ -94,6 +94,7 @@ async function send(text) {
         '<div class="skel-block"><div class="skel-line skel-w-70"></div><div class="skel-line skel-w-50"></div><div class="skel-line skel-w-60"></div></div>' +
         '<div class="skel-block" style="margin-top:12px"><div class="skel-line skel-w-40"></div><div class="skel-line skel-w-80"></div><div class="skel-line skel-w-30"></div></div>'
     );
+    const bubble = b.querySelector('.bubble') || b;
 
     var getT = function(k) { return (typeof t === 'function') ? t(k) : {
         connFailed: 'Connection failed. Check your network.',
@@ -179,7 +180,7 @@ async function send(text) {
                 try {
                     const j = JSON.parse(d);
                     if (j.error) {
-                        b.innerHTML = '<span style=color:#fca5a5>' + H(j.error) + '</span>';
+                        bubble.innerHTML = '<span style=color:#fca5a5>' + H(j.error) + '</span>';
                         sbb.disabled = false;
                         sbb.textContent = 'Send';
                         smartScroll();
@@ -213,11 +214,21 @@ async function send(text) {
                             })();
                         }
                     }
-                    b.innerHTML = M(f);
+                    // Don't wipe the skeleton if we still have no text.
+                    if (f && f.trim()) bubble.innerHTML = M(f);
                 } catch (_) {}
             }
             buf = buf.includes('\n') ? buf.split('\n').pop() : buf;
             smartScroll();
+        }
+
+        // Stream ended but we got no content — show a helpful message instead of an empty bubble.
+        if (!f || !f.trim()) {
+            bubble.innerHTML =
+                '<span style=color:#fca5a5>No response from the model.</span><br>' +
+                '<small style=color:rgba(255,255,255,.55)>' +
+                'Please verify <code>LLM_API_KEY</code> and model settings on Vercel, then try again.' +
+                '</small>';
         }
 
         const sm = f.split('---SUGGESTIONS---');

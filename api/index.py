@@ -553,7 +553,18 @@ async def stream_llm(messages: list[dict]) -> AsyncGenerator[str, None]:
                         return
                     try:
                         obj = json.loads(data)
-                        token = obj["choices"][0]["delta"].get("content", "")
+                        # DeepSeek/OpenAI-compatible streaming may use:
+                        # - choices[0].delta.content
+                        # - choices[0].delta.reasoning_content (DeepSeek reasoning tokens)
+                        # - choices[0].text (legacy)
+                        choice0 = (obj.get("choices") or [{}])[0] or {}
+                        delta = choice0.get("delta") or {}
+                        token = (
+                            delta.get("content")
+                            or delta.get("reasoning_content")
+                            or choice0.get("text")
+                            or ""
+                        )
                         if token:
                             yield f"data: {json.dumps({'token': token})}\n\n"
                     except (KeyError, json.JSONDecodeError):

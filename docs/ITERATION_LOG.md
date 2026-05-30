@@ -456,3 +456,31 @@ python -m py_compile api/index.py ✅
 ```
 python -m py_compile api/index.py ✅
 ```
+
+---
+
+## Iteration 127 — Chat reply rendering + DeepSeek stream compatibility
+
+**日期**: 2026-05-30  
+**目标**: 修复“发送后无回答/空白”的问题，确保 DeepSeek 流式返回可被后端解析、前端渲染可见  
+**状态**: ✅ 完成
+
+### Iter 127 — 后端：DeepSeek 流式字段兼容 ⭐⭐
+| 改动 | 说明 |
+|------|------|
+| stream parser 支持 `delta.reasoning_content` 与 legacy `text` | 部分 DeepSeek 流式包不会走 `delta.content`，导致前端永远收不到 token |
+
+### Iter 127 — 前端：避免把 bot 消息容器清空 ⭐⭐⭐
+| 问题 | 根因 | 修复 |
+|------|------|------|
+| bot 回复不显示（甚至 skeleton 也消失） | 前端收到非 token 的 SSE 包时会把整个 bot DOM `innerHTML` 覆盖为 `''` | 改为只更新 `.bubble` 内容；若尚未收到 token，不覆盖 skeleton；若 stream 结束仍无 token，显示明确错误提示 |
+
+### Iter 127 — PWA 缓存：强制客户端拿到新脚本 ⭐⭐
+| 改动 | 说明 |
+|------|------|
+| SW cache name `vp-v2` → `vp-v3` | 避免旧版 chat.js 被 SW 长期缓存导致修复无法生效 |
+
+### 测试
+```
+python -m py_compile api/index.py ✅
+```

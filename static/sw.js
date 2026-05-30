@@ -1,5 +1,5 @@
 // VisePanda Service Worker v2 — install-time + runtime cache
-const CACHE = 'vp-v2';
+const CACHE = 'vp-v3';
 const RUNTIME = 'vp-runtime';
 
 const PRECACHE = [
