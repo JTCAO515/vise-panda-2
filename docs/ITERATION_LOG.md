@@ -484,3 +484,27 @@ python -m py_compile api/index.py ✅
 ```
 python -m py_compile api/index.py ✅
 ```
+
+---
+
+## Iteration 128 — Better error surfacing + non-SSE stream compatibility
+
+**日期**: 2026-05-30  
+**目标**: 解决“已配置但依然无输出/仅提示 No response”的盲区，让真实错误在页面可见，并兼容非 SSE 的流式/单包 JSON 返回  
+**状态**: ✅ 完成
+
+### Iter 128 — 后端：兼容非 SSE / 单包 JSON ⭐⭐
+| 改动 | 说明 |
+|------|------|
+| stream parser 允许解析“无 data: 前缀”的 JSON 行 | 有些供应商不会用标准 SSE 前缀 |
+| 支持 `choices[0].message.content` | 当供应商忽略 `stream=true` 并一次性返回 JSON 时仍能取到内容 |
+
+### Iter 128 — 前端：HTTP 错误直接显示 ⭐⭐⭐
+| 改动 | 说明 |
+|------|------|
+| `fetch('/api/chat')` 若 `!r.ok`，直接在气泡里显示 HTTP 状态码与部分响应内容 | 避免 401/500 被误判为“模型无响应” |
+
+### Iter 128 — PWA 缓存刷新 ⭐
+| 改动 | 说明 |
+|------|------|
+| SW cache name `vp-v4` | 确保线上立即拿到最新 chat.js |

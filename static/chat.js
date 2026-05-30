@@ -153,6 +153,19 @@ async function send(text) {
             }
         }
 
+        if (!r || !r.ok) {
+            let detail = '';
+            try { detail = (await r.text()).slice(0, 500); } catch (_) {}
+            bubble.innerHTML =
+                '<span style=color:#fca5a5>Request failed.</span><br>' +
+                '<small style=color:rgba(255,255,255,.55)>' +
+                'HTTP ' + (r ? r.status : '0') + (detail ? (': ' + H(detail)) : '') +
+                '</small>';
+            sbb.disabled = false;
+            sbb.textContent = getT('sendBtn');
+            return;
+        }
+
         const rd = r.body.getReader();
         const dc = new TextDecoder();
         let buf = '';

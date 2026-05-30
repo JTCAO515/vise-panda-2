@@ -545,9 +545,12 @@ async def stream_llm(messages: list[dict]) -> AsyncGenerator[str, None]:
                     return
 
                 async for line in resp.aiter_lines():
-                    if not line or not line.startswith("data: "):
+                    if not line:
                         continue
-                    data = line[6:]
+                    # Some providers stream as SSE ("data: {...}") while others stream raw JSON lines.
+                    data = line[6:] if line.startswith("data: ") else line.strip()
+                    if not data:
+                        continue
                     if data == "[DONE]":
                         yield "data: [DONE]\n\n"
                         return
@@ -556,12 +559,14 @@ async def stream_llm(messages: list[dict]) -> AsyncGenerator[str, None]:
                         # DeepSeek/OpenAI-compatible streaming may use:
                         # - choices[0].delta.content
                         # - choices[0].delta.reasoning_content (DeepSeek reasoning tokens)
+                        # - choices[0].message.content (non-stream JSON response in one chunk)
                         # - choices[0].text (legacy)
                         choice0 = (obj.get("choices") or [{}])[0] or {}
                         delta = choice0.get("delta") or {}
                         token = (
                             delta.get("content")
                             or delta.get("reasoning_content")
+                            or (choice0.get("message") or {}).get("content")
                             or choice0.get("text")
                             or ""
                         )
