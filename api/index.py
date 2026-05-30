@@ -414,6 +414,7 @@ class JournalEntry(Base):
 # ══════════════════════════════════════════════════════════
 
 _ENGINE = None
+_STARTUP_WARNINGS: list[str] = []
 
 def _ensure_sqlalchemy():
     """Initialize SQLAlchemy engine/session if configured."""
@@ -446,6 +447,23 @@ def _ensure_sqlalchemy():
 
     # Otherwise, keep Supabase Management API mode (no SQLAlchemy session)
     _DB_KIND = "supabase_mgmt"
+
+
+def _startup_check() -> list[str]:
+    warnings: list[str] = []
+
+    if LLM_ENABLED and not LLM_API_KEY:
+        warnings.append("LLM_ENABLED=1 but LLM_API_KEY is missing")
+    if not LLM_BASE_URL:
+        warnings.append("LLM_BASE_URL is empty")
+    if LLM_BASE_URL and not LLM_BASE_URL.startswith("http"):
+        warnings.append("LLM_BASE_URL should start with http(s)")
+
+    # Supabase is optional in fallback mode, but warn if partially configured.
+    if (SUPABASE_URL and not SUPABASE_ANON_KEY) or (SUPABASE_ANON_KEY and not SUPABASE_URL):
+        warnings.append("SUPABASE_URL / SUPABASE_ANON_KEY should be set together")
+
+    return warnings
 
 # ══════════════════════════════════════════════════════════
 # AUTH
@@ -1279,6 +1297,11 @@ def page_profile(user_id: str) -> str:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Ensure DB is usable even without Supabase credentials.
+    global _STARTUP_WARNINGS
+    _STARTUP_WARNINGS = _startup_check()
+    for w in _STARTUP_WARNINGS:
+        print(f"[BOOT] warning: {w}", flush=True)
+
     _ensure_sqlalchemy()
     if _ENGINE is not None:
         try:
@@ -1356,6 +1379,7 @@ def health():
         "ok": True,
         "version": "0.1.0",
         "db": db,
+        "warnings": _STARTUP_WARNINGS,
         "llm": {
             "enabled": bool(LLM_ENABLED),
             "api_key_present": bool(LLM_API_KEY),

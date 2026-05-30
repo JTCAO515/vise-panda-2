@@ -597,3 +597,22 @@ python -m py_compile api/index.py ✅
 | 改动 | 说明 |
 |------|------|
 | 新增 `BRAND.md` | 记录 Logo/Favicon/OG/PWA 资产与使用建议 |
+
+---
+
+## Iteration 134 — 生产化（README + 启动自检 + CI）
+
+**日期**: 2026-05-30  
+**目标**: 提升部署可维护性与可排障性，让每次提交都有最基本的自动校验  
+**状态**: ✅ 完成
+
+### Iter 134 — 文档与自检 ⭐⭐
+| 改动 | 说明 |
+|------|------|
+| 新增 `README.md` | 本地启动、Vercel 环境变量、诊断与排障说明 |
+| 启动自检 warnings + `/api/health` 暴露 | LLM key 缺失、配置不完整会在 health 里体现 |
+
+### Iter 134 — GitHub Actions CI ⭐⭐
+| 改动 | 说明 |
+|------|------|
+| 新增 `.github/workflows/ci.yml` | push/PR 自动执行 `py_compile` 基础语法检查 |
