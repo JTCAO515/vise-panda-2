@@ -5,11 +5,13 @@ const RUNTIME = 'vp-runtime';
 const PRECACHE = [
   '/',
   '/chat',
+  '/sw.js',
   '/static/landing.js',
   '/static/chat.js',
   '/static/trips.js',
   '/static/auth.js',
   '/static/i18n.js',
+  '/static/pwa.js',
 ];
 
 // Install: warm cache with critical static assets (don't fail on missing)

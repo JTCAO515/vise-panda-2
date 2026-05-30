@@ -1,4 +1,4 @@
-"""VisePanda LLM Prompt Engine — System Prompt + 主动提问 + 知识注入"""
+"""VisePanda LLM Prompt Engine — System Prompt + proactive questions + knowledge injection"""
 import json
 from data.knowledge.cities import CITIES
 from data.knowledge.food import FOOD
@@ -11,18 +11,70 @@ from data.knowledge.transport import get_transport_summary
 
 # ── 知识摘要（放 system prompt 里太大，压缩为精简版） ──
 def _city_overview():
-    """返回城市名列表+关键词"""
+    """Return compact city overview lines for prompts."""
     lines = []
     for key, city in CITIES.items():
-        lines.append(f"- {city['name_zh']}({city['name_en']}): {city['vibe']} | {city['days_min']}-{city['days_max']}天 | 最佳{', '.join(city['keywords'][:4])}")
+        lines.append(
+            f"- {city['name_en']} ({city['name_zh']}): {city['vibe']} | "
+            f"{city['days_min']}-{city['days_max']} days | best for {', '.join(city['keywords'][:4])}"
+        )
     return '\n'.join(lines)
 
 def _food_cities():
-    """返回有美食数据的城市"""
+    """Return city names that have food data."""
     return ', '.join(sorted(FOOD.keys()))
 
-# ── System Prompt ──
-SYSTEM_PROMPT = f"""你是 VisePanda (熊猫行)，一个专业的 AI 中国旅行规划助手。
+# ── System Prompts ──
+
+EN_SYSTEM_PROMPT = f"""You are **VisePanda**, an expert AI travel planner for trips in **China**.
+
+## Output language
+- **Always respond in English** (UI language = English).
+- Only respond in Chinese when the user switches the site language to Chinese.
+
+## Core behavior
+1) Ask *only* 1–2 critical follow-up questions if information is missing (destination / days / budget / interests / travel party / season).
+2) If info is sufficient, provide a practical plan immediately.
+
+## Output format
+Split your answer into two sections:
+1) Main answer (the plan / advice)
+2) Optional suggestions separated by `---SUGGESTIONS---` as 3–4 bullet items, like:
+- Ask about food
+- Optimize pace
+- Budget breakdown
+
+## Knowledge you can use (China travel)
+**City overview (compact):**
+{_city_overview()}
+
+**Food data cities:** {_food_cities()}
+
+**Transport summary (high-speed rail + flights):**
+{get_transport_summary()}
+
+**Useful phrases (CN + pinyin + EN):**
+{phrases_prompt()}
+
+**Smart packing guide:**
+{packing_prompt()}
+
+**Hotel price references:**
+{hotels_prompt()}
+
+**Emergency numbers & embassy summary:**
+{format_emergency_phone_numbers()}
+
+{format_embassy_summary()}
+
+## Style & constraints
+- Be specific: landmarks (Chinese + English names), realistic timing, and budget ranges.
+- Do **not** fabricate uncertain facts; label uncertain parts as “please double-check”.
+- Be considerate of pace; suggest rest breaks for families / seniors.
+- Only answer China-travel-related questions.
+"""
+
+ZH_SYSTEM_PROMPT = f"""你是 VisePanda（熊猫行），一个专业的 AI 中国旅行规划助手。
 
 ## 核心行为
 
@@ -127,32 +179,50 @@ SYSTEM_PROMPT = f"""你是 VisePanda (熊猫行)，一个专业的 AI 中国旅�
 - 不确定的信息标注"建议自行确认"
 - 尊重用户的所有偏好设定"""
 
-def get_system_prompt(user_context: dict = None) -> str:
-    """返回 system prompt，可附加用户上下文"""
+def get_system_prompt(user_context: dict | None = None, lang: str = "en") -> str:
+    """Return a system prompt (optionally with user context)."""
+    base = ZH_SYSTEM_PROMPT if (lang or "").lower().startswith("zh") else EN_SYSTEM_PROMPT
     if not user_context:
-        return SYSTEM_PROMPT
+        return base
 
     context_parts = []
     if user_context.get("preferences"):
-        context_parts.append(f"用户已知偏好：{json.dumps(user_context['preferences'], ensure_ascii=False)}")
+        context_parts.append(
+            ("用户已知偏好：" if (lang or "").lower().startswith("zh") else "Known preferences: ")
+            + json.dumps(user_context["preferences"], ensure_ascii=False)
+        )
     if user_context.get("current_trip"):
-        context_parts.append(f"当前行程：{json.dumps(user_context['current_trip'], ensure_ascii=False)}")
+        context_parts.append(
+            ("当前行程：" if (lang or "").lower().startswith("zh") else "Current trip: ")
+            + json.dumps(user_context["current_trip"], ensure_ascii=False)
+        )
 
     if context_parts:
-        return SYSTEM_PROMPT + "\n\n## 用户上下文\n" + "\n".join(context_parts)
-    return SYSTEM_PROMPT
+        header = "## 用户上下文\n" if (lang or "").lower().startswith("zh") else "## User context\n"
+        return base + "\n\n" + header + "\n".join(context_parts)
+    return base
 
-def get_proactive_questions(missing_info: list) -> list:
-    """根据缺失信息生成主动提问"""
-    q_map = {
-        "destination": ["想去哪个城市？北京、上海、成都、西安还是其他地方？", "你有想去的城市吗？"],
-        "days": ["计划玩几天？", "大概有多少天的时间？"],
-        "budget": ["预算大概是多少？穷游（每天¥300以下）、中等（¥500-1000）、还是豪华（¥1500+）？"],
-        "style": ["你喜欢什么类型的旅行？美食/历史/自然风光/都市购物/还是混合？"],
-        "people": ["自己一个人还是和家人/朋友一起？"],
-        "season": ["打算什么时候去？不同季节体验差别很大"],
+def get_proactive_questions(missing_info: list, lang: str = "en") -> list:
+    """Generate proactive questions based on missing info."""
+    is_zh = (lang or "").lower().startswith("zh")
+    q_map_en = {
+        "destination": ["Which city/region in China are you visiting?", "Do you already have a destination in mind?"],
+        "days": ["How many days do you have for this trip?"],
+        "budget": ["What budget level do you prefer: budget / mid-range / luxury?"],
+        "style": ["What style do you like: food, history, nature, shopping, or mixed?"],
+        "people": ["Who are you traveling with: solo, couple, family, friends?"],
+        "season": ["When are you going? Season matters a lot in China."],
     }
-    return q_map.get(missing_info[0], ["还有什么我可以帮你规划的？"]) if missing_info else []
+    q_map_zh = {
+        "destination": ["想去哪个城市/地区？", "你有想去的城市吗？"],
+        "days": ["计划玩几天？"],
+        "budget": ["预算偏好：穷游/中等/豪华？"],
+        "style": ["更喜欢哪种旅行：美食/历史/自然/购物/混合？"],
+        "people": ["自己一个人还是和家人/朋友一起？"],
+        "season": ["打算什么时候去？季节会影响体验。"],
+    }
+    q_map = q_map_zh if is_zh else q_map_en
+    return q_map.get(missing_info[0], (["还有什么我可以帮你规划的？"] if is_zh else ["What can I help you plan next?"])) if missing_info else []
 
 
 def validate_itinerary(itinerary: dict) -> list[str]:
@@ -160,7 +230,7 @@ def validate_itinerary(itinerary: dict) -> list[str]:
     warnings = []
     days = itinerary.get("itinerary", itinerary.get("days", []))
     if not days:
-        warnings.append("行程中没有日程信息")
+        warnings.append("No day-by-day items found in the itinerary.")
         return warnings
 
     city_name = itinerary.get("city", "")
@@ -172,9 +242,9 @@ def validate_itinerary(itinerary: dict) -> list[str]:
         # Count activities for pacing
         act_count = len(activities)
         if act_count > 8:
-            warnings.append(f"Day {day_num}: 安排了 {act_count} 项活动，可能太紧凑")
+            warnings.append(f"Day {day_num}: {act_count} activities planned — may be too packed.")
         elif act_count == 0:
-            warnings.append(f"Day {day_num}: 没有安排任何活动")
+            warnings.append(f"Day {day_num}: no activities found.")
 
         # Check for unrealistic meal times
         for act in activities:
@@ -182,12 +252,12 @@ def validate_itinerary(itinerary: dict) -> list[str]:
             name = act.get("name", "")
             if "吃" in time_str or "餐" in time_str or "饭" in time_str:
                 if any(h in time_str for h in ["22:", "23:", "00:", "01:", "02:"]):
-                    warnings.append(f"Day {day_num}: '{name}' 安排在深夜 {time_str}，可能不合理")
+                    warnings.append(f"Day {day_num}: '{name}' scheduled very late at {time_str}.")
             if "起" in time_str or "出发" in time_str:
                 try:
                     hour = int(time_str.split(":")[0])
                     if hour < 5:
-                        warnings.append(f"Day {day_num}: '{name}' 出发时间 {time_str} 过早")
+                        warnings.append(f"Day {day_num}: '{name}' departure time {time_str} may be too early.")
                 except (ValueError, IndexError):
                     pass
 
@@ -199,6 +269,6 @@ def validate_itinerary(itinerary: dict) -> list[str]:
         all_text = " ".join(act.get("name", "") + act.get("time", "") for act in activities)
         has_food_mention = any(k in all_text for k in food_keywords)
         if not has_food_mention and activities:
-            warnings.append(f"Day {day_num}: 未提及餐饮安排")
+            warnings.append(f"Day {day_num}: no meal/food breaks mentioned.")
 
     return warnings

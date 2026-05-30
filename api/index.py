@@ -22,11 +22,11 @@ from typing import AsyncGenerator
 import httpx
 import urllib.parse
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import HTMLResponse, JSONResponse, Response, StreamingResponse
+from fastapi.responses import HTMLResponse, JSONResponse, Response, StreamingResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-from sqlalchemy import JSON, Column, DateTime, ForeignKey, String, Text
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy import JSON, Column, DateTime, ForeignKey, String, Text, create_engine
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, sessionmaker
 from jose import jwt
 
 # ══════════════════════════════════════════════════════════
@@ -35,9 +35,11 @@ from jose import jwt
 
 SUPABASE_URL = os.getenv("SUPABASE_URL", "").rstrip("/")
 SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY", "")
-LLM_BASE_URL = os.getenv("LLM_BASE_URL", "https://open.bigmodel.cn/api/paas/v4")
+# LLM (OpenAI-compatible). Default: DeepSeek
+LLM_BASE_URL = os.getenv("LLM_BASE_URL", "https://api.deepseek.com/v1").rstrip("/")
 LLM_API_KEY = os.getenv("LLM_API_KEY", "")
-LLM_MODEL = os.getenv("LLM_MODEL", "glm-5.1")
+# User-requested default model
+LLM_MODEL = os.getenv("LLM_MODEL", "deepseek-v4-flash")
 LLM_ENABLED = os.getenv("LLM_ENABLED", "1") == "1"
 AUTH_TEST_BYPASS = os.getenv("AUTH_TEST_BYPASS", "0").lower() in ("1", "true", "yes")
 IS_DEV = os.getenv("IS_DEV", "0") == "1"
@@ -52,6 +54,16 @@ SUPABASE_PAT = os.getenv("SUPABASE_PAT", "")
 SUPABASE_PROJECT_REF = "jdlinmdhmulozrjeseyc"
 _SB_HEADERS = {"Authorization": f"Bearer {SUPABASE_PAT}", "Content-Type": "application/json"}
 _SB_QUERY_URL = f"https://api.supabase.com/v1/projects/{SUPABASE_PROJECT_REF}/database/query"
+
+# ── Database fallback (SQLAlchemy) ──
+# Priority:
+# 1) If DATABASE_URL is set -> SQLAlchemy engine (Postgres / SQLite / etc.)
+# 2) Else if SUPABASE_PAT is set -> Supabase Management API (existing behavior)
+# 3) Else -> SQLite at /tmp (works on Vercel serverless)
+DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
+SQLITE_PATH = os.getenv("SQLITE_PATH", "/tmp/visepanda.sqlite3").strip()
+_SESSION_FACTORY = None  # type: ignore[assignment]
+_DB_KIND = "supabase_mgmt" if SUPABASE_PAT and not DATABASE_URL else ("sqlalchemy" if DATABASE_URL else "sqlite")
 
 class SupabaseDB:
     """Drop-in replacement for SQLAlchemy session using Supabase Management API."""
@@ -241,6 +253,10 @@ def _row_to_model(model, row: dict):
     return _Row(row)
 
 def get_db():
+    # If SQLAlchemy session factory is available, prefer it.
+    _ensure_sqlalchemy()
+    if _SESSION_FACTORY is not None:
+        return _SESSION_FACTORY()
     return SupabaseDB()
 
 # ══════════════════════════════════════════════════════════
@@ -394,6 +410,44 @@ class JournalEntry(Base):
     created_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
 # ══════════════════════════════════════════════════════════
+# DB INIT (SQLAlchemy fallback)
+# ══════════════════════════════════════════════════════════
+
+_ENGINE = None
+
+def _ensure_sqlalchemy():
+    """Initialize SQLAlchemy engine/session if configured."""
+    global _ENGINE, _SESSION_FACTORY, _DB_KIND
+
+    if _SESSION_FACTORY is not None:
+        return
+
+    # If DATABASE_URL is set, always use SQLAlchemy
+    if DATABASE_URL:
+        _DB_KIND = "sqlalchemy"
+        _ENGINE = create_engine(DATABASE_URL, pool_pre_ping=True, future=True)
+        _SESSION_FACTORY = sessionmaker(
+            bind=_ENGINE, autoflush=False, autocommit=False, expire_on_commit=False
+        )
+        return
+
+    # If no Supabase PAT, use local SQLite (works on Vercel via /tmp)
+    if not SUPABASE_PAT:
+        _DB_KIND = "sqlite"
+        _ENGINE = create_engine(
+            f"sqlite:///{SQLITE_PATH}",
+            connect_args={"check_same_thread": False},
+            future=True,
+        )
+        _SESSION_FACTORY = sessionmaker(
+            bind=_ENGINE, autoflush=False, autocommit=False, expire_on_commit=False
+        )
+        return
+
+    # Otherwise, keep Supabase Management API mode (no SQLAlchemy session)
+    _DB_KIND = "supabase_mgmt"
+
+# ══════════════════════════════════════════════════════════
 # AUTH
 # ══════════════════════════════════════════════════════════
 
@@ -457,7 +511,7 @@ def _get_user_id(request: Request, guest_id: str | None) -> tuple[str, str]:
 # LLM
 # ══════════════════════════════════════════════════════════
 
-from api.prompt import SYSTEM_PROMPT, get_system_prompt, get_proactive_questions
+from api.prompt import get_system_prompt, get_proactive_questions
 from data.tools.packing import get_packing_list
 from data.tools.travel_tools import recommend_destination, generate_caption
 from data.tools.pricing import estimate_trip_cost, get_weather_advice
@@ -465,7 +519,7 @@ from data.tools.visa_guide import VISA_INFO
 
 async def stream_llm(messages: list[dict]) -> AsyncGenerator[str, None]:
     if not LLM_ENABLED or not LLM_API_KEY:
-        yield f"data: {json.dumps({'error': 'LLM not configured'})}\n\n"
+        yield f"data: {json.dumps({'error': 'LLM not configured. Please set LLM_API_KEY.'})}\n\n"
         yield "data: [DONE]\n\n"
         return
 
@@ -687,8 +741,6 @@ window.__SUPABASE_CONFIG__ = {{
   supabase_url: "{SUPABASE_URL}",
   supabase_anon_key: "{SUPABASE_ANON_KEY}"
 }};
-// Auto-detect locale via IP (only if no preference stored)
-!function(){{if(!localStorage.getItem('vp_lang')){{fetch('/api/locale').then(function(r){{return r.json()}}).then(function(d){{if(d.locale==='zh'){{localStorage.setItem('vp_lang','zh');location.reload()}}}}).catch(function(){{}})}}}}();
 </script>"""
 
 def page_landing() -> str:
@@ -702,7 +754,7 @@ def page_landing() -> str:
 <meta name="apple-mobile-web-app-title" content="VisePanda">
 <link rel="icon" type="image/jpeg" href="/static/img/logo-icon.jpg"><link rel="apple-touch-icon" href="/static/img/logo-icon.jpg"><title data-i18n="title">VisePanda — AI China Travel Planner</title><meta name="description" data-i18n-content="metaDesc" content="Your AI-powered guide to traveling China. Get personalized day-by-day itineraries, food recommendations, hotel tips, and local insights — just tell us where and how long."><meta property="og:title" content="VisePanda — AI China Travel Planner"><meta property="og:description" content="Personalized China travel itineraries powered by AI — built by travelers, for travelers."><meta property="og:type" content="website"><meta property="og:image" content="https://go2china.space/static/img/og-image.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><style>{CSS}</style><script defer src='/_vercel/insights/script.js'></script><script defer src='/_vercel/speed-insights/script.js'></script>{_inject_config()}</head><body>
 <div class="bg-shanshui"></div>
-<header><div><a href="/" class="logo-seal"><span class="seal">熊</span><span class="name">VisePanda</span></a></div><div id="authArea"><a href="#" class="lang-switch" onclick="event.preventDefault();setLang(LANG==='en'?'zh':'en')" data-i18n="langLabel">中</a><a href="#" onclick="event.preventDefault();signIn()" class="btn btn-accent" style="color:var(--gold-bright)" data-i18n="signIn">Sign in</a><a href="#" onclick="event.preventDefault();toggleTheme()" class="lang-switch" id="themeToggle" title="Toggle theme">🌓</a></div></header>
+<header><div><a href="/" class="logo-seal"><span class="seal">🐼</span><span class="name">VisePanda</span></a></div><div id="authArea"><a href="#" class="lang-switch" onclick="event.preventDefault();setLang(LANG==='en'?'zh':'en')" data-i18n="langLabel">ZH</a><a href="#" onclick="event.preventDefault();signIn()" class="btn btn-accent" style="color:var(--gold-bright)" data-i18n="signIn">Sign in</a><a href="#" onclick="event.preventDefault();toggleTheme()" class="lang-switch" id="themeToggle" title="Toggle theme">🌓</a></div></header>
 <main style="position:relative;min-height:calc(100vh-56px);display:flex;align-items:center;justify-content:center;padding:24px 16px 90px;z-index:1">
 <div style="width:min(680px,96%);text-align:center">
 <h1 style="font-size:36px;margin:0 0 6px;letter-spacing:-.02em;font-weight:700" data-i18n="heroTitle">🐼 Your personal guide to China</h1>
@@ -743,49 +795,49 @@ def page_landing() -> str:
 <img src="/static/img/city-beijing.jpg" alt="Beijing" class="card-bg" loading="lazy" onerror="this.style.display='none';document.getElementById('fe_beijing').style.display='flex'">
 <div id="fe_beijing" class="card-emoji-fallback" style="display:none">🏯</div>
 </div>
-<div class="card-body"><div class="card-title">Beijing</div><div class="card-sub">故宫 · 长城 · 胡同</div></div>
+<div class="card-body"><div class="card-title">Beijing</div><div class="card-sub">Forbidden City · Great Wall · Hutongs</div></div>
 </a><a class="card anim-fade-up" data-cat="food" href="#" onclick="event.preventDefault();goChat('Chengdu')">
 <div class="card-img-wrap">
 <img src="/static/img/city-chengdu.jpg" alt="Chengdu" class="card-bg" loading="lazy" onerror="this.style.display='none';document.getElementById('fe_chengdu').style.display='flex'">
 <div id="fe_chengdu" class="card-emoji-fallback" style="display:none">🐼</div>
 </div>
-<div class="card-body"><div class="card-title">Chengdu</div><div class="card-sub">火锅 · 熊猫 · 宽窄巷子</div></div>
+<div class="card-body"><div class="card-title">Chengdu</div><div class="card-sub">Hotpot · Pandas · Kuanzhai Alley</div></div>
 </a><a class="card anim-fade-up" data-cat="city" href="#" onclick="event.preventDefault();goChat('Shanghai')">
 <div class="card-img-wrap">
 <img src="/static/img/city-shanghai.jpg" alt="Shanghai" class="card-bg" loading="lazy" onerror="this.style.display='none';document.getElementById('fe_shanghai').style.display='flex'">
 <div id="fe_shanghai" class="card-emoji-fallback" style="display:none">🌃</div>
 </div>
-<div class="card-body"><div class="card-title">Shanghai</div><div class="card-sub">外滩 · 迪士尼 · 法租界</div></div>
+<div class="card-body"><div class="card-title">Shanghai</div><div class="card-sub">The Bund · Disneyland · French Concession</div></div>
 </a><a class="card anim-fade-up" data-cat="history" href="#" onclick="event.preventDefault();goChat('Xi'an')">
 <div class="card-img-wrap">
 <img src="/static/img/city-xian.jpg" alt="Xi'an" class="card-bg" loading="lazy" onerror="this.style.display='none';document.getElementById('fe_xian').style.display='flex'">
 <div id="fe_xian" class="card-emoji-fallback" style="display:none">🏛️</div>
 </div>
-<div class="card-body"><div class="card-title">Xi'an</div><div class="card-sub">兵马俑 · 古城墙 · 回民街</div></div>
+<div class="card-body"><div class="card-title">Xi'an</div><div class="card-sub">Terracotta Army · City Wall · Muslim Quarter</div></div>
 </a><a class="card anim-fade-up" data-cat="nature" href="#" onclick="event.preventDefault();goChat('Guilin')">
 <div class="card-img-wrap">
 <img src="/static/img/city-guilin.jpg" alt="Guilin" class="card-bg" loading="lazy" onerror="this.style.display='none';document.getElementById('fe_guilin').style.display='flex'">
 <div id="fe_guilin" class="card-emoji-fallback" style="display:none">🛶</div>
 </div>
-<div class="card-body"><div class="card-title">Guilin</div><div class="card-sub">漓江 · 阳朔 · 象鼻山</div></div>
+<div class="card-body"><div class="card-title">Guilin</div><div class="card-sub">Li River · Yangshuo · Elephant Trunk Hill</div></div>
 </a><a class="card anim-fade-up" data-cat="city" href="#" onclick="event.preventDefault();goChat('Guangzhou')">
 <div class="card-img-wrap">
 <img src="/static/img/city-guangzhou.jpg" alt="Guangzhou" class="card-bg" loading="lazy" onerror="this.style.display='none';document.getElementById('fe_guangzhou').style.display='flex'">
 <div id="fe_guangzhou" class="card-emoji-fallback" style="display:none">🥟</div>
 </div>
-<div class="card-body"><div class="card-title">Guangzhou</div><div class="card-sub">早茶 · 小蛮腰 · 沙面</div></div>
+<div class="card-body"><div class="card-title">Guangzhou</div><div class="card-sub">Dim sum · Canton Tower · Shamian</div></div>
 </a><a class="card anim-fade-up" data-cat="city" href="#" onclick="event.preventDefault();goChat('Chongqing')">
 <div class="card-img-wrap">
 <img src="/static/img/city-chongqing.jpg" alt="Chongqing" class="card-bg" loading="lazy" onerror="this.style.display='none';document.getElementById('fe_chongqing').style.display='flex'">
 <div id="fe_chongqing" class="card-emoji-fallback" style="display:none">🌆</div>
 </div>
-<div class="card-body"><div class="card-title">Chongqing</div><div class="card-sub">洪崖洞 · 火锅 · 轻轨穿楼</div></div>
+<div class="card-body"><div class="card-title">Chongqing</div><div class="card-sub">Hongyadong · Hotpot · Liziba Monorail</div></div>
 </a><a class="card anim-fade-up" data-cat="nature" href="#" onclick="event.preventDefault();goChat('Hangzhou')">
 <div class="card-img-wrap">
 <img src="/static/img/city-hangzhou.jpg" alt="Hangzhou" class="card-bg" loading="lazy" onerror="this.style.display='none';document.getElementById('fe_hangzhou').style.display='flex'">
 <div id="fe_hangzhou" class="card-emoji-fallback" style="display:none">🍵</div>
 </div>
-<div class="card-body"><div class="card-title">Hangzhou</div><div class="card-sub">西湖 · 断桥 · 灵隐寺</div></div>
+<div class="card-body"><div class="card-title">Hangzhou</div><div class="card-sub">West Lake · Broken Bridge · Lingyin Temple</div></div>
 </a>
 
 </div>
@@ -892,7 +944,7 @@ def page_trips() -> str:
 @keyframes fadeInOut{{0%{{opacity:0;transform:translateX(-50%) translateY(8px)}}15%{{opacity:1;transform:translateX(-50%) translateY(0)}}85%{{opacity:1;transform:translateX(-50%) translateY(0)}}100%{{opacity:0;transform:translateX(-50%) translateY(-8px)}}}}
 </style><script defer src='/_vercel/insights/script.js'></script><script defer src='/_vercel/speed-insights/script.js'></script></head><body>
 <div class="bg-shanshui"></div>
-<header><div><a href="/" class="logo-seal"><span class="seal">熊</span><span class="name">VisePanda</span></a></div><div><a href="/" class="btn" data-i18n="homeBtn">Home</a><a href="#" class="lang-switch" onclick="event.preventDefault();setLang(LANG==='en'?'zh':'en')" data-i18n="langLabel">中</a><a href="#" onclick="event.preventDefault();toggleTheme()" class="lang-switch" id="themeToggle" title="Toggle theme">🌓</a></div></header>
+<header><div><a href="/" class="logo-seal"><span class="seal">🐼</span><span class="name">VisePanda</span></a></div><div><a href="/" class="btn" data-i18n="homeBtn">Home</a><a href="#" class="lang-switch" onclick="event.preventDefault();setLang(LANG==='en'?'zh':'en')" data-i18n="langLabel">ZH</a><a href="#" onclick="event.preventDefault();toggleTheme()" class="lang-switch" id="themeToggle" title="Toggle theme">🌓</a></div></header>
 <main style="position:relative;z-index:1;min-height:calc(100vh-56px);padding:20px 16px 80px">
 <h2 style="text-align:center;color:var(--text);font-size:22px;margin:20px 0" data-i18n="tripsHeading">My Trips</h2>
 <div id="tripsList" class="trips-grid"><div class="skeleton" style="height:100px"></div></div>
@@ -959,17 +1011,17 @@ def page_chat() -> str:
 .time{{font-size:10px;color:var(--muted);margin-top:4px}}
 </style><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"><script defer src='/_vercel/insights/script.js'></script><script defer src='/_vercel/speed-insights/script.js'></script>{_inject_config()}</head><body>
 <div class="bg-shanshui"></div>
-<header><div><a href="/" class="logo-seal"><span class="seal">熊</span><span class="name">VisePanda</span></a></div><div><a href="/trips" class="btn" style="margin-right:8px" data-i18n="tripsBtn">Trips</a><a href="#" onclick="event.preventDefault();clearChat()" class="btn" style="margin-right:8px" data-i18n="clearBtn">Clear</a><a href="/" class="btn" data-i18n="homeBtn">Home</a><a href="#" class="lang-switch" onclick="event.preventDefault();setLang(LANG==='en'?'zh':'en')" data-i18n="langLabel">中</a><a href="#" onclick="event.preventDefault();toggleTheme()" class="lang-switch" id="themeToggle" title="Toggle theme">🌓</a></div></header>
+<header><div><a href="/" class="logo-seal"><span class="seal">🐼</span><span class="name">VisePanda</span></a></div><div><a href="/trips" class="btn" style="margin-right:8px" data-i18n="tripsBtn">Trips</a><a href="#" onclick="event.preventDefault();clearChat()" class="btn" style="margin-right:8px" data-i18n="clearBtn">Clear</a><a href="/" class="btn" data-i18n="homeBtn">Home</a><a href="#" class="lang-switch" onclick="event.preventDefault();setLang(LANG==='en'?'zh':'en')" data-i18n="langLabel">ZH</a><a href="#" onclick="event.preventDefault();toggleTheme()" class="lang-switch" id="themeToggle" title="Toggle theme">🌓</a></div></header>
 <div class="layout"><button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">☰</button>
 <aside id="sidebar">
-  <h3>📋 行程概况</h3>
-  <div class="sidebar-info" id="tripInfo"><strong>目的地</strong><br><span id="tripCities">—</span></div>
-  <div class="sidebar-info"><strong>天数</strong><br><span id="tripDays">—</span></div>
-  <h3 style="margin-top:16px">💬 最近消息</h3>
+  <h3 data-i18n="tripOverview">Trip overview</h3>
+  <div class="sidebar-info" id="tripInfo"><strong data-i18n="destLabel">Destination</strong><br><span id="tripCities">—</span></div>
+  <div class="sidebar-info"><strong data-i18n="daysLabel">Days</strong><br><span id="tripDays">—</span></div>
+  <h3 style="margin-top:16px" data-i18n="recentMsgs">Recent messages</h3>
   <div id="sidebarMsgs"></div>
 </aside>
-<main style="flex:1;display:flex;flex-direction:column"><div id="thread"><div class="welcome" id="welcomeMsg"><h2 data-i18n="welcomeTitle">🐼 Explorer</h2><p style="color:var(--gold-bright);font-size:13px;letter-spacing:.12em;margin:0;font-weight:500" data-i18n="welcomeSub">✦ AI 中国旅行规划 · Tell me where ✦</p><p style="font-size:13px;color:var(--muted);margin:8px 0 0" data-i18n="welcomeSub2">Pick a destination or describe your dream trip</p><div class="welcome-chips"><span class="welcome-chip" onclick="document.getElementById('msgInput').value='北京3天深度游,历史文化';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🏯 北京 3天</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='成都4天美食之旅';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🐼 成都 4天</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='云南7天自然风光';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🏔️ 云南 7天</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='上海3天摩登都市';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🌃 上海 3天</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='西安3天兵马俑历史';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🏛️ 西安 3天</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='桂林漓江阳朔4天';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🛶 桂林 4天</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='杭州西湖3天休闲';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🍵 杭州 3天</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='广州3天早茶美食之旅';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🥟 广州 3天</span></div></div></div><div id="tripMap" class="vp-map-container"></div></main></div>
-<div class="chat-footer"><div id="quickReplies"></div><form id="msgForm"><input id="msgInput" type="text" placeholder="告诉我你想去哪，玩几天…" data-i18n-placeholder="inputMsgPlaceholder" autofocus><button id="sendBtn" type="submit" class="btn-red" style="height:44px;padding:0 24px;font-size:14px" data-i18n="sendBtn">Send</button></form></div>
+<main style="flex:1;display:flex;flex-direction:column"><div id="thread"><div class="welcome" id="welcomeMsg"><h2 data-i18n="welcomeTitle">👋 Welcome to VisePanda</h2><p style="color:var(--gold-bright);font-size:13px;letter-spacing:.12em;margin:0;font-weight:500" data-i18n="welcomeSub">Your AI travel planner for China. Ask me anything!</p><p style="font-size:13px;color:var(--muted);margin:8px 0 0" data-i18n="welcomeSub2">Pick a destination or describe your dream trip</p><div class="welcome-chips"><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Beijing 3 days, history and culture';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🏯 Beijing (3 days)</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Chengdu 4 days, food tour and pandas';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🐼 Chengdu (4 days)</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Yunnan 7 days, Dali + Lijiang + nature';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🏔️ Yunnan (7 days)</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Shanghai 3 days, modern city highlights';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🌃 Shanghai (3 days)</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Xi\\'an 3 days, Terracotta Army and history';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🏛️ Xi'an (3 days)</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Guilin 4 days, Li River and Yangshuo';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🛶 Guilin (4 days)</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Hangzhou 3 days, West Lake relaxed pace';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🍵 Hangzhou (3 days)</span><span class="welcome-chip" onclick="document.getElementById('msgInput').value='Guangzhou 3 days, dim sum and food culture';document.getElementById('msgForm').dispatchEvent(new Event('submit'))">🥟 Guangzhou (3 days)</span></div></div></div><div id="tripMap" class="vp-map-container"></div></main></div>
+<div class="chat-footer"><div id="quickReplies"></div><form id="msgForm"><input id="msgInput" type="text" placeholder="Type a message…" data-i18n-placeholder="inputMsgPlaceholder" autofocus><button id="sendBtn" type="submit" class="btn-red" style="height:44px;padding:0 24px;font-size:14px" data-i18n="sendBtn">Send</button></form></div>
 <script src="/static/i18n.js"></script>
 <script src="/static/chat.js"></script><script src="/static/pwa.js"></script><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="/static/map.js"></script></body></html>"""
 
@@ -1148,7 +1200,7 @@ def page_profile(user_id: str) -> str:
 <meta name="apple-mobile-web-app-title" content="VisePanda">
 <link rel="apple-touch-icon" href="/static/icon.svg"><title data-i18n="profileTitle">Profile · VisePanda</title><meta name="description" content="Manage your VisePanda profile and preferences."><style>{CSS}</style><script defer src='/_vercel/insights/script.js'></script><script defer src='/_vercel/speed-insights/script.js'></script>{_inject_config()}</head><body>
 <div class="bg-shanshui"></div>
-<header><div><a href="/" class="logo-seal"><span class="seal">熊</span><span class="name">VisePanda</span></a></div><div><a href="/chat" class="btn" style="margin-right:8px" data-i18n="chatBtn">Chat</a><a href="/trips" class="btn" style="margin-right:8px" data-i18n="tripsBtn">Trips</a><a href="/" class="btn" data-i18n="homeBtn">Home</a><a href="#" class="lang-switch" onclick="event.preventDefault();setLang(LANG==='en'?'zh':'en')" data-i18n="langLabel">中</a><a href="#" onclick="event.preventDefault();toggleTheme()" class="lang-switch" id="themeToggle" title="Toggle theme">🌓</a></div></header>
+<header><div><a href="/" class="logo-seal"><span class="seal">🐼</span><span class="name">VisePanda</span></a></div><div><a href="/chat" class="btn" style="margin-right:8px" data-i18n="chatBtn">Chat</a><a href="/trips" class="btn" style="margin-right:8px" data-i18n="tripsBtn">Trips</a><a href="/" class="btn" data-i18n="homeBtn">Home</a><a href="#" class="lang-switch" onclick="event.preventDefault();setLang(LANG==='en'?'zh':'en')" data-i18n="langLabel">ZH</a><a href="#" onclick="event.preventDefault();toggleTheme()" class="lang-switch" id="themeToggle" title="Toggle theme">🌓</a></div></header>
 <div class="profile-page">
 <div class="profile-header"><div class="profile-avatar">🐼</div><h1 data-i18n="profileH1">My Profile</h1><p data-i18n="profileSub">Manage your account and preferences</p></div>
 <div id="profileMsg" class="profile-msg"></div>
@@ -1157,7 +1209,7 @@ def page_profile(user_id: str) -> str:
 <div class="profile-field"><label data-i18n="nameLabel">Display Name</label><input id="profileName" type="text" placeholder="Your name" value="{name}" data-i18n-placeholder="namePlaceholder"></div>
 <div class="profile-field"><label data-i18n="emailLabel">Email</label><input id="profileEmail" type="email" value="{email_display}" readonly style="opacity:.6;cursor:not-allowed"></div>
 <div class="profile-field"><label data-i18n="phoneLabel">Phone</label><input id="profilePhone" type="text" value="{phone_display}" readonly style="opacity:.6;cursor:not-allowed"></div>
-<div class="profile-field"><label data-i18n="langLabelPref">Language</label><select id="langSelect"><option value="en">English</option><option value="zh">中文</option></select></div>
+<div class="profile-field"><label data-i18n="langLabelPref">Language</label><select id="langSelect"><option value="en">English</option><option value="zh">Chinese</option></select></div>
 </div>
 <div class="profile-card">
 <h3 data-i18n="passwordSection">Change Password</h3>
@@ -1173,7 +1225,14 @@ def page_profile(user_id: str) -> str:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Tables managed via Supabase Management API
+    # Ensure DB is usable even without Supabase credentials.
+    _ensure_sqlalchemy()
+    if _ENGINE is not None:
+        try:
+            Base.metadata.create_all(bind=_ENGINE)
+        except Exception as e:
+            # Don't crash the whole app for DB init issues; endpoints will surface errors.
+            print(f"[DB] create_all failed: {e}", flush=True)
     yield
 
 app = FastAPI(title="VisePanda", version="0.1.0", lifespan=lifespan)
@@ -1222,7 +1281,27 @@ def _nav(current=""):
 
 @app.get("/api/health")
 def health():
-    return {"ok": True, "version": "0.1.0", "db": "postgres"}
+    _ensure_sqlalchemy()
+    db = _DB_KIND
+    if db == "sqlalchemy" and DATABASE_URL:
+        if DATABASE_URL.startswith("postgres"):
+            db = "postgres"
+        elif DATABASE_URL.startswith("sqlite"):
+            db = "sqlite"
+    return {"ok": True, "version": "0.1.0", "db": db}
+
+@app.get("/sw.js")
+def service_worker():
+    # Serve service worker from site root so it can control the whole app.
+    # (Vercel/serverless environments may require this to avoid scope issues.)
+    return FileResponse(
+        "static/sw.js",
+        media_type="application/javascript",
+        headers={
+            "Cache-Control": "no-cache",
+            "Service-Worker-Allowed": "/",
+        },
+    )
 
 @app.get("/favicon.ico")
 @app.get("/favicon.png")
@@ -1981,6 +2060,7 @@ class ChatIn(BaseModel):
     trip_id: str
     text: str
     guest_id: str | None = None
+    lang: str | None = None
 
 
 @app.post("/api/chat")
@@ -2031,7 +2111,7 @@ async def chat_endpoint(payload: ChatIn, request: Request):
             older = context_msgs[:-6]
             summary_text = " | ".join(m["content"][:80] for m in older if m["role"] == "user")
             if summary_text:
-                summary_msg = {"role": "system", "content": f"[历史摘要] 用户之前提到: {summary_text}..."}
+                summary_msg = {"role": "system", "content": f"[History summary] User previously mentioned: {summary_text}..."}
                 context_msgs = [summary_msg] + keep
     finally:
         db_ctx.close()
@@ -2047,7 +2127,7 @@ async def chat_endpoint(payload: ChatIn, request: Request):
         finally:
             db_trip.close()
     messages = [
-        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "system", "content": get_system_prompt(user_ctx, lang=(payload.lang or "en"))},
         *context_msgs,
     ]
 

@@ -118,7 +118,12 @@ async function send(text) {
         try {
             r = await fetch('/api/chat', {
                 method: 'POST', headers: h,
-                body: JSON.stringify({ trip_id: tripId, text: text, guest_id: localStorage.getItem('vp_trip') || '' })
+                body: JSON.stringify({
+                    trip_id: tripId,
+                    text: text,
+                    guest_id: localStorage.getItem('vp_trip') || '',
+                    lang: localStorage.getItem('vp_lang') || 'en'
+                })
             });
         } catch (fe) {
             // Auto-reconnect with exponential backoff
@@ -127,7 +132,12 @@ async function send(text) {
                 try {
                     r = await fetch('/api/chat', {
                         method: 'POST', headers: h,
-                        body: JSON.stringify({ trip_id: tripId, text: text, guest_id: localStorage.getItem('vp_trip') || '' })
+                        body: JSON.stringify({
+                            trip_id: tripId,
+                            text: text,
+                            guest_id: localStorage.getItem('vp_trip') || '',
+                            lang: localStorage.getItem('vp_lang') || 'en'
+                        })
                     });
                     if (r.ok) break;
                 } catch (_) {}

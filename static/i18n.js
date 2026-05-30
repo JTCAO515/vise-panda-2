@@ -72,7 +72,13 @@ const I18N = {
         notFoundTitle: '404 — VisePanda',
         notFound: 'Page not found',
         backHome: 'Back home',
-        langLabel: '中',
+        // Language toggle shows the *other* language in English UI
+        langLabel: 'ZH',
+        tripOverview: 'Trip overview',
+        destLabel: 'Destination',
+        daysLabel: 'Days',
+        recentMsgs: 'Recent messages',
+        welcomeSub2: 'Pick a destination or describe your dream trip',
     },
     zh: {
         title: 'VisePanda — AI 中国旅行规划师 🇨🇳',
@@ -146,7 +152,13 @@ const I18N = {
         notFoundTitle: '404 — VisePanda',
         notFound: '页面未找到',
         backHome: '返回首页',
+        // 中文模式下显示切回英文的按钮
         langLabel: 'EN',
+        tripOverview: '行程概况',
+        destLabel: '目的地',
+        daysLabel: '天数',
+        recentMsgs: '最近消息',
+        welcomeSub2: '选择目的地或描述你想要的旅行',
     }
 };
 

@@ -420,3 +420,39 @@ supabase-js: ✅ 0 script tags (dynamic import only)
 ```
 python -m py_compile api/index.py ✅
 ```
+
+---
+
+## Iteration 126 — English-native UI + DeepSeek + DB fallback
+
+**日期**: 2026-05-30  
+**目标**:
+- 英文为默认 UI（除非手动切换到中文，否则页面不出现中文）
+- LLM 默认切换为 DeepSeek（OpenAI-compatible）
+- 无 Supabase 凭据时也能正常对话（SQLite /tmp fallback）
+**状态**: ✅ 完成
+
+### Iter 126 — 语言与 UI（英文原生） ⭐⭐
+| 改动 | 说明 |
+|------|------|
+| 移除 `/_inject_config()` 的 IP 语言自动切换逻辑 | 不再根据 IP/国家自动把站点切到中文 |
+| Header 语言按钮默认显示 `ZH`（英文 UI 下不出现“中”） | 中文模式下自动显示 `EN` |
+| Chat / Landing / Trips / Profile 中的中文文案与中文快捷 chips 全部替换为英文 | 中文只在用户切换语言后由 i18n 渲染 |
+
+### Iter 126 — LLM（DeepSeek 默认） ⭐⭐
+| 改动 | 说明 |
+|------|------|
+| 默认 `LLM_BASE_URL=https://api.deepseek.com/v1` | OpenAI-compatible `/chat/completions` |
+| 默认 `LLM_MODEL=deepseek-v4-flash` | 可用环境变量覆盖 |
+| `/api/chat` 请求携带 `lang` | 后端按 UI 语言选择 system prompt（英文/中文） |
+
+### Iter 126 — DB（可用性修复） ⭐⭐⭐
+| 问题 | 根因 | 修复 |
+|------|------|------|
+| 未配置 Supabase PAT 时，所有 DB 操作会失败导致聊天不可用 | `get_db()` 强制使用 Supabase Management API | 加入 SQLAlchemy fallback：优先 `DATABASE_URL`，否则无 PAT 时用 `/tmp/visepanda.sqlite3` |
+| 站点包含 `/static/pwa.js` 但文件缺失 | 引发 PWA/缓存脚本不一致 | 恢复 `static/pwa.js`，并新增 `/sw.js` 根路径路由注册 SW |
+
+### 测试
+```
+python -m py_compile api/index.py ✅
+```
