@@ -616,3 +616,22 @@ python -m py_compile api/index.py ✅
 | 改动 | 说明 |
 |------|------|
 | 新增 `.github/workflows/ci.yml` | push/PR 自动执行 `py_compile` 基础语法检查 |
+
+---
+
+## Iteration 135 — 页面加载加速（首屏稳定）
+
+**日期**: 2026-05-30  
+**目标**: 提升 Chat 首屏加载速度与稳定性，减少第三方资源导致的阻塞/白屏  
+**状态**: ✅ 完成
+
+### Iter 135 — Chat 初始化不阻塞 ⭐⭐⭐
+| 改动 | 说明 |
+|------|------|
+| Chat 页不再 `await` Supabase 动态 import | 避免 esm.sh 网络波动导致事件绑定延后、页面“看似卡住” |
+
+### Iter 135 — 地图资源懒加载 ⭐⭐⭐
+| 改动 | 说明 |
+|------|------|
+| Chat 页移除 Leaflet CSS/JS 的默认引入 | 首屏不加载地图相关大资源 |
+| 仅在检测到 itinerary 且需要展示地图时，按需加载 Leaflet + `/static/map.js` | 加速首屏、减少外部 CDN 失败对核心对话的影响 |

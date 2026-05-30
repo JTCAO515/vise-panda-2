@@ -40,6 +40,46 @@ const M = text => {
     return h;
 };
 
+// ── Lazy-load heavy map dependencies (Leaflet + map.js) ──
+function _loadScriptOnce(src) {
+    W.__vp_scripts = W.__vp_scripts || {};
+    if (W.__vp_scripts[src]) return W.__vp_scripts[src];
+    W.__vp_scripts[src] = new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = src;
+        s.async = true;
+        s.onload = () => resolve(true);
+        s.onerror = () => reject(new Error('Failed to load script: ' + src));
+        document.head.appendChild(s);
+    });
+    return W.__vp_scripts[src];
+}
+
+function _loadCssOnce(href) {
+    W.__vp_css = W.__vp_css || {};
+    if (W.__vp_css[href]) return W.__vp_css[href];
+    W.__vp_css[href] = new Promise((resolve) => {
+        const l = document.createElement('link');
+        l.rel = 'stylesheet';
+        l.href = href;
+        l.onload = () => resolve(true);
+        l.onerror = () => resolve(false); // CSS is optional
+        document.head.appendChild(l);
+    });
+    return W.__vp_css[href];
+}
+
+function ensureMapLoaded() {
+    if (W.__vp_map_ready) return W.__vp_map_ready;
+    W.__vp_map_ready = (async () => {
+        await _loadCssOnce('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
+        await _loadScriptOnce('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js');
+        await _loadScriptOnce('/static/map.js');
+        return true;
+    })();
+    return W.__vp_map_ready;
+}
+
 function msg(r, c) {
     const d = document.createElement('div');
     d.className = 'msg ' + r;
@@ -235,10 +275,13 @@ async function send(text) {
                             mapContainer.style.display = 'block';
                             (async () => {
                                 try {
+                                    await ensureMapLoaded();
                                     const resp = await fetch('/api/trips/' + tripId);
                                     const td = await resp.json();
                                     if (td.current_itinerary && td.current_itinerary.cities && td.current_itinerary.cities.length > 0) {
-                                        await VP_MAP.loadItinerary('tripMap', td);
+                                        if (W.VP_MAP && typeof W.VP_MAP.loadItinerary === 'function') {
+                                            await W.VP_MAP.loadItinerary('tripMap', td);
+                                        }
                                         mapContainer.style.display = 'block';
                                     }
                                 } catch (e) {}
@@ -291,7 +334,8 @@ async function send(text) {
 
 // Init — on DOM ready
 (async function() {
-    await i();
+    // Do not block UI on third-party module fetch (esm.sh can be slow/unreachable).
+    i();
     const p = new URL(W.location);
     tripId = p.searchParams.get('trip') || localStorage.getItem('vp_trip');
     if (tripId) loadHistory();
