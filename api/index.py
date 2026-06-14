@@ -379,6 +379,71 @@ def _handle_tools(start_response, path: str):
 
 
 # ════════════════════════════════════════════════════════════
+# ESTIMATE & VALIDATE API
+# ════════════════════════════════════════════════════════════
+
+ESTIMATE_DATA = {
+    "beijing": {"budget_daily": "¥300-500", "mid_daily": "¥600-1000", "luxury_daily": "¥1500-3000", "flight_avg": "¥500-1500", "food_avg": "¥30-80/meal"},
+    "shanghai": {"budget_daily": "¥350-550", "mid_daily": "¥700-1200", "luxury_daily": "¥2000-4000", "flight_avg": "¥500-1500", "food_avg": "¥35-100/meal"},
+    "chengdu": {"budget_daily": "¥200-400", "mid_daily": "¥500-800", "luxury_daily": "¥1200-2500", "flight_avg": "¥400-1200", "food_avg": "¥20-60/meal"},
+    "guangzhou": {"budget_daily": "¥250-450", "mid_daily": "¥500-900", "luxury_daily": "¥1500-3000", "flight_avg": "¥400-1200", "food_avg": "¥25-70/meal"},
+    "xian": {"budget_daily": "¥200-350", "mid_daily": "¥400-700", "luxury_daily": "¥1000-2000", "flight_avg": "¥400-1000", "food_avg": "¥20-50/meal"},
+    "guilin": {"budget_daily": "¥180-300", "mid_daily": "¥350-600", "luxury_daily": "¥800-1800", "flight_avg": "¥400-1000", "food_avg": "¥20-45/meal"},
+    "hangzhou": {"budget_daily": "¥250-400", "mid_daily": "¥500-900", "luxury_daily": "¥1500-3000", "flight_avg": "¥400-1200", "food_avg": "¥30-70/meal"},
+}
+
+
+def _handle_estimate(start_response):
+    """GET /api/estimate — return price estimates for cities."""
+    return _json(start_response, {"estimates": ESTIMATE_DATA})
+
+
+def _handle_validate(environ, start_response):
+    """POST /api/validate — validate a trip plan."""
+    try:
+        length = int(environ.get("CONTENT_LENGTH", 0))
+        body = environ["wsgi.input"].read(length) if length else b"{}"
+        data = json.loads(body)
+    except (ValueError, json.JSONDecodeError):
+        data = {}
+
+    city = data.get("city", "").lower()
+    days = data.get("days", 0)
+
+    warnings = []
+    tips = []
+
+    # Validate city
+    if city and city not in ESTIMATE_DATA:
+        warnings.append(f"We don't have detailed pricing data for {city.title()}")
+
+    # Validate days
+    if days:
+        if days < 1:
+            warnings.append("Trip should be at least 1 day")
+        elif days > 30:
+            warnings.append("Trips over 30 days may need visa planning")
+
+    # Seasonal tips for known cities
+    cities_data = _load_json(DATA_DIR / "cities.json") or {}
+    if city in cities_data:
+        info = cities_data[city]
+        season = info.get("best_season", "")
+        if season:
+            tips.append(f"Best season: {season}")
+        if info.get("budget_tip"):
+            tips.append(info["budget_tip"])
+
+    return _json(start_response, {
+        "valid": len(warnings) == 0,
+        "warnings": warnings,
+        "tips": tips,
+        "city": city,
+        "days": days,
+    })
+
+
+# ════════════════════════════════════════════════════════════
 # WSGI APPLICATION
 # ════════════════════════════════════════════════════════════
 
@@ -405,6 +470,14 @@ def app(environ, start_response):
     # ── Tools API ──
     if path.startswith("/api/tools") and method == "GET":
         return _handle_tools(start_response, path)
+
+    # ── Estimate API ──
+    if path == "/api/estimate" and method == "GET":
+        return _handle_estimate(start_response)
+
+    # ── Validate API ──
+    if path == "/api/validate" and method == "POST":
+        return _handle_validate(environ, start_response)
 
     # ── Static files (web/ + static/) ──
     result = _serve_static(start_response, path)

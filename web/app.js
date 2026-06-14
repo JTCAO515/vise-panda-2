@@ -64,6 +64,7 @@ const VP = (function(){
     if (target) target.classList.add('active');
 
     if (view === 'cities') loadCities();
+    if (view === 'trips') renderTrips();
     if (view === 'tools') loadTools();
     if (view === 'home') loadHomeCities();
 
@@ -609,6 +610,19 @@ const VP = (function(){
         addMessage(botContent, 'assistant');
         state.messages.push({role: 'assistant', content: botContent});
         saveMessages();
+        // Auto-save if looks like an itinerary
+        const saved = autoSaveTrip(currentCity, botContent);
+        if (saved) {
+          // Add subtle save indicator
+          const msgs = document.getElementById('chat-messages');
+          if (msgs) {
+            const saveNote = document.createElement('div');
+            saveNote.className = 'save-note';
+            saveNote.innerHTML = '💾 Trip saved! <a href="#" onclick="VP.navigate(\'trips\');return false">View all trips →</a>';
+            msgs.appendChild(saveNote);
+            msgs.scrollTop = msgs.scrollHeight;
+          }
+        }
         updateSuggestions();
       } else if (!doneReceived) {
         addMessage('I had trouble processing that. Could you try rephrasing?', 'bot');
@@ -650,6 +664,159 @@ const VP = (function(){
     }
   }
 
+  // ═══════════════════════════════════════════════════════════
+  // TRIP MANAGEMENT (Persistent Itineraries)
+  // ═══════════════════════════════════════════════════════════
+
+  function getTrips() {
+    try {
+      return JSON.parse(localStorage.getItem('vp_trips') || '[]');
+    } catch(e) { return []; }
+  }
+
+  function saveTrips(trips) {
+    try { localStorage.setItem('vp_trips', JSON.stringify(trips.slice(0, 20))); }
+    catch(e) { /* quota */ }
+  }
+
+  function saveTrip(city, content) {
+    const trips = getTrips();
+    const title = content.split('\n')[0].replace(/[#*]/g,'').trim().slice(0, 60) || (city ? city + ' Trip' : 'China Trip');
+    const dayCount = (content.match(/\*\*Day \d+/g) || content.match(/Day \d+:/g) || []).length;
+    const trip = {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      city: city || '',
+      title: title,
+      content: content,
+      days: dayCount || '?',
+      created: new Date().toISOString(),
+    };
+    trips.unshift(trip);
+    saveTrips(trips);
+    return trip;
+  }
+
+  function deleteTrip(id) {
+    const trips = getTrips().filter(t => t.id !== id);
+    saveTrips(trips);
+    renderTrips();
+  }
+
+  function renderTrips() {
+    const grid = document.getElementById('trips-grid');
+    if (!grid) return;
+    const trips = getTrips();
+
+    if (!trips.length) {
+      grid.innerHTML = '<div class="trip-empty">No saved trips yet. Chat with VisePanda to plan a trip, then save it! 🌏</div>';
+      return;
+    }
+
+    grid.innerHTML = trips.map(t => {
+      const date = new Date(t.created);
+      const dateStr = date.toLocaleDateString('en-US', {month:'short', day:'numeric'});
+      const snippet = t.content.replace(/<[^>]+>/g, '').slice(0, 120).replace(/\n/g, ' ');
+      const cityEmoji = t.city ? getCityEmoji(t.city) : '🌏';
+      return '<div class="trip-card">'
+        + '<div class="trip-card-top">'
+        + '<span class="trip-city-icon">' + cityEmoji + '</span>'
+        + '<div class="trip-card-info">'
+        + '<div class="trip-card-title">' + escHtml(t.title) + '</div>'
+        + '<div class="trip-card-meta">' + (t.city ? escHtml(t.city) + ' · ' : '') + t.days + ' days · ' + dateStr + '</div>'
+        + '</div></div>'
+        + '<div class="trip-card-desc">' + escHtml(snippet) + '…</div>'
+        + '<div class="trip-card-actions">'
+        + '<button class="trip-action-btn load" onclick="VP.loadTrip(\'' + t.id + '\')">📂 Load</button>'
+        + '<button class="trip-action-btn share" onclick="VP.shareTrip(\'' + t.id + '\')">📋 Copy</button>'
+        + '<button class="trip-action-btn delete" onclick="VP.deleteTrip(\'' + t.id + '\')">🗑️</button>'
+        + '</div></div>';
+    }).join('');
+  }
+
+  function loadTrip(id) {
+    const trips = getTrips();
+    const trip = trips.find(t => t.id === id);
+    if (!trip) return;
+
+    // Restore content to chat
+    state.messages.push({role: 'user', content: 'Show me my saved trip: ' + trip.title});
+    state.messages.push({role: 'assistant', content: trip.content});
+    saveMessages();
+
+    // Navigate to chat
+    navigate('chat');
+
+    // Reload chat messages
+    const container = document.getElementById('chat-messages');
+    if (container) {
+      // Keep welcome, remove old messages
+      const welcome = container.querySelector('.msg-bot:first-child');
+      container.innerHTML = '';
+      if (welcome) container.appendChild(welcome.cloneNode(true));
+
+      state.messages.forEach(msg => {
+        const el = document.createElement('div');
+        el.className = 'msg msg-' + (msg.role === 'user' ? 'user' : 'bot');
+        el.innerHTML = '<div class="msg-avatar">' + (msg.role === 'assistant' ? '🐼' : '👤') + '</div>'
+          + '<div class="msg-body">'
+          + '<div class="msg-sender">' + (msg.role === 'assistant' ? 'VisePanda' : 'You') + '</div>'
+          + '<div class="msg-text">' + (msg.role === 'user' ? escHtml(msg.content).replace(/\n/g,'<br>') : renderMD(msg.content)) + '</div>'
+          + '</div>';
+        container.appendChild(el);
+      });
+      container.scrollTop = container.scrollHeight;
+    }
+  }
+
+  function shareTrip(id) {
+    const trips = getTrips();
+    const trip = trips.find(t => t.id === id);
+    if (!trip) return;
+
+    // Strip markdown for clean sharing
+    const clean = trip.content
+      .replace(/\*\*/g, '')
+      .replace(/#/g, '')
+      .replace(/---+/g, '')
+      .trim();
+
+    const text = '🌏 VisePanda Trip: ' + trip.title + '\n'
+      + (trip.city ? '📍 ' + trip.city + ' · ' : '')
+      + trip.days + ' days\n'
+      + '─────────────────\n\n'
+      + clean
+      + '\n\n─────────────────\n'
+      + 'Planned with VisePanda 🐼';
+
+    navigator.clipboard.writeText(text).then(() => {
+      // Show toast
+      const toast = document.getElementById('toast') || (function(){
+        const el = document.createElement('div');
+        el.id = 'toast';
+        el.className = 'toast';
+        document.body.appendChild(el);
+        return el;
+      })();
+      toast.textContent = '✅ Trip copied to clipboard!';
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2000);
+    }).catch(() => {
+      alert('Trip copied!\n\n' + text.slice(0, 200) + '...');
+    });
+  }
+
+  function autoSaveTrip(city, content) {
+    // Detect if content looks like an itinerary
+    const hasDay = /\*\*Day \d+|Day \d+:/i.test(content);
+    const hasList = /^\- /m.test(content);
+    const hasEmoji = /[🕐🍽️🏨💡🎯💰]/i.test(content);
+    if ((hasDay || (hasList && content.length > 300)) && content.length > 200) {
+      const trip = saveTrip(city, content);
+      return trip;
+    }
+    return null;
+  }
+
   // ── Keyboard shortcuts ──
   document.addEventListener('keydown', (e) => {
     // Escape to close modal
@@ -669,7 +836,7 @@ const VP = (function(){
 
     // Hash-based nav
     const hash = window.location.hash.slice(1);
-    if (hash && ['home','chat','cities','tools'].includes(hash)) {
+    if (hash && ['home','chat','trips','cities','tools'].includes(hash)) {
       navigate(hash);
     }
 
@@ -706,6 +873,9 @@ const VP = (function(){
     clearChatHistory,
     openCityDetail,
     closeCityDetail,
+    loadTrip,
+    shareTrip,
+    deleteTrip,
     init,
   };
 })();

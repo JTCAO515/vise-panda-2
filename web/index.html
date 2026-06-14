@@ -29,8 +29,8 @@
     <nav class="header-nav">
       <button class="nav-btn active" data-view="home" onclick="VP.navigate('home')">🏠 Home</button>
       <button class="nav-btn" data-view="chat" onclick="VP.navigate('chat')">💬 Chat</button>
+      <button class="nav-btn" data-view="trips" onclick="VP.navigate('trips')">📋 Trips</button>
       <button class="nav-btn" data-view="cities" onclick="VP.navigate('cities')">🏙 Cities</button>
-      <button class="nav-btn" data-view="tools" onclick="VP.navigate('tools')">🧳 Tools</button>
     </nav>
     <div class="header-right">
       <button class="theme-toggle" onclick="VP.toggleTheme()" aria-label="Toggle theme">🌙</button>
@@ -90,6 +90,17 @@
       </div>
     </section>
 
+    <!-- ─── TRIPS ─── -->
+    <section id="view-trips" class="view">
+      <div class="section">
+        <h2 class="section-title">📋 Saved Trips</h2>
+        <p class="section-sub">Your saved itineraries — click to reload or share</p>
+        <div id="trips-grid" class="trips-grid">
+          <div class="trip-empty">No saved trips yet. Chat with VisePanda to plan a trip, then save it! 🌏</div>
+        </div>
+      </div>
+    </section>
+
     <!-- ─── CITIES ─── -->
     <section id="view-cities" class="view">
       <div class="section">
@@ -102,23 +113,14 @@
         </div>
       </div>
     </section>
-
-    <!-- ─── TOOLS ─── -->
-    <section id="view-tools" class="view">
-      <div class="section">
-        <h2 class="section-title">🧳 Travel Tools</h2>
-        <p class="section-sub">Everything you need for your China trip</p>
-        <div id="tools-grid" class="tools-grid">
-          <div class="tool-card skeleton" style="height:120px"><div class="sk-block sk-w-3"></div><div class="sk-line"></div></div>
-          <div class="tool-card skeleton" style="height:120px"><div class="sk-block sk-w-3"></div><div class="sk-line"></div></div>
-        </div>
-      </div>
-    </section>
   </main>
 
-  <!-- ═══ CITY DETAIL MODAL ═══ -->
+  <!-- ═══ MODALS ═══ -->
   <div id="city-detail-overlay" class="modal-overlay" onclick="if(event.target===this)VP.closeCityDetail()">
     <div id="city-detail-panel" class="modal-panel"></div>
+  </div>
+  <div id="trip-detail-overlay" class="modal-overlay" onclick="if(event.target===this)VP.closeTripDetail()">
+    <div id="trip-detail-panel" class="modal-panel"></div>
   </div>
 
   <!-- ═══ FOOTER ═══ -->
