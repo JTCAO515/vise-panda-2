@@ -752,6 +752,36 @@ body{
   .trips-grid{grid-template-columns:1fr}
 }
 
+/* ─── Estimate Grid ─── */
+.estimate-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(130px,1fr));
+  gap:8px;
+}
+.estimate-item{
+  padding:8px 10px;
+  background:var(--bg-surface);
+  border:1px solid var(--border-default);
+  border-radius:var(--radius-md);
+  text-align:center;
+}
+.estimate-label{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);display:block;margin-bottom:2px}
+.estimate-val{font-size:14px;font-weight:600;color:var(--accent-gold)}
+
+/* ─── City Map ─── */
+.city-map{
+  height:260px;
+  border-radius:var(--radius-md);
+  overflow:hidden;
+  border:1px solid var(--border-subtle);
+}
+.city-map .leaflet-container{background:#0a0f17}
+.city-map .leaflet-control-zoom a{background:var(--bg-elevated);color:var(--text-secondary);border-color:var(--border-default)}
+.city-map .leaflet-control-zoom a:hover{background:var(--bg-hover);color:var(--text-primary)}
+.city-map .leaflet-popup-content-wrapper{background:var(--bg-secondary);color:var(--text-primary);border-radius:var(--radius-md);box-shadow:var(--shadow-elevated);border:1px solid var(--border-default)}
+.city-map .leaflet-popup-tip{background:var(--bg-secondary);border:1px solid var(--border-default)}
+.city-map .leaflet-popup-content{margin:8px 12px;font-size:13px;line-height:1.4}
+
 /* ═══ RESPONSIVE ═══ */
 
 /* Tablet (768-1024px) */

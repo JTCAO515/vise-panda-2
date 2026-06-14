@@ -294,6 +294,16 @@ def _build_system_prompt(params: dict) -> str:
                     else:
                         prompt_parts.append(f"- {t}")
 
+            # Price estimates
+            est = ESTIMATE_DATA.get(city)
+            if est:
+                prompt_parts.append(f"\n### Price Estimates for {city.title()}")
+                prompt_parts.append(f"- Budget daily: {est.get('budget_daily', '')}")
+                prompt_parts.append(f"- Mid daily: {est.get('mid_daily', '')}")
+                prompt_parts.append(f"- Luxury daily: {est.get('luxury_daily', '')}")
+                prompt_parts.append(f"- Avg flight: {est.get('flight_avg', '')}")
+                prompt_parts.append(f"- Avg meal: {est.get('food_avg', '')}")
+
     # Add general recommendation guidance
     prompt_parts.append("")
     prompt_parts.append("## POPULAR CITY GUIDE (Quick Reference)")
@@ -344,6 +354,8 @@ def _handle_cities(start_response, path: str):
             detail["food"] = food.get(city_name, [])
             detail["hotels"] = hotels.get(city_name, {})
             detail["tips"] = tips.get(city_name, [])
+            detail["map"] = MAP_DATA.get(city_name, {})
+            detail["estimate"] = ESTIMATE_DATA.get(city_name, {})
             return _json(start_response, {"city": detail})
         return _json_error(start_response, f"City '{city_name}' not found", "404 Not Found")
     return _json_error(start_response, "Not found", "404 Not Found")
@@ -381,6 +393,58 @@ def _handle_tools(start_response, path: str):
 # ════════════════════════════════════════════════════════════
 # ESTIMATE & VALIDATE API
 # ════════════════════════════════════════════════════════════
+
+# ════════════════════════════════════════════════════════════
+# MAP & ESTIMATE DATA
+# ════════════════════════════════════════════════════════════
+
+MAP_DATA = {
+    "beijing": {"lat": 39.9042, "lng": 116.4074, "zoom": 11, "pois": [
+        {"name": "Forbidden City", "name_cn": "故宫", "lat": 39.9163, "lng": 116.3972, "type": "history"},
+        {"name": "Great Wall (Badaling)", "name_cn": "八达岭长城", "lat": 40.3601, "lng": 116.0114, "type": "landmark"},
+        {"name": "Temple of Heaven", "name_cn": "天坛", "lat": 39.8822, "lng": 116.4066, "type": "history"},
+        {"name": "Summer Palace", "name_cn": "颐和园", "lat": 39.9999, "lng": 116.2755, "type": "history"},
+        {"name": "Wangfujing Night Market", "name_cn": "王府井小吃街", "lat": 39.9133, "lng": 116.4109, "type": "food"},
+    ]},
+    "shanghai": {"lat": 31.2304, "lng": 121.4737, "zoom": 12, "pois": [
+        {"name": "The Bund", "name_cn": "外滩", "lat": 31.2400, "lng": 121.4900, "type": "landmark"},
+        {"name": "Yu Garden", "name_cn": "豫园", "lat": 31.2270, "lng": 121.4885, "type": "history"},
+        {"name": "Oriental Pearl Tower", "name_cn": "东方明珠", "lat": 31.2400, "lng": 121.5000, "type": "modern"},
+        {"name": "Shanghai Disney", "name_cn": "上海迪士尼", "lat": 31.1440, "lng": 121.6590, "type": "entertainment"},
+    ]},
+    "chengdu": {"lat": 30.5728, "lng": 104.0668, "zoom": 11, "pois": [
+        {"name": "Panda Base", "name_cn": "大熊猫繁育基地", "lat": 30.7345, "lng": 104.1442, "type": "nature"},
+        {"name": "Jinli Ancient Street", "name_cn": "锦里", "lat": 30.6480, "lng": 104.0470, "type": "culture"},
+        {"name": "Kuanzhai Alley", "name_cn": "宽窄巷子", "lat": 30.6680, "lng": 104.0560, "type": "culture"},
+        {"name": "Wuhou Shrine", "name_cn": "武侯祠", "lat": 30.6460, "lng": 104.0480, "type": "history"},
+    ]},
+    "xian": {"lat": 34.3416, "lng": 108.9398, "zoom": 11, "pois": [
+        {"name": "Terracotta Warriors", "name_cn": "兵马俑", "lat": 34.3853, "lng": 109.2739, "type": "history"},
+        {"name": "Ancient City Wall", "name_cn": "西安城墙", "lat": 34.2610, "lng": 108.9420, "type": "history"},
+        {"name": "Muslim Quarter", "name_cn": "回民街", "lat": 34.2620, "lng": 108.9390, "type": "food"},
+        {"name": "Big Wild Goose Pagoda", "name_cn": "大雁塔", "lat": 34.2180, "lng": 108.9590, "type": "history"},
+    ]},
+    "guangzhou": {"lat": 23.1291, "lng": 113.2644, "zoom": 11, "pois": [
+        {"name": "Canton Tower", "name_cn": "广州塔", "lat": 23.1065, "lng": 113.3244, "type": "modern"},
+        {"name": "Shamian Island", "name_cn": "沙面岛", "lat": 23.1090, "lng": 113.2440, "type": "culture"},
+        {"name": "Chen Clan Academy", "name_cn": "陈家祠", "lat": 23.1330, "lng": 113.2570, "type": "history"},
+    ]},
+    "guilin": {"lat": 25.2736, "lng": 110.2900, "zoom": 11, "pois": [
+        {"name": "Li River", "name_cn": "漓江", "lat": 25.2700, "lng": 110.3000, "type": "nature"},
+        {"name": "Elephant Trunk Hill", "name_cn": "象鼻山", "lat": 25.2670, "lng": 110.2980, "type": "nature"},
+        {"name": "Reed Flute Cave", "name_cn": "芦笛岩", "lat": 25.2870, "lng": 110.2780, "type": "nature"},
+    ]},
+    "hangzhou": {"lat": 30.2741, "lng": 120.1551, "zoom": 12, "pois": [
+        {"name": "West Lake", "name_cn": "西湖", "lat": 30.2590, "lng": 120.1480, "type": "nature"},
+        {"name": "Lingyin Temple", "name_cn": "灵隐寺", "lat": 30.2670, "lng": 120.1000, "type": "history"},
+        {"name": "Longjing Tea Village", "name_cn": "龙井村", "lat": 30.2240, "lng": 120.1230, "type": "culture"},
+    ]},
+    "chongqing": {"lat": 29.4316, "lng": 106.9123, "zoom": 11, "pois": [
+        {"name": "Hongya Cave", "name_cn": "洪崖洞", "lat": 29.5627, "lng": 106.5810, "type": "culture"},
+        {"name": "Yangtze River Cableway", "name_cn": "长江索道", "lat": 29.5650, "lng": 106.5850, "type": "landmark"},
+        {"name": "Ciqikou", "name_cn": "磁器口", "lat": 29.5750, "lng": 106.4550, "type": "culture"},
+    ]},
+}
 
 ESTIMATE_DATA = {
     "beijing": {"budget_daily": "¥300-500", "mid_daily": "¥600-1000", "luxury_daily": "¥1500-3000", "flight_avg": "¥500-1500", "food_avg": "¥30-80/meal"},

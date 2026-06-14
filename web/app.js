@@ -297,6 +297,29 @@ const VP = (function(){
   function renderCityDetail(panel, name, city) {
     const emoji = getCityEmoji(name);
     const tags = (city.highlights || []).slice(0, 4);
+    const mapData = city.map || {};
+    const hasMap = mapData.lat && mapData.lng;
+    const est = city.estimate || {};
+
+    // Build price estimate HTML
+    let estHtml = '';
+    if (est.mid_daily) {
+      estHtml = '<div class="detail-section"><h3 class="detail-section-title">💰 Price Estimates</h3><div class="estimate-grid">'
+        + '<div class="estimate-item"><span class="estimate-label">Budget/day</span><span class="estimate-val">' + escHtml(est.budget_daily || '') + '</span></div>'
+        + '<div class="estimate-item"><span class="estimate-label">Mid/day</span><span class="estimate-val">' + escHtml(est.mid_daily || '') + '</span></div>'
+        + '<div class="estimate-item"><span class="estimate-label">Luxury/day</span><span class="estimate-val">' + escHtml(est.luxury_daily || '') + '</span></div>'
+        + '<div class="estimate-item"><span class="estimate-label">Avg flight</span><span class="estimate-val">' + escHtml(est.flight_avg || '') + '</span></div>'
+        + '<div class="estimate-item"><span class="estimate-label">Avg meal</span><span class="estimate-val">' + escHtml(est.food_avg || '') + '</span></div>'
+        + '</div></div>';
+    }
+
+    // Build POI map HTML
+    let mapHtml = '';
+    let mapId = '';
+    if (hasMap) {
+      mapId = 'map-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
+      mapHtml = '<div class="detail-section"><h3 class="detail-section-title">🗺️ Map</h3><div id="' + mapId + '" class="city-map"></div></div>';
+    }
 
     // Build food HTML
     let foodHtml = '';
@@ -344,16 +367,88 @@ const VP = (function(){
       + '<div class="detail-meta"><span>📅 Best: ' + escHtml(city.best_season || '') + '</span><span>⏱️ ' + escHtml(city.days || '') + '</span><span>' + escHtml(city.vibe || '') + '</span></div>'
       + (city.budget_tip ? '<div class="detail-tip">💰 ' + escHtml(city.budget_tip) + '</div>' : '')
       + (tags.length ? '<div class="detail-tags">' + tags.map(function(t){return '<span class="detail-tag">' + escHtml(t) + '</span>';}).join('') + '</div>' : '')
+      + estHtml
+      + mapHtml
       + foodHtml
       + hotelHtml
       + tipsHtml
       + '<div class="detail-actions"><button class="btn-primary" onclick="VP.navigate(\'chat\');setTimeout(function(){VP.focusChat(\'' + name.toLowerCase() + '\')},100)">💬 Plan a Trip to ' + name + '</button></div>';
+
+    // Initialize map after DOM is rendered
+    if (hasMap && mapId) {
+      setTimeout(function() { initCityMap(mapId, mapData); }, 100);
+    }
   }
 
   function closeCityDetail() {
     const overlay = document.getElementById('city-detail-overlay');
     if (overlay) overlay.classList.remove('active');
     document.body.style.overflow = '';
+    // Clean up map instances
+    if (window._vpMaps) {
+      window._vpMaps.forEach(function(m) { m.remove(); });
+      window._vpMaps = [];
+    }
+  }
+
+  // Leaflet map initialization with dark theme
+  function initCityMap(mapId, mapData) {
+    if (!window.L || !mapData.lat || !mapData.lng) return;
+    
+    // Store map instances for cleanup
+    if (!window._vpMaps) window._vpMaps = [];
+    
+    // Dark tile layer
+    var tileUrl = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+    var tileAttr = '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> contributors, &copy; CartoDB';
+    
+    var map = window.L.map(mapId, {
+      center: [mapData.lat, mapData.lng],
+      zoom: mapData.zoom || 11,
+      zoomControl: true,
+      attributionControl: false,
+    });
+    
+    window.L.tileLayer(tileUrl, { attribution: tileAttr, maxZoom: 18 }).addTo(map);
+    
+    // City center marker
+    var goldIcon = window.L.divIcon({
+      className: 'map-marker-city',
+      html: '<div style="background:#bc3a2c;width:16px;height:16px;border-radius:50%;border:3px solid #c9a96e;box-shadow:0 2px 8px rgba(0,0,0,.5)"></div>',
+      iconSize: [16, 16],
+      iconAnchor: [8, 8],
+    });
+    window.L.marker([mapData.lat, mapData.lng], { icon: goldIcon }).addTo(map);
+    
+    // POI markers with colored icons by type
+    var typeColors = {
+      history: '#c9a96e',
+      nature: '#7dd3fc',
+      food: '#bc3a2c',
+      culture: '#a78bfa',
+      landmark: '#f59e0b',
+      modern: '#6ee7b7',
+      entertainment: '#f472b6',
+    };
+    
+    if (mapData.pois) {
+      mapData.pois.forEach(function(poi) {
+        var color = typeColors[poi.type] || '#888';
+        var poiIcon = window.L.divIcon({
+          className: 'map-marker-poi',
+          html: '<div style="background:' + color + ';width:10px;height:10px;border-radius:50%;border:2px solid rgba(255,255,255,.6);box-shadow:0 2px 6px rgba(0,0,0,.4)"></div>',
+          iconSize: [10, 10],
+          iconAnchor: [5, 5],
+        });
+        var marker = window.L.marker([poi.lat, poi.lng], { icon: poiIcon }).addTo(map);
+        marker.bindPopup('<b>' + escHtml(poi.name) + '</b>' + (poi.name_cn ? '<br><span style="font-size:12px;color:#888">' + escHtml(poi.name_cn) + '</span>' : ''));
+      });
+    }
+    
+    window._vpMaps.push(map);
+    
+    // Invalidate after render to fix sizing
+    setTimeout(function() { map.invalidateSize(); }, 200);
   }
 
   // ═══════════════════════════════════════════════════════════
