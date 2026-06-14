@@ -17,26 +17,56 @@ const VP = (function(){
   const $ = (s) => document.querySelector(s);
   const $$ = (s) => document.querySelectorAll(s);
 
+  // ── Minimal Markdown Renderer ──
+  function renderMD(text) {
+    if (!text) return '';
+    let html = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    // Code blocks
+    html = html.replace(/```(\w*)\n?([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
+    // Inline code
+    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+    // Bold
+    html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    // Horizontal rules
+    html = html.replace(/^-{3,}$/gm, '<hr>');
+
+    // Lists (unordered): - item
+    html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
+    html = html.replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>');
+
+    // Lists (ordered): 1. item
+    html = html.replace(/^\d+\.\s(.+)$/gm, '<li>$1</li>');
+    // Only wrap in <ol> if there are <li> not already in <ul>
+    html = html.replace(/(?<!<ul>)((<li>.*<\/li>\n?)+)(?!<\/ul>)/g, '<ol>$1</ol>');
+
+    // Paragraphs
+    const parts = html.split(/\n\n+/);
+    return parts.map(p => {
+      p = p.trim();
+      if (!p) return '';
+      if (p.startsWith('<')) return p;
+      return `<p>${p.replace(/\n/g, '<br>')}</p>`;
+    }).join('');
+  }
+
   // ── Navigation ──
   function navigate(view) {
     state.currentView = view;
-
-    // Update nav buttons
     $$('.nav-btn').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.view === view);
     });
-
-    // Show/hide views
     $$('.view').forEach(v => v.classList.remove('active'));
     const target = document.getElementById(`view-${view}`);
     if (target) target.classList.add('active');
 
-    // Load data on demand
     if (view === 'cities') loadCities();
     if (view === 'tools') loadTools();
     if (view === 'home') loadHomeCities();
 
-    // Update URL hash
     window.location.hash = view;
   }
 
@@ -74,6 +104,67 @@ const VP = (function(){
     }
   }
 
+  // ── Chat History Persistence ──
+  function saveMessages() {
+    try {
+      localStorage.setItem('vp_chat_msgs', JSON.stringify(state.messages.slice(-50)));
+    } catch (e) { /* quota exceeded - ignore */ }
+  }
+
+  function loadMessages() {
+    try {
+      const saved = localStorage.getItem('vp_chat_msgs');
+      if (saved) {
+        const msgs = JSON.parse(saved);
+        if (Array.isArray(msgs) && msgs.length) {
+          state.messages = msgs;
+          return true;
+        }
+      }
+    } catch (e) { /* corrupt data */ }
+    return false;
+  }
+
+  function restoreChatMessages() {
+    const container = document.getElementById('chat-messages');
+    if (!container) return;
+    // Keep welcome message, then restore history
+    const welcome = container.querySelector('.msg-bot:first-child');
+    container.innerHTML = '';
+    if (welcome) container.appendChild(welcome.cloneNode(true));
+
+    state.messages.forEach(msg => {
+      const el = document.createElement('div');
+      el.className = `msg msg-${msg.role}`;
+      el.innerHTML = `
+        <div class="msg-avatar">${msg.role === 'assistant' ? '🐼' : '👤'}</div>
+        <div class="msg-body">
+          <div class="msg-sender">${msg.role === 'assistant' ? 'VisePanda' : 'You'}</div>
+          <div class="msg-text">${renderMD(msg.content)}</div>
+        </div>
+      `;
+      container.appendChild(el);
+    });
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function clearChatHistory() {
+    state.messages = [];
+    localStorage.removeItem('vp_chat_msgs');
+    const container = document.getElementById('chat-messages');
+    if (container) {
+      container.innerHTML = `
+        <div class="msg msg-bot">
+          <div class="msg-avatar">🐼</div>
+          <div class="msg-body">
+            <div class="msg-sender">VisePanda</div>
+            <div class="msg-text">Hi! I'm your China travel assistant. Tell me what kind of trip you're planning — cities, duration, interests, budget... I'll create a personalized itinerary for you! 🌏</div>
+          </div>
+        </div>
+      `;
+    }
+  }
+
   // ── City emoji helper ──
   function getCityEmoji(name) {
     const map = {
@@ -89,13 +180,11 @@ const VP = (function(){
   function getCityTags(name, info) {
     const tags = [];
     const vibe = (info.vibe || '').toLowerCase();
-    if (vibe.includes('food') || vibe.includes('cuisine')) tags.push('🍜 Foodie');
-    else if (name === 'chengdu' || name === 'guangzhou') tags.push('🍜 Foodie');
-    if (vibe.includes('nature') || vibe.includes('mountain') || vibe.includes('scenery') || vibe === 'nature') tags.push('🏞️ Nature');
+    if (vibe.includes('food') || vibe.includes('cuisine') || name === 'chengdu' || name === 'guangzhou') tags.push('🍜 Foodie');
+    if (vibe.includes('nature') || vibe.includes('mountain') || vibe.includes('scenery')) tags.push('🏞️ Nature');
     if (vibe.includes('history') || vibe.includes('ancient') || vibe.includes('culture')) tags.push('🏛️ History');
     if (vibe.includes('modern') || vibe.includes('city')) tags.push('🌃 Urban');
     if (vibe.includes('nightlife') || vibe.includes('vibrant')) tags.push('🌙 Nightlife');
-    if (vibe.includes('relax') || vibe.includes('chill')) tags.push('🧘 Relax');
     if (!tags.length) tags.push('📍 Destination');
     return tags.slice(0, 2);
   }
@@ -104,7 +193,7 @@ const VP = (function(){
   function createCityCard(name, info) {
     const card = document.createElement('div');
     card.className = 'city-card';
-    card.onclick = () => { navigate('chat'); focusChat(name); };
+    card.onclick = () => openCityDetail(name);
 
     const emoji = getCityEmoji(name);
     const hasImg = info.image ? true : false;
@@ -128,7 +217,6 @@ const VP = (function(){
         ${tags.length ? `<div class="city-tags">${tags.map(t => `<span class="city-tag">${t}</span>`).join('')}</div>` : ''}
       </div>
     `;
-
     return card;
   }
 
@@ -138,10 +226,8 @@ const VP = (function(){
     if (!grid) return;
     const data = await apiGet('/api/cities');
     if (!data || !data.cities) return;
-
     grid.innerHTML = '';
-    const entries = Object.entries(data.cities).slice(0, 8);
-    entries.forEach(([name, info]) => {
+    Object.entries(data.cities).slice(0, 8).forEach(([name, info]) => {
       grid.appendChild(createCityCard(name, info));
     });
   }
@@ -152,7 +238,6 @@ const VP = (function(){
     if (!grid) return;
     const data = await apiGet('/api/cities');
     if (!data || !data.cities) return;
-
     grid.innerHTML = '';
     Object.entries(data.cities).forEach(([name, info]) => {
       grid.appendChild(createCityCard(name, info));
@@ -180,10 +265,107 @@ const VP = (function(){
     });
   }
 
-  // ── Chat ──
+  // ═══════════════════════════════════════════════════════════
+  // CITY DETAIL MODAL
+  // ═══════════════════════════════════════════════════════════
+
+  function openCityDetail(name) {
+    const overlay = document.getElementById('city-detail-overlay');
+    const panel = document.getElementById('city-detail-panel');
+    if (!overlay || !panel) return;
+
+    panel.innerHTML = '<div class="modal-loading">Loading...</div>';
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+
+    apiGet(`/api/cities/${name}`).then(data => {
+      if (!data || !data.city) {
+        panel.innerHTML = '<div class="modal-error">Failed to load city data</div>';
+        return;
+      }
+      renderCityDetail(panel, name, data.city);
+    });
+  }
+
+  function renderCityDetail(panel, name, city) {
+    const emoji = getCityEmoji(name);
+    const tags = (city.highlights || []).slice(0, 4);
+
+    let foodHtml = '';
+    if (city.food && city.food.length) {
+      foodHtml = `<div class="detail-section">
+        <h3 class="detail-section-title">🍽️ Must-Eat Foods</h3>
+        <div class="detail-list">${city.food.map(f => `
+          <div class="food-item${f.must_try ? ' must' : ''}">
+            <div class="food-item-name">${f.must_try ? '⭐ ' : ''}${f.name_en || ''} <span class="food-item-cn">${f.name_cn || ''}</span></div>
+            <div class="food-item-desc">${f.description || ''}</div>
+            <div class="food-item-price">💰 ${f.price_range || ''}</div>
+          </div>
+        `).join('')}</div>
+      </div>` : '';
+    }
+
+    let hotelHtml = '';
+    if (city.hotels) {
+      const h = city.hotels;
+      hotelHtml = `<div class="detail-section">
+        <h3 class="detail-section-title">🏨 Accommodation</h3>
+        <div class="hotel-grid">
+          ${h.budget ? `<div class="hotel-tier"><div class="hotel-tier-label">Budget</div><div class="hotel-tier-range">${h.budget.range || ''}</div><div class="hotel-tier-desc">${h.budget.desc || ''} · ${h.budget.areas || ''}</div></div>` : ''}
+          ${h.mid ? `<div class="hotel-tier"><div class="hotel-tier-label">Mid</div><div class="hotel-tier-range">${h.mid.range || ''}</div><div class="hotel-tier-desc">${h.mid.desc || ''} · ${h.mid.areas || ''}</div></div>` : ''}
+          ${h.luxury ? `<div class="hotel-tier"><div class="hotel-tier-label">Luxury</div><div class="hotel-tier-range">${h.luxury.range || ''}</div><div class="hotel-tier-desc">${h.luxury.desc || ''} · ${h.luxury.areas || ''}</div></div>` : ''}
+        </div>
+        ${h.tip ? `<div class="detail-tip">💡 ${h.tip}</div>` : ''}
+      </div>`;
+    }
+
+    let tipsHtml = '';
+    if (city.tips && city.tips.length) {
+      tipsHtml = `<div class="detail-section">
+        <h3 class="detail-section-title">💡 Local Tips</h3>
+        <div class="detail-list">${city.tips.map(t => `
+          <div class="tip-item">${typeof t === 'object' ? `<strong>${t.en || ''}</strong>: ${t.tip || ''}` : t}</div>
+        `).join('')}</div>
+      </div>`;
+    }
+
+    panel.innerHTML = `
+      <div class="detail-header">
+        <span class="detail-emoji">${emoji}</span>
+        <div>
+          <h2 class="detail-name">${name}</h2>
+          <div class="detail-sub">${city.name_cn || ''} · ${city.province || ''}</div>
+        </div>
+        <button class="modal-close" onclick="VP.closeCityDetail()">✕</button>
+      </div>
+      <div class="detail-meta">
+        <span>📅 Best: ${city.best_season || ''}</span>
+        <span>⏱️ ${city.days || ''}</span>
+        <span>${city.vibe || ''}</span>
+      </div>
+      ${city.budget_tip ? `<div class="detail-tip">💰 ${city.budget_tip}</div>` : ''}
+      ${tags.length ? `<div class="detail-tags">${tags.map(t => `<span class="detail-tag">${t}</span>`).join('')}</div>` : ''}
+      ${foodHtml}
+      ${hotelHtml}
+      ${tipsHtml}
+      <div class="detail-actions">
+        <button class="btn-primary" onclick="VP.navigate('chat');setTimeout(()=>VP.focusChat('${name}'),100)">💬 Plan a Trip to ${name}</button>
+      </div>
+    `;
+  }
+
+  function closeCityDetail() {
+    const overlay = document.getElementById('city-detail-overlay');
+    if (overlay) overlay.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // CHAT
+  // ═══════════════════════════════════════════════════════════
+
   let abortController = null;
 
-  // City list for auto-detection in user messages
   const CITY_NAMES = [
     'beijing','shanghai','chengdu','xian','guilin','yunnan','hangzhou',
     'guangzhou','shenzhen','chongqing','changsha','nanjing','suzhou',
@@ -201,12 +383,12 @@ const VP = (function(){
   }
 
   const SUGGESTIONS = [
-    '3 days in Beijing 🏯',
-    'Shanghai food tour 🥟',
-    'Chengdu panda trip 🐼',
-    'Guilin nature escape 🏞️',
-    'Xi\'an history guide 🏛️',
-    'Budget tips for China 💰',
+    '3 days in Beijing',
+    'Shanghai food tour',
+    'Chengdu panda trip',
+    'Guilin nature escape',
+    "Xi'an history guide",
+    'Budget tips for China',
   ];
 
   function renderSuggestions() {
@@ -220,7 +402,7 @@ const VP = (function(){
       chip.onclick = () => {
         const input = document.getElementById('chat-input');
         if (input) {
-          input.value = s.replace(/ 🏯| 🥟| 🐼| 🏞️| 🏛️| 💰/g, '');
+          input.value = s;
           input.style.height = 'auto';
           toggleSendButton(true);
           input.focus();
@@ -233,14 +415,13 @@ const VP = (function(){
   function addMessage(text, role) {
     const container = document.getElementById('chat-messages');
     if (!container) return null;
-
     const msg = document.createElement('div');
     msg.className = `msg msg-${role}`;
     msg.innerHTML = `
-      <div class="msg-avatar">${role === 'bot' ? '🐼' : '👤'}</div>
+      <div class="msg-avatar">${role === 'assistant' || role === 'bot' ? '🐼' : '👤'}</div>
       <div class="msg-body">
-        <div class="msg-sender">${role === 'bot' ? 'VisePanda' : 'You'}</div>
-        <div class="msg-text">${text.replace(/\n/g, '<br>')}</div>
+        <div class="msg-sender">${role === 'assistant' || role === 'bot' ? 'VisePanda' : 'You'}</div>
+        <div class="msg-text">${role === 'user' ? text.replace(/\n/g, '<br>') : renderMD(text)}</div>
       </div>
     `;
     container.appendChild(msg);
@@ -251,7 +432,6 @@ const VP = (function(){
   function addTyping() {
     const container = document.getElementById('chat-messages');
     if (!container) return null;
-
     const msg = document.createElement('div');
     msg.className = 'msg msg-bot';
     msg.id = 'typing-msg';
@@ -259,7 +439,7 @@ const VP = (function(){
       <div class="msg-avatar">🐼</div>
       <div class="msg-body">
         <div class="msg-sender">VisePanda</div>
-        <div class="msg-text typing-dots"><span>.</span><span>.</span><span>.</span></div>
+        <div class="msg-text"><span class="typing-dots"><span>.</span><span>.</span><span>.</span></span></div>
       </div>
     `;
     container.appendChild(msg);
@@ -270,7 +450,9 @@ const VP = (function(){
   function updateTyping(el, content) {
     if (!el) return;
     const textDiv = el.querySelector('.msg-text');
-    if (textDiv && content) textDiv.innerHTML = content.replace(/\n/g, '<br>') + '<span class="cursor-blink">▌</span>';
+    if (textDiv && content) {
+      textDiv.innerHTML = renderMD(content) + '<span class="cursor-blink">▌</span>';
+    }
   }
 
   function removeMessage(el) {
@@ -282,10 +464,17 @@ const VP = (function(){
     if (btn) btn.disabled = !enabled;
   }
 
+  function toggleStopButton(show) {
+    const stopBtn = document.getElementById('chat-stop');
+    const sendBtn = document.getElementById('chat-send');
+    if (stopBtn) stopBtn.style.display = show ? 'flex' : 'none';
+    if (sendBtn) sendBtn.style.display = show ? 'none' : 'flex';
+  }
+
   function autoResize(el) {
     el.style.height = 'auto';
     el.style.height = Math.min(el.scrollHeight, 120) + 'px';
-    toggleSendButton(el.value.trim().length > 0);
+    if (!state.isStreaming) toggleSendButton(el.value.trim().length > 0);
   }
 
   async function sendMessage() {
@@ -295,17 +484,16 @@ const VP = (function(){
 
     input.value = '';
     input.style.height = 'auto';
-    toggleSendButton(false);
 
     // Add user message
     addMessage(text, 'user');
     state.messages.push({role: 'user', content: text});
+    saveMessages();
 
-    // Show typing indicator
+    // Show typing + stop button
     const typingId = addTyping();
-
-    // Stream response
     state.isStreaming = true;
+    toggleStopButton(true);
     abortController = new AbortController();
 
     try {
@@ -322,6 +510,9 @@ const VP = (function(){
       if (!resp.ok) {
         removeMessage(typingId);
         addMessage('Sorry, I couldn\'t process that. Please try again.', 'bot');
+        toggleStopButton(false);
+        state.isStreaming = false;
+        toggleSendButton(input.value.trim().length > 0);
         return;
       }
 
@@ -329,6 +520,7 @@ const VP = (function(){
       const decoder = new TextDecoder();
       let buffer = '';
       let botContent = '';
+      let doneReceived = false;
 
       while (true) {
         const {done, value} = await reader.read();
@@ -351,38 +543,71 @@ const VP = (function(){
             } else if (parsed.error) {
               removeMessage(typingId);
               addMessage('Error: ' + parsed.error, 'bot');
-              return;
+              doneReceived = true;
             } else if (parsed.done) {
-              // Done
+              doneReceived = true;
             }
           } catch (e) {
-            // Incomplete JSON chunk, skip
+            // Incomplete chunk
           }
         }
       }
 
-      // Finalize
       removeMessage(typingId);
       if (botContent) {
-        addMessage(botContent, 'bot');
+        addMessage(botContent, 'assistant');
         state.messages.push({role: 'assistant', content: botContent});
+        saveMessages();
+      } else if (!doneReceived) {
+        addMessage('I had trouble processing that. Could you try rephrasing?', 'bot');
       }
     } catch (e) {
-      if (e.name === 'AbortError') return;
-      removeMessage(typingId);
-      addMessage('Connection error. Please try again.', 'bot');
+      if (e.name === 'AbortError') {
+        // User stopped - save partial
+        if (state._partialContent) {
+          state.messages.push({role: 'assistant', content: state._partialContent});
+          saveMessages();
+        }
+      } else {
+        removeMessage(typingId);
+        addMessage('Connection error. Please try again.', 'bot');
+      }
     } finally {
       state.isStreaming = false;
+      toggleStopButton(false);
       abortController = null;
+      const input2 = document.getElementById('chat-input');
+      if (input2) toggleSendButton(input2.value.trim().length > 0);
     }
   }
 
   function stopStreaming() {
     if (abortController) {
+      // Save whatever we have before aborting
+      const typing = document.getElementById('typing-msg');
+      if (typing) {
+        const textDiv = typing.querySelector('.msg-text');
+        if (textDiv) {
+          const raw = textDiv.textContent.replace('▌', '').trim();
+          if (raw && raw !== '...') {
+            state._partialContent = raw;
+          }
+        }
+      }
       abortController.abort();
-      abortController = null;
     }
   }
+
+  // ── Keyboard shortcuts ──
+  document.addEventListener('keydown', (e) => {
+    // Escape to close modal
+    if (e.key === 'Escape') closeCityDetail();
+    // Ctrl+Shift+C to clear chat
+    if (e.key === 'C' && e.ctrlKey && e.shiftKey) {
+      e.preventDefault();
+      clearChatHistory();
+    }
+  });
 
   // ── Init ──
   function init() {
@@ -396,9 +621,12 @@ const VP = (function(){
       navigate(hash);
     }
 
+    // Restore chat history
+    const hasHistory = loadMessages();
+    if (hasHistory) restoreChatMessages();
+
     // Chat input events
     const chatInput = document.getElementById('chat-input');
-    const chatSend = document.getElementById('chat-send');
     if (chatInput) {
       chatInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
@@ -418,8 +646,11 @@ const VP = (function(){
     toggleTheme,
     focusChat,
     sendMessage,
-    autoResize,
     stopStreaming,
+    autoResize,
+    clearChatHistory,
+    openCityDetail,
+    closeCityDetail,
     init,
   };
 })();

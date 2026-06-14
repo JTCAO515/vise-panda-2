@@ -85,6 +85,7 @@
         <div class="chat-input-bar">
           <textarea id="chat-input" class="chat-input" rows="1" placeholder="Ask about China travel... (e.g. '3 days in Beijing')" oninput="VP.autoResize(this)"></textarea>
           <button id="chat-send" class="chat-send" onclick="VP.sendMessage()" disabled>Send</button>
+          <button id="chat-stop" class="chat-stop" onclick="VP.stopStreaming()" style="display:none">⏹ Stop</button>
         </div>
       </div>
     </section>
@@ -93,7 +94,7 @@
     <section id="view-cities" class="view">
       <div class="section">
         <h2 class="section-title">🏙 All Cities</h2>
-        <p class="section-sub">Browse our curated city knowledge base</p>
+        <p class="section-sub">Browse our curated city knowledge base — click a city for details</p>
         <div id="cities-grid" class="city-grid">
           <div class="sk-card skeleton" style="height:200px"><div class="sk-block"></div><div class="sk-block"></div><div class="sk-block"></div></div>
           <div class="sk-card skeleton" style="height:200px"><div class="sk-block"></div><div class="sk-block"></div><div class="sk-block"></div></div>
@@ -115,9 +116,14 @@
     </section>
   </main>
 
+  <!-- ═══ CITY DETAIL MODAL ═══ -->
+  <div id="city-detail-overlay" class="modal-overlay" onclick="if(event.target===this)VP.closeCityDetail()">
+    <div id="city-detail-panel" class="modal-panel"></div>
+  </div>
+
   <!-- ═══ FOOTER ═══ -->
   <footer id="footer">
-    <p>VisePanda v3.0.1 · AI China Travel Planner · 🐼</p>
+    <p>VisePanda v3.0.1 · AI China Travel Planner · 🐼 · <span class="footer-clear" onclick="VP.clearChatHistory()" style="cursor:pointer;text-decoration:underline;opacity:.5">Clear chat</span></p>
   </footer>
 </div>
 
