@@ -165,6 +165,12 @@ const VP = (function(){
     }
   }
 
+  // ── HTML escape helper ──
+  function escHtml(s) {
+    if (typeof s !== 'string') return '';
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
   // ── City emoji helper ──
   function getCityEmoji(name) {
     const map = {
@@ -291,67 +297,56 @@ const VP = (function(){
     const emoji = getCityEmoji(name);
     const tags = (city.highlights || []).slice(0, 4);
 
+    // Build food HTML
     let foodHtml = '';
     if (city.food && city.food.length) {
-      foodHtml = `<div class="detail-section">
-        <h3 class="detail-section-title">🍽️ Must-Eat Foods</h3>
-        <div class="detail-list">${city.food.map(f => `
-          <div class="food-item${f.must_try ? ' must' : ''}">
-            <div class="food-item-name">${f.must_try ? '⭐ ' : ''}${f.name_en || ''} <span class="food-item-cn">${f.name_cn || ''}</span></div>
-            <div class="food-item-desc">${f.description || ''}</div>
-            <div class="food-item-price">💰 ${f.price_range || ''}</div>
-          </div>
-        `).join('')}</div>
-      </div>` : '';
+      const items = city.food.map(f => {
+        const star = f.must_try ? '⭐ ' : '';
+        const cls = f.must_try ? 'food-item must' : 'food-item';
+        return '<div class="' + cls + '">'
+          + '<div class="food-item-name">' + star + escHtml(f.name_en || '') + ' <span class="food-item-cn">' + escHtml(f.name_cn || '') + '</span></div>'
+          + '<div class="food-item-desc">' + escHtml(f.description || '') + '</div>'
+          + '<div class="food-item-price">💰 ' + escHtml(f.price_range || '') + '</div>'
+          + '</div>';
+      }).join('');
+      foodHtml = '<div class="detail-section"><h3 class="detail-section-title">🍽️ Must-Eat Foods</h3><div class="detail-list">' + items + '</div></div>';
     }
 
+    // Build hotel HTML
     let hotelHtml = '';
     if (city.hotels) {
       const h = city.hotels;
-      hotelHtml = `<div class="detail-section">
-        <h3 class="detail-section-title">🏨 Accommodation</h3>
-        <div class="hotel-grid">
-          ${h.budget ? `<div class="hotel-tier"><div class="hotel-tier-label">Budget</div><div class="hotel-tier-range">${h.budget.range || ''}</div><div class="hotel-tier-desc">${h.budget.desc || ''} · ${h.budget.areas || ''}</div></div>` : ''}
-          ${h.mid ? `<div class="hotel-tier"><div class="hotel-tier-label">Mid</div><div class="hotel-tier-range">${h.mid.range || ''}</div><div class="hotel-tier-desc">${h.mid.desc || ''} · ${h.mid.areas || ''}</div></div>` : ''}
-          ${h.luxury ? `<div class="hotel-tier"><div class="hotel-tier-label">Luxury</div><div class="hotel-tier-range">${h.luxury.range || ''}</div><div class="hotel-tier-desc">${h.luxury.desc || ''} · ${h.luxury.areas || ''}</div></div>` : ''}
-        </div>
-        ${h.tip ? `<div class="detail-tip">💡 ${h.tip}</div>` : ''}
-      </div>`;
+      const tiers = [];
+      if (h.budget) tiers.push('<div class="hotel-tier"><div class="hotel-tier-label">Budget</div><div class="hotel-tier-range">' + escHtml(h.budget.range || '') + '</div><div class="hotel-tier-desc">' + escHtml(h.budget.desc || '') + ' · ' + escHtml(h.budget.areas || '') + '</div></div>');
+      if (h.mid) tiers.push('<div class="hotel-tier"><div class="hotel-tier-label">Mid</div><div class="hotel-tier-range">' + escHtml(h.mid.range || '') + '</div><div class="hotel-tier-desc">' + escHtml(h.mid.desc || '') + ' · ' + escHtml(h.mid.areas || '') + '</div></div>');
+      if (h.luxury) tiers.push('<div class="hotel-tier"><div class="hotel-tier-label">Luxury</div><div class="hotel-tier-range">' + escHtml(h.luxury.range || '') + '</div><div class="hotel-tier-desc">' + escHtml(h.luxury.desc || '') + ' · ' + escHtml(h.luxury.areas || '') + '</div></div>');
+      const tip = h.tip ? '<div class="detail-tip">💡 ' + escHtml(h.tip) + '</div>' : '';
+      hotelHtml = '<div class="detail-section"><h3 class="detail-section-title">🏨 Accommodation</h3><div class="hotel-grid">' + tiers.join('') + '</div>' + tip + '</div>';
     }
 
+    // Build tips HTML
     let tipsHtml = '';
     if (city.tips && city.tips.length) {
-      tipsHtml = `<div class="detail-section">
-        <h3 class="detail-section-title">💡 Local Tips</h3>
-        <div class="detail-list">${city.tips.map(t => `
-          <div class="tip-item">${typeof t === 'object' ? `<strong>${t.en || ''}</strong>: ${t.tip || ''}` : t}</div>
-        `).join('')}</div>
-      </div>`;
+      const items = city.tips.map(t => {
+        const content = typeof t === 'object' ? '<strong>' + escHtml(t.en || '') + '</strong>: ' + escHtml(t.tip || '') : escHtml(String(t));
+        return '<div class="tip-item">' + content + '</div>';
+      }).join('');
+      tipsHtml = '<div class="detail-section"><h3 class="detail-section-title">💡 Local Tips</h3><div class="detail-list">' + items + '</div></div>';
     }
 
-    panel.innerHTML = `
-      <div class="detail-header">
-        <span class="detail-emoji">${emoji}</span>
-        <div>
-          <h2 class="detail-name">${name}</h2>
-          <div class="detail-sub">${city.name_cn || ''} · ${city.province || ''}</div>
-        </div>
-        <button class="modal-close" onclick="VP.closeCityDetail()">✕</button>
-      </div>
-      <div class="detail-meta">
-        <span>📅 Best: ${city.best_season || ''}</span>
-        <span>⏱️ ${city.days || ''}</span>
-        <span>${city.vibe || ''}</span>
-      </div>
-      ${city.budget_tip ? `<div class="detail-tip">💰 ${city.budget_tip}</div>` : ''}
-      ${tags.length ? `<div class="detail-tags">${tags.map(t => `<span class="detail-tag">${t}</span>`).join('')}</div>` : ''}
-      ${foodHtml}
-      ${hotelHtml}
-      ${tipsHtml}
-      <div class="detail-actions">
-        <button class="btn-primary" onclick="VP.navigate('chat');setTimeout(()=>VP.focusChat('${name}'),100)">💬 Plan a Trip to ${name}</button>
-      </div>
-    `;
+    panel.innerHTML =
+      '<div class="detail-header">'
+      + '<span class="detail-emoji">' + emoji + '</span>'
+      + '<div><h2 class="detail-name">' + name + '</h2>'
+      + '<div class="detail-sub">' + escHtml(city.name_cn || '') + ' · ' + escHtml(city.province || '') + '</div></div>'
+      + '<button class="modal-close" onclick="VP.closeCityDetail()">✕</button></div>'
+      + '<div class="detail-meta"><span>📅 Best: ' + escHtml(city.best_season || '') + '</span><span>⏱️ ' + escHtml(city.days || '') + '</span><span>' + escHtml(city.vibe || '') + '</span></div>'
+      + (city.budget_tip ? '<div class="detail-tip">💰 ' + escHtml(city.budget_tip) + '</div>' : '')
+      + (tags.length ? '<div class="detail-tags">' + tags.map(function(t){return '<span class="detail-tag">' + escHtml(t) + '</span>';}).join('') + '</div>' : '')
+      + foodHtml
+      + hotelHtml
+      + tipsHtml
+      + '<div class="detail-actions"><button class="btn-primary" onclick="VP.navigate(\'chat\');setTimeout(function(){VP.focusChat(\'' + name.toLowerCase() + '\')},100)">💬 Plan a Trip to ' + name + '</button></div>';
   }
 
   function closeCityDetail() {
@@ -365,6 +360,7 @@ const VP = (function(){
   // ═══════════════════════════════════════════════════════════
 
   let abortController = null;
+  let currentCity = ''; // Track city across multi-turn conversation
 
   const CITY_NAMES = [
     'beijing','shanghai','chengdu','xian','guilin','yunnan','hangzhou',
@@ -396,6 +392,56 @@ const VP = (function(){
     if (!bar) return;
     bar.innerHTML = '';
     SUGGESTIONS.forEach(s => {
+      const chip = document.createElement('button');
+      chip.className = 'chat-chip';
+      chip.textContent = s;
+      chip.onclick = () => {
+        const input = document.getElementById('chat-input');
+        if (input) {
+          input.value = s;
+          input.style.height = 'auto';
+          toggleSendButton(true);
+          input.focus();
+        }
+      };
+      bar.appendChild(chip);
+    });
+  }
+
+  // Context-aware suggestions
+  function updateSuggestions() {
+    const bar = document.getElementById('chat-suggestions');
+    if (!bar) return;
+
+    let suggestions;
+    const lastMsg = state.messages[state.messages.length - 1];
+    const lastCity = currentCity || '';
+
+    if (lastMsg && lastMsg.role === 'assistant' && lastCity) {
+      // After discussing a city, show follow-up options
+      suggestions = [
+        `Make the ${lastCity} trip cheaper`,
+        `Show me a different ${lastCity} itinerary`,
+        `What about ${lastCity} nightlife?`,
+        `Another city similar to ${lastCity}`,
+        'Compare with a different city',
+        'Add this to my saved trips',
+      ];
+    } else if (lastCity) {
+      suggestions = [
+        `3 days in ${lastCity}`,
+        `${lastCity} food guide`,
+        `${lastCity} budget trip`,
+        `${lastCity} with kids`,
+        'Show me another city',
+        'Compare cities',
+      ];
+    } else {
+      suggestions = SUGGESTIONS;
+    }
+
+    bar.innerHTML = '';
+    suggestions.forEach(s => {
       const chip = document.createElement('button');
       chip.className = 'chat-chip';
       chip.textContent = s;
@@ -488,6 +534,11 @@ const VP = (function(){
     // Add user message
     addMessage(text, 'user');
     state.messages.push({role: 'user', content: text});
+
+    // Track current city across multi-turn conversation
+    const detected = detectCity(text);
+    if (detected) currentCity = detected;
+  
     saveMessages();
 
     // Show typing + stop button
@@ -501,8 +552,8 @@ const VP = (function(){
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
-          messages: state.messages.slice(-10),
-          city: detectCity(text),
+          messages: state.messages.slice(-12),
+          city: detectCity(text) || currentCity,
         }),
         signal: abortController.signal,
       });
@@ -558,6 +609,7 @@ const VP = (function(){
         addMessage(botContent, 'assistant');
         state.messages.push({role: 'assistant', content: botContent});
         saveMessages();
+        updateSuggestions();
       } else if (!doneReceived) {
         addMessage('I had trouble processing that. Could you try rephrasing?', 'bot');
       }
@@ -624,6 +676,9 @@ const VP = (function(){
     // Restore chat history
     const hasHistory = loadMessages();
     if (hasHistory) restoreChatMessages();
+
+    // Update suggestions based on conversation context
+    updateSuggestions();
 
     // Chat input events
     const chatInput = document.getElementById('chat-input');

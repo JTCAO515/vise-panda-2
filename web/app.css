@@ -232,6 +232,18 @@ body{
   font-size:14px;color:var(--text-muted);margin-bottom:20px;
 }
 
+/* ─── Stagger Grid Entrance ─── */
+.city-grid > *{animation:cardFadeIn .4s ease backwards}
+.city-grid > *:nth-child(1){animation-delay:0ms}
+.city-grid > *:nth-child(2){animation-delay:60ms}
+.city-grid > *:nth-child(3){animation-delay:120ms}
+.city-grid > *:nth-child(4){animation-delay:180ms}
+.city-grid > *:nth-child(5){animation-delay:240ms}
+.city-grid > *:nth-child(6){animation-delay:300ms}
+.city-grid > *:nth-child(7){animation-delay:360ms}
+.city-grid > *:nth-child(8){animation-delay:420ms}
+.city-grid > *:nth-child(n+9){animation-delay:480ms}
+
 /* ═══ CITY CARDS (Image-Rich) ═══ */
 .city-grid,.tools-grid{
   display:grid;
@@ -486,6 +498,7 @@ body{
 /* ═══ ANIMATIONS ═══ */
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes cardFadeIn{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 @keyframes drift{0%,100%{transform:translate(0,0)}25%{transform:translate(5px,-5px)}50%{transform:translate(-3px,-8px)}75%{transform:translate(-5px,-3px)}}
@@ -537,6 +550,7 @@ body{
   padding:20px;
   animation:fadeIn .2s ease;
 }
+[data-theme="light"] .modal-overlay{background:rgba(245,243,240,.8)}
 .modal-overlay.active{display:flex}
 .modal-panel{
   background:var(--bg-secondary);
@@ -660,30 +674,62 @@ body{
   display:flex;align-items:center;gap:4px;
   animation:fadeIn .15s ease;
 }
-.chat-stop:hover{background:#d44a3a}
+.chat-stop:hover{background:var(--accent-red-hover)}
 
 /* ═══ RESPONSIVE ═══ */
+
+/* Tablet (768-1024px) */
+@media(max-width:1024px){
+  .city-grid{grid-template-columns:repeat(3,1fr)}
+  .hero{padding:60px 20px 50px;min-height:340px}
+}
+
+/* Small tablet / large phone (480-768px) */
 @media(max-width:768px){
   .hero-title{font-size:28px}
   .hero-panda{font-size:48px}
   .hero{padding:60px 16px 40px;min-height:320px}
   .nav-btn{padding:6px 8px;font-size:12px}
   .brand-text{font-size:14px}
-  .city-grid,.tools-grid{grid-template-columns:repeat(2,1fr)}
-  .chat-container{height:calc(100vh - var(--header-h) - 30px)}
+  .city-grid{grid-template-columns:repeat(2,1fr)}
+  .tools-grid{grid-template-columns:repeat(2,1fr)}
+  .chat-container{height:calc(100vh - var(--header-h) - 30px);padding:8px}
   .hero-deco{display:none}
+  .modal-panel{max-width:95%;max-height:90vh;border-radius:var(--radius-lg)}
+  .detail-header{padding:16px 16px 12px}
+  .detail-section{padding:12px 16px}
+  .detail-meta{padding:8px 16px}
 }
+
+/* Phone (<480px) */
 @media(max-width:480px){
-  .hero-title{font-size:24px}
-  .hero-sub{font-size:14px}
-  .hero{padding:40px 12px 32px;min-height:280px}
-  .hero-panda{font-size:40px}
-  .header-nav{gap:0}
+  .hero-title{font-size:22px}
+  .hero-sub{font-size:13px}
+  .hero{padding:32px 12px 28px;min-height:260px}
+  .hero-panda{font-size:36px}
+  .hero-cta{padding:10px 24px;font-size:14px}
+  .header-nav{gap:2px}
   .nav-btn{padding:4px 6px;font-size:11px}
   .brand-text{display:none}
-  .city-grid,.tools-grid{grid-template-columns:1fr}
-  .chat-container{padding:8px;height:calc(100vh - var(--header-h) - 40px)}
-  .msg{max-width:92%}
+  .city-grid{grid-template-columns:1fr}
+  .tools-grid{grid-template-columns:1fr}
+  .city-card{min-height:170px}
+  .chat-container{height:calc(100vh - var(--header-h) - 40px);padding:4px}
+  .msg{max-width:95%}
+  .chat-chip{font-size:11px;padding:4px 8px}
+  .chat-input{font-size:13px;min-height:40px;padding:8px 12px}
+  .chat-send,.chat-stop{font-size:13px;padding:8px 14px;height:40px}
+  #footer{padding:16px 12px;font-size:11px}
+}
+
+/* Small phone (<360px) */
+@media(max-width:360px){
+  .hero-title{font-size:20px}
+  .hero{padding:24px 10px 24px;min-height:240px}
+  .city-grid{gap:8px}
+  .city-card{padding:14px;min-height:150px}
+  .chat-container{height:calc(100vh - var(--header-h) - 30px)}
+  .msg{max-width:98%}
 }
 
 /* ═══ Reduced Motion ═══ */
