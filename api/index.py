@@ -1,5 +1,5 @@
 """
-VisePanda v3.0.1 — China Travel AI
+VisePanda v3.0.2 — China Travel AI
 WSGI handler. Zero pip dependencies (stdlib only).
 """
 from __future__ import annotations
@@ -657,7 +657,7 @@ def app(environ, start_response):
     if path == "/api/health" and method == "GET":
         return _json(start_response, {
             "status": "alive",
-            "version": "3.0.1",
+            "version": "3.0.2",
             "build": "2026-06-14",
         })
 
