@@ -159,6 +159,18 @@ body{
 }
 .theme-toggle:hover{background:var(--bg-hover)}
 
+/* ── Version Badge ── */
+.version-badge{
+  font-size:10px;font-weight:600;letter-spacing:.5px;
+  padding:2px 8px;border-radius:20px;
+  background:var(--accent-red-soft);color:var(--accent-red);
+  border:1px solid color-mix(in srgb,var(--accent-red) 25%,transparent);
+  white-space:nowrap;user-select:none;
+  transition:opacity .2s;
+  opacity:.9;
+}
+.version-badge:hover{opacity:1}
+
 /* ═══ MAIN ═══ */
 #main{
   flex:1;

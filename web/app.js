@@ -949,6 +949,15 @@ const VP = (function(){
     const themeBtn = document.querySelector('.theme-toggle');
     if (themeBtn) themeBtn.textContent = state.theme === 'dark' ? '🌙' : '☀️';
 
+    // Fetch version from API and update badge + footer
+    fetch('/api/health').then(r => r.json()).then(d => {
+      const ver = d.version || '3.0.2';
+      const badge = document.getElementById('version-badge');
+      const footerVer = document.getElementById('footer-version');
+      if (badge) badge.textContent = 'v' + ver;
+      if (footerVer) footerVer.textContent = 'VisePanda v' + ver;
+    }).catch(() => {});
+
     // Hash-based nav
     const hash = window.location.hash.slice(1);
     if (hash && ['home','chat','trips','cities','tools'].includes(hash)) {
