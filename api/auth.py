@@ -25,7 +25,7 @@ from urllib.parse import parse_qs
 
 THIS_DIR = Path(__file__).resolve().parent
 DATA_DIR = THIS_DIR.parent / "data"
-DB_PATH = DATA_DIR / "users.db"
+DB_PATH = Path(os.environ.get("AUTH_DB_PATH", str(DATA_DIR / "users.db")))
 
 # ── Token lifetime ──
 TOKEN_DAYS = 7
