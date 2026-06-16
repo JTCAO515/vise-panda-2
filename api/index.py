@@ -242,7 +242,7 @@ def _yield_with_images(content):
     i = 0
     while i < len(parts):
         if parts[i]:
-            yield _sse_event(json.dumps({"token": parts[i]}))
+            yield _sse_event(json.dumps({"type": "token", "content": parts[i], "token": parts[i]}))
         i += 1
         if i < len(parts):
             key = parts[i]
@@ -262,13 +262,13 @@ def _yield_with_images(content):
                     found = f"/static/img/{name}"
                     break
             if found:
-                yield _sse_event(json.dumps({"image": {
+                yield _sse_event(json.dumps({"type": "image", "content": {
                     "key": key,
                     "url": found,
                     "label": label,
                 }}))
             else:
-                yield _sse_event(json.dumps({"token": f"[{label}]"}))
+                yield _sse_event(json.dumps({"type": "token", "content": f"[{label}]", "token": f"[{label}]"}))
 
 
 def _handle_chat(environ, start_response):
@@ -301,12 +301,9 @@ def _handle_chat(environ, start_response):
         # First, send FAQ match info if available
         if faq_match:
             yield _sse_event(json.dumps({
-                "faq": {
-                    "id": faq_match["id"],
-                    "title": faq_match["title"],
-                    "icon": faq_match["icon"],
-                    "matched_terms": faq_match.get("matched_terms", []),
-                }
+                "type": "faq",
+                "content": json.dumps(faq_match),
+                "faq": faq_match
             }))
 
         headers = {
@@ -358,13 +355,13 @@ def _handle_chat(environ, start_response):
                                                 # Check for image markers in this part
                                                 yield from _yield_with_images(part)
                                             if i < len(parts) - 1:
-                                                yield _sse_event(json.dumps({"split": True}))
+                                                yield _sse_event(json.dumps({"type": "split", "content": "---SEPARATOR---", "split": True}))
                                     else:
                                         yield from _yield_with_images(content)
                             except (json.JSONDecodeError, KeyError, IndexError):
                                 pass
         except Exception as ex:
-            yield _sse_event(json.dumps({"error": str(ex)}), event="error")
+            yield _sse_event(json.dumps({"type": "error", "content": str(ex)}), event="error")
 
         yield _sse_event(json.dumps({"done": True}), event="done")
 
