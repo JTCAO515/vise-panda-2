@@ -46,6 +46,11 @@ DEEPSEEK_BASE = (os.environ.get("DEEPSEEK_BASE_URL", "")
                  or "https://api.deepseek.com/v1")
 
 
+# ── Auth module (users + sessions + admin) ──
+from api import auth as _auth
+_auth.ensure_init()
+
+
 # ════════════════════════════════════════════════════════════
 # HELPERS
 # ════════════════════════════════════════════════════════════
@@ -802,6 +807,11 @@ def app(environ, start_response):
     # ── Config API ──
     if path == "/api/config" and method == "GET":
         return _handle_config(start_response)
+
+    # ── Auth & Admin routes ──
+    auth_result = _auth.handle_auth_route(environ, start_response, path, method)
+    if auth_result is not None:
+        return auth_result
 
     # ── Static files (web/ + static/) ──
     result = _serve_static(start_response, path)
