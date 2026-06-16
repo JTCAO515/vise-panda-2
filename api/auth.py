@@ -70,6 +70,18 @@ def init_db():
         );
         CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
         CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at);
+        CREATE TABLE IF NOT EXISTS trips (
+            id          TEXT PRIMARY KEY,
+            user_id     TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            title       TEXT NOT NULL,
+            city        TEXT NOT NULL,
+            days        TEXT NOT NULL DEFAULT '',
+            preview     TEXT NOT NULL DEFAULT '',
+            is_saved    INTEGER NOT NULL DEFAULT 0,
+            created_at  TEXT NOT NULL DEFAULT (datetime('now')),
+            updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+        CREATE INDEX IF NOT EXISTS idx_trips_user ON trips(user_id);
     """)
     conn.commit()
     conn.close()
@@ -298,6 +310,81 @@ def handle_admin_delete(environ, start_response, user_id: str):
 
 
 # ════════════════════════════════════════════════════════════
+# TRIPS API
+# ════════════════════════════════════════════════════════════
+
+def handle_get_trips(environ, start_response):
+    """GET /api/trips — list current user's trips (recents and saved)."""
+    user = require_auth(environ, start_response)
+    if user is None:
+        return []
+    conn = _get_db()
+    recent = [dict(r) for r in conn.execute(
+        "SELECT id, title, city, days, preview, created_at FROM trips WHERE user_id = ? AND is_saved = 0 ORDER BY created_at DESC LIMIT 20",
+        (user["id"],)
+    ).fetchall()]
+    saved = [dict(r) for r in conn.execute(
+        "SELECT id, title, city, days, preview, created_at FROM trips WHERE user_id = ? AND is_saved = 1 ORDER BY created_at DESC LIMIT 20",
+        (user["id"],)
+    ).fetchall()]
+    conn.close()
+    return _json(start_response, {"trips": {"recent": recent, "saved": saved}})
+
+
+def handle_create_trip(environ, start_response):
+    """POST /api/trips — create a new trip."""
+    user = require_auth(environ, start_response)
+    if user is None:
+        return []
+    data = _read_post(environ)
+    title = (data.get("title", "") or "").strip()
+    city = (data.get("city", "") or "").strip()
+    days = (data.get("days", "") or "").strip()
+    preview = (data.get("preview", "") or "").strip()
+    is_saved = 1 if data.get("is_saved", False) else 0
+
+    if not title or not city:
+        return _json_error(start_response, "Title and city required")
+
+    trip_id = uuid.uuid4().hex
+    conn = _get_db()
+    conn.execute(
+        "INSERT INTO trips (id, user_id, title, city, days, preview, is_saved) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        (trip_id, user["id"], title, city, days, preview, is_saved),
+    )
+    conn.commit()
+    conn.close()
+    return _json(start_response, {
+        "trip": {"id": trip_id, "title": title, "city": city, "days": days, "preview": preview},
+        "message": "Trip created",
+    }, "201 Created")
+
+
+def handle_delete_trip(environ, start_response, trip_id: str):
+    """DELETE /api/trips/:id — delete a trip (only owner or admin)."""
+    user = require_auth(environ, start_response)
+    if user is None:
+        return []
+
+    conn = _get_db()
+    trip = conn.execute("SELECT id, user_id FROM trips WHERE id = ?", (trip_id,)).fetchone()
+    if trip is None:
+        conn.close()
+        return _json_error(start_response, "Trip not found", "404 Not Found")
+
+    trip = dict(trip)
+    # Only trip owner or admin can delete
+    if trip["user_id"] != user["id"] and user["role"] != "admin":
+        conn.close()
+        return _json_error(start_response, "Permission denied", "403 Forbidden")
+
+    conn.execute("DELETE FROM trips WHERE id = ?", (trip_id,))
+    conn.commit()
+    conn.close()
+    return _json(start_response, {"message": "Trip deleted", "trip_id": trip_id})
+
+
+# ════════════════════════════════════════════════════════════
 # AUTH MIDDLEWARE
 # ════════════════════════════════════════════════════════════
 
@@ -394,4 +481,18 @@ def handle_auth_route(environ, start_response, path: str, method: str) -> list[b
             return _json_error(start_response, "User ID required", "400 Bad Request")
         return handle_admin_delete(environ, start_response, user_id)
 
+    # ── Trip routes ──
+    if path == "/api/trips" and method == "GET":
+        return handle_get_trips(environ, start_response)
+
+    if path == "/api/trips" and method == "POST":
+        return handle_create_trip(environ, start_response)
+
+    if path.startswith("/api/trips/") and method == "DELETE":
+        trip_id = path[len("/api/trips/"):]
+        if trip_id:
+            return handle_delete_trip(environ, start_response, trip_id)
+        return _json_error(start_response, "Trip ID required", "400 Bad Request")
+
     return None  # not matched
+
