@@ -813,6 +813,10 @@ def app(environ, start_response):
     if auth_result is not None:
         return auth_result
 
+    # ── Admin panel (serve static HTML) ──
+    if path in ("/admin", "/admin/") and method == "GET":
+        return _serve_static(start_response, "admin.html")
+
     # ── Static files (web/ + static/) ──
     result = _serve_static(start_response, path)
     if result is not None:
