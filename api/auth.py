@@ -21,6 +21,7 @@ import sqlite3
 import time
 import urllib.request
 import uuid
+from datetime import datetime, timedelta
 from pathlib import Path
 from urllib.parse import parse_qs
 
@@ -128,6 +129,19 @@ def init_db():
         conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google ON users(google_id) WHERE google_id IS NOT NULL")
     except sqlite3.OperationalError:
         pass
+
+    # Password reset tokens table
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS password_reset_tokens (
+            id          TEXT PRIMARY KEY,
+            user_id     TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            token       TEXT UNIQUE NOT NULL,
+            expires_at  TEXT NOT NULL,
+            used        INTEGER NOT NULL DEFAULT 0,
+            created_at  TEXT NOT NULL DEFAULT (datetime('now'))
+        )
+    """)
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_reset_token ON password_reset_tokens(token)")
 
     # Seed default admin user (safe to run repeatedly)
     admin_email = os.environ.get("ADMIN_EMAIL", "admin@go2china.space")
@@ -804,6 +818,91 @@ def handle_update_profile(environ, start_response):
 
 
 # ════════════════════════════════════════════════════════════
+# PASSWORD RESET API
+# ════════════════════════════════════════════════════════════
+
+def handle_forgot_password(environ, start_response):
+    """POST /api/auth/forgot-password — generate reset token."""
+    data = _read_post(environ)
+    if not data or not data.get("email"):
+        return _json_error(start_response, "Email is required")
+
+    email = data["email"].strip().lower()
+    conn = _get_db()
+    user = conn.execute("SELECT id FROM users WHERE email = ?", (email,)).fetchone()
+
+    # Always return the same response to prevent email enumeration
+    response = {"message": "If this email exists, a reset code has been generated."}
+
+    if user:
+        user_id = user["id"]
+        # Invalidate old unused tokens for this user
+        conn.execute("UPDATE password_reset_tokens SET used = 1 WHERE user_id = ? AND used = 0", (user_id,))
+
+        token = uuid.uuid4().hex[:32]
+        token_id = uuid.uuid4().hex[:16]
+        expires = (datetime.utcnow() + timedelta(hours=1)).strftime("%Y-%m-%d %H:%M:%S")
+
+        conn.execute(
+            "INSERT INTO password_reset_tokens (id, user_id, token, expires_at) VALUES (?, ?, ?, ?)",
+            (token_id, user_id, token, expires)
+        )
+        # Include the token in response so the frontend can show it
+        # In production, this would be sent via email instead
+        response["reset_token"] = token
+        response["user_id"] = user_id
+
+    conn.commit()
+    conn.close()
+    return _json(start_response, response)
+
+
+def handle_reset_password(environ, start_response):
+    """POST /api/auth/reset-password — use token to set new password."""
+    data = _read_post(environ)
+    if not data:
+        return _json_error(start_response, "No data provided")
+
+    token = (data.get("token") or "").strip()
+    password = data.get("password") or ""
+
+    if not token or not password:
+        return _json_error(start_response, "Token and new password are required")
+
+    if len(password) < 4:
+        return _json_error(start_response, "Password must be at least 4 characters")
+
+    conn = _get_db()
+    row = conn.execute(
+        "SELECT id, user_id, expires_at FROM password_reset_tokens WHERE token = ? AND used = 0",
+        (token,)
+    ).fetchone()
+
+    if row is None:
+        conn.close()
+        return _json_error(start_response, "Invalid or expired reset token", "400 Bad Request")
+
+    token_data = dict(row)
+    expires = datetime.strptime(token_data["expires_at"], "%Y-%m-%d %H:%M:%S")
+    if datetime.utcnow() > expires:
+        conn.close()
+        return _json_error(start_response, "Reset token has expired", "400 Bad Request")
+
+    # Update password
+    pw_hash, salt = _hash_password(password)
+    conn.execute(
+        "UPDATE users SET password_hash = ?, salt = ?, updated_at = datetime('now') WHERE id = ?",
+        (pw_hash, salt, token_data["user_id"])
+    )
+    # Mark token as used
+    conn.execute("UPDATE password_reset_tokens SET used = 1 WHERE id = ?", (token_data["id"],))
+    conn.commit()
+    conn.close()
+
+    return _json(start_response, {"message": "Password has been reset successfully"})
+
+
+# ════════════════════════════════════════════════════════════
 # ADMIN API
 # ════════════════════════════════════════════════════════════
 
@@ -1006,6 +1105,13 @@ def handle_auth_route(environ, start_response, path: str, method: str) -> list[b
     # ── User settings ──
     if path == "/api/auth/update-profile" and method == "POST":
         return handle_update_profile(environ, start_response)
+
+    # ── Password reset ──
+    if path == "/api/auth/forgot-password" and method == "POST":
+        return handle_forgot_password(environ, start_response)
+
+    if path == "/api/auth/reset-password" and method == "POST":
+        return handle_reset_password(environ, start_response)
 
     # ── Admin routes ──
     if path == "/api/admin/stats" and method == "GET":

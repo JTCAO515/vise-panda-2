@@ -600,6 +600,7 @@ body{
 .auth-switch a{color:var(--accent-gold);text-decoration:none}
 .auth-switch a:hover{text-decoration:underline}
 .auth-success-icon{text-align:center;font-size:48px;margin-bottom:12px}
+.auth-success-info{background:rgba(74,156,109,.12);color:#4a9c6d;padding:8px 12px;border-radius:8px;font-size:13px;margin-bottom:12px;word-break:break-all}
 .auth-divider{display:flex;align-items:center;margin:16px 0;color:var(--text-dim);font-size:12px}
 .auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border-strong)}
 .auth-divider span{padding:0 12px}

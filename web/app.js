@@ -1455,6 +1455,126 @@ const VP = (function(){
       document.getElementById('auth-reg-error').classList.add('hidden');
     },
 
+    // Password Reset
+    showForgotPassword: function() {
+      document.getElementById('auth-login-form').classList.add('hidden');
+      document.getElementById('auth-register-form').classList.add('hidden');
+      document.getElementById('auth-success').classList.add('hidden');
+      document.getElementById('auth-forgot-form').classList.remove('hidden');
+      document.getElementById('auth-reset-form').classList.add('hidden');
+      document.getElementById('auth-forgot-error').classList.add('hidden');
+      document.getElementById('auth-forgot-success').classList.add('hidden');
+      document.getElementById('auth-reset-error').classList.add('hidden');
+      document.getElementById('auth-reset-success').classList.add('hidden');
+      document.getElementById('forgot-email').value = '';
+      document.getElementById('forgot-email').focus();
+    },
+
+    sendResetCode: function() {
+      var email = document.getElementById('forgot-email').value.trim();
+      var errEl = document.getElementById('auth-forgot-error');
+      var succEl = document.getElementById('auth-forgot-success');
+      errEl.classList.add('hidden');
+      succEl.classList.add('hidden');
+
+      if (!email) {
+        errEl.textContent = 'Please enter your email.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      var btn = document.querySelector('#auth-forgot-form .auth-submit');
+      btn.disabled = true;
+      btn.textContent = 'Sending...';
+
+      fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({email: email})
+      }).then(function(r){ return r.json(); }).then(function(data){
+        btn.disabled = false;
+        btn.textContent = 'Send Reset Code';
+
+        // Show the reset code if returned (in production this would be sent via email)
+        if (data.reset_token) {
+          // Pre-fill the reset code for convenience
+          document.getElementById('reset-code').value = data.reset_token;
+          // Show the reset form
+          document.getElementById('auth-forgot-form').classList.add('hidden');
+          document.getElementById('auth-reset-form').classList.remove('hidden');
+          document.getElementById('auth-reset-error').classList.add('hidden');
+          document.getElementById('auth-reset-success').classList.add('hidden');
+          document.getElementById('reset-password').focus();
+        } else {
+          // Email not found — show message but don't reveal if email exists
+          succEl.textContent = data.message || 'If this email exists, a reset code has been sent.';
+          succEl.classList.remove('hidden');
+        }
+      }).catch(function(){
+        btn.disabled = false;
+        btn.textContent = 'Send Reset Code';
+        errEl.textContent = 'Failed to send. Try again.';
+        errEl.classList.remove('hidden');
+      });
+    },
+
+    completeReset: function() {
+      var code = document.getElementById('reset-code').value.trim();
+      var pw = document.getElementById('reset-password').value;
+      var pw2 = document.getElementById('reset-password-confirm').value;
+      var errEl = document.getElementById('auth-reset-error');
+      var succEl = document.getElementById('auth-reset-success');
+      errEl.classList.add('hidden');
+      succEl.classList.add('hidden');
+
+      if (!code) {
+        errEl.textContent = 'Please enter the reset code.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+      if (!pw || pw.length < 4) {
+        errEl.textContent = 'Password must be at least 4 characters.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+      if (pw !== pw2) {
+        errEl.textContent = 'Passwords do not match.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      var btn = document.querySelector('#auth-reset-form .auth-submit');
+      btn.disabled = true;
+      btn.textContent = 'Resetting...';
+
+      fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({token: code, password: pw})
+      }).then(function(r){ return r.json(); }).then(function(data){
+        btn.disabled = false;
+        btn.textContent = 'Reset Password';
+        if (data.error) {
+          errEl.textContent = data.error;
+          errEl.classList.remove('hidden');
+          return;
+        }
+        succEl.textContent = 'Password reset successfully! You can now sign in.';
+        succEl.classList.remove('hidden');
+        // Show login after 2 seconds
+        setTimeout(function(){
+          document.getElementById('auth-reset-form').classList.add('hidden');
+          document.getElementById('auth-login-form').classList.remove('hidden');
+          document.getElementById('login-email').focus();
+        }, 2000);
+      }).catch(function(){
+        btn.disabled = false;
+        btn.textContent = 'Reset Password';
+        errEl.textContent = 'Failed to reset. Try again.';
+        errEl.classList.remove('hidden');
+      });
+    },
+
     // Login
     login: function() {
       var email = document.getElementById('login-email').value.trim();
@@ -1580,6 +1700,21 @@ const VP = (function(){
     toggleMenu: function() {
       var dd = document.getElementById('user-dropdown');
       dd.classList.toggle('hidden');
+      // Add click-outside-to-close listener
+      if (!dd.classList.contains('hidden')) {
+        setTimeout(function(){
+          document.addEventListener('click', VP.auth._closeDropdownOutside);
+        }, 0);
+      }
+    },
+
+    _closeDropdownOutside: function(e) {
+      var dd = document.getElementById('user-dropdown');
+      var avatar = document.querySelector('.user-avatar');
+      if (dd && !dd.contains(e.target) && avatar && !avatar.contains(e.target)) {
+        dd.classList.add('hidden');
+        document.removeEventListener('click', VP.auth._closeDropdownOutside);
+      }
     },
 
     // My Chats modal
