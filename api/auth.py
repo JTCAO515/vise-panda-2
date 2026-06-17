@@ -128,6 +128,19 @@ def init_db():
         conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google ON users(google_id) WHERE google_id IS NOT NULL")
     except sqlite3.OperationalError:
         pass
+
+    # Seed default admin user (safe to run repeatedly)
+    admin_email = os.environ.get("ADMIN_EMAIL", "admin@go2china.space")
+    admin_password = os.environ.get("ADMIN_PASSWORD", "admin123")
+    existing = conn.execute("SELECT id FROM users WHERE email = ?", (admin_email,)).fetchone()
+    if existing is None:
+        pw_hash, salt = _hash_password(admin_password)
+        admin_id = uuid.uuid4().hex[:16]
+        conn.execute(
+            "INSERT INTO users (id, email, password_hash, salt, display_name, role, status) VALUES (?, ?, ?, ?, ?, 'admin', 'active')",
+            (admin_id, admin_email, pw_hash, salt, "Admin")
+        )
+
     conn.commit()
     conn.close()
 
