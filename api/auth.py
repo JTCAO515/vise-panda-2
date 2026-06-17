@@ -25,7 +25,9 @@ from urllib.parse import parse_qs
 
 THIS_DIR = Path(__file__).resolve().parent
 DATA_DIR = THIS_DIR.parent / "data"
-DB_PATH = Path(os.environ.get("AUTH_DB_PATH", str(DATA_DIR / "users.db")))
+# Vercel Serverless: /tmp is writable, everything else is read-only
+_DEFAULT_DB = str(Path("/tmp/users.db") if os.environ.get("VERCEL") else DATA_DIR / "users.db")
+DB_PATH = Path(os.environ.get("AUTH_DB_PATH", _DEFAULT_DB))
 
 # ── Token lifetime ──
 TOKEN_DAYS = 7
