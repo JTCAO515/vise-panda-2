@@ -84,6 +84,23 @@ def init_db():
             updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
         );
         CREATE INDEX IF NOT EXISTS idx_trips_user ON trips(user_id);
+        CREATE TABLE IF NOT EXISTS chat_conversations (
+            id          TEXT PRIMARY KEY,
+            user_id     TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            title       TEXT NOT NULL DEFAULT '',
+            message_count INTEGER NOT NULL DEFAULT 0,
+            created_at  TEXT NOT NULL DEFAULT (datetime('now')),
+            updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+        CREATE TABLE IF NOT EXISTS chat_messages (
+            id              TEXT PRIMARY KEY,
+            conversation_id TEXT NOT NULL REFERENCES chat_conversations(id) ON DELETE CASCADE,
+            role            TEXT NOT NULL,
+            content         TEXT NOT NULL,
+            created_at      TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+        CREATE INDEX IF NOT EXISTS idx_conv_user ON chat_conversations(user_id);
+        CREATE INDEX IF NOT EXISTS idx_msg_conv ON chat_messages(conversation_id, created_at);
     """)
     conn.commit()
     conn.close()
@@ -419,6 +436,288 @@ def require_admin(environ, start_response) -> dict | None:
     return user
 
 
+def require_role(*allowed_roles) -> callable:
+    """Middleware factory: check auth + role in allowed_roles. Returns middleware function."""
+    def _check(environ, start_response) -> dict | None:
+        user = require_auth(environ, start_response)
+        if user is None:
+            return None
+        if user["role"] not in allowed_roles:
+            _json_error(start_response, "Access denied", "403 Forbidden")
+            return None
+        return user
+    return _check
+
+
+# ════════════════════════════════════════════════════════════
+# CHAT HISTORY API
+# ════════════════════════════════════════════════════════════
+
+def handle_chat_save(environ, start_response):
+    """POST /api/auth/chat/save — save/update a conversation with messages."""
+    check_auth = require_role("user", "ops", "admin")
+    user = check_auth(environ, start_response)
+    if user is None:
+        return []
+    data = _read_post(environ)
+    conv_id = data.get("conversation_id") or uuid.uuid4().hex
+    messages = data.get("messages", [])
+    if not messages:
+        return _json_error(start_response, "Messages required")
+
+    conn = _get_db()
+    # Check if conversation exists and belongs to user
+    existing = conn.execute(
+        "SELECT id FROM chat_conversations WHERE id = ? AND user_id = ?",
+        (conv_id, user["id"])
+    ).fetchone()
+
+    title = data.get("title", "") or messages[0].get("content", "")[:50] if messages else ""
+
+    if existing:
+        # Update existing
+        conn.execute(
+            "UPDATE chat_conversations SET title = ?, updated_at = datetime('now') WHERE id = ?",
+            (title or "Chat", conv_id)
+        )
+    else:
+        # Create new
+        conn.execute(
+            "INSERT INTO chat_conversations (id, user_id, title) VALUES (?, ?, ?)",
+            (conv_id, user["id"], title or "Chat")
+        )
+
+    # Insert messages (skip duplicates by checking content + created_at rough dedup)
+    inserted = 0
+    for msg in messages:
+        role = msg.get("role", "user")
+        content = msg.get("content", "")
+        if not content:
+            continue
+        msg_id = msg.get("id") or uuid.uuid4().hex
+        conn.execute(
+            "INSERT OR IGNORE INTO chat_messages (id, conversation_id, role, content) VALUES (?, ?, ?, ?)",
+            (msg_id, conv_id, role, content)
+        )
+        inserted += 1
+
+    # Update message count
+    count = conn.execute(
+        "SELECT COUNT(*) FROM chat_messages WHERE conversation_id = ?",
+        (conv_id,)
+    ).fetchone()[0]
+    conn.execute(
+        "UPDATE chat_conversations SET message_count = ? WHERE id = ?",
+        (count, conv_id)
+    )
+    conn.commit()
+    conn.close()
+
+    return _json(start_response, {
+        "conversation_id": conv_id,
+        "saved": inserted,
+        "total_messages": count,
+    })
+
+
+def handle_chat_history(environ, start_response):
+    """GET /api/auth/chat-history?page=1&limit=20 — list user's conversations."""
+    check_auth = require_role("user", "ops", "admin")
+    user = check_auth(environ, start_response)
+    if user is None:
+        return []
+
+    params = parse_qs(environ.get("QUERY_STRING", ""))
+    page = int(params.get("page", ["1"])[0])
+    limit = min(int(params.get("limit", ["20"])[0]), 100)
+    offset = (page - 1) * limit
+
+    conn = _get_db()
+    total = conn.execute(
+        "SELECT COUNT(*) FROM chat_conversations WHERE user_id = ?",
+        (user["id"],)
+    ).fetchone()[0]
+    rows = conn.execute(
+        "SELECT id, title, message_count, created_at, updated_at FROM chat_conversations "
+        "WHERE user_id = ? ORDER BY updated_at DESC LIMIT ? OFFSET ?",
+        (user["id"], limit, offset)
+    ).fetchall()
+    conn.close()
+
+    return _json(start_response, {
+        "conversations": [dict(r) for r in rows],
+        "total": total,
+        "page": page,
+        "limit": limit,
+    })
+
+
+def handle_chat_detail(environ, start_response, conv_id: str):
+    """GET /api/auth/chat/:id — get full conversation with messages."""
+    check_auth = require_role("user", "ops", "admin")
+    user = check_auth(environ, start_response)
+    if user is None:
+        return []
+
+    conn = _get_db()
+    conv = conn.execute(
+        "SELECT id, title, message_count, created_at, updated_at FROM chat_conversations "
+        "WHERE id = ? AND user_id = ?",
+        (conv_id, user["id"])
+    ).fetchone()
+
+    if conv is None:
+        conn.close()
+        return _json_error(start_response, "Conversation not found", "404 Not Found")
+
+    messages = conn.execute(
+        "SELECT id, role, content, created_at FROM chat_messages WHERE conversation_id = ? ORDER BY created_at",
+        (conv_id,)
+    ).fetchall()
+    conn.close()
+
+    return _json(start_response, {
+        "conversation": dict(conv),
+        "messages": [dict(m) for m in messages],
+    })
+
+
+# ════════════════════════════════════════════════════════════
+# ADMIN API
+# ════════════════════════════════════════════════════════════
+
+def handle_admin_stats(start_response, current_user: dict):
+    """GET /api/admin/stats — dashboard statistics."""
+    conn = _get_db()
+    total_users = conn.execute("SELECT COUNT(*) FROM users").fetchone()[0]
+    by_role = {}
+    for r in conn.execute("SELECT role, COUNT(*) as cnt FROM users GROUP BY role").fetchall():
+        by_role[r["role"]] = r["cnt"]
+    by_status = {}
+    for s in conn.execute("SELECT status, COUNT(*) as cnt FROM users GROUP BY status").fetchall():
+        by_status[s["status"]] = s["cnt"]
+    total_convs = conn.execute("SELECT COUNT(*) FROM chat_conversations").fetchone()[0]
+    today_convs = conn.execute(
+        "SELECT COUNT(*) FROM chat_conversations WHERE date(created_at) = date('now')"
+    ).fetchone()[0]
+    today_users = conn.execute(
+        "SELECT COUNT(DISTINCT user_id) FROM chat_conversations WHERE date(created_at) = date('now')"
+    ).fetchone()[0]
+    conn.close()
+
+    return _json(start_response, {
+        "total_users": total_users,
+        "users_by_role": by_role,
+        "users_by_status": by_status,
+        "total_conversations": total_convs,
+        "today_conversations": today_convs,
+        "today_active_users": today_users,
+    })
+
+
+def handle_admin_user_update(environ, start_response, user_id: str):
+    """PATCH /api/admin/users/:id — update user (role, status, display_name)."""
+    data = _read_post(environ)
+    if not data:
+        return _json_error(start_response, "No data provided")
+
+    conn = _get_db()
+    row = conn.execute("SELECT id, role FROM users WHERE id = ?", (user_id,)).fetchone()
+    if row is None:
+        conn.close()
+        return _json_error(start_response, "User not found", "404 Not Found")
+
+    updates = []
+    params = []
+    for field in ["display_name", "role", "status"]:
+        if field in data and data[field]:
+            # Validate role
+            if field == "role" and data[field] not in ("user", "ops", "admin"):
+                conn.close()
+                return _json_error(start_response, f"Invalid role: {data[field]}")
+            # Validate status
+            if field == "status" and data[field] not in ("active", "disabled", "pending"):
+                conn.close()
+                return _json_error(start_response, f"Invalid status: {data[field]}")
+            updates.append(f"{field} = ?")
+            params.append(data[field])
+
+    if not updates:
+        conn.close()
+        return _json_error(start_response, "No valid fields to update")
+
+    params.append(user_id)
+    conn.execute(
+        f"UPDATE users SET updated_at = datetime('now'), {', '.join(updates)} WHERE id = ?",
+        params
+    )
+    conn.commit()
+
+    # Return updated user
+    row = conn.execute(
+        "SELECT id, email, display_name, role, status, created_at, updated_at FROM users WHERE id = ?",
+        (user_id,)
+    ).fetchone()
+    conn.close()
+
+    return _json(start_response, {"user": dict(row), "message": "User updated"})
+
+
+def handle_admin_user_chat(environ, start_response, user_id: str):
+    """GET /api/admin/users/:id/chat — list a user's conversations."""
+    conn = _get_db()
+    # Check user exists
+    user_row = conn.execute("SELECT id, email FROM users WHERE id = ?", (user_id,)).fetchone()
+    if user_row is None:
+        conn.close()
+        return _json_error(start_response, "User not found", "404 Not Found")
+
+    rows = conn.execute(
+        "SELECT id, title, message_count, created_at, updated_at FROM chat_conversations "
+        "WHERE user_id = ? ORDER BY updated_at DESC LIMIT 50",
+        (user_id,)
+    ).fetchall()
+    conn.close()
+
+    return _json(start_response, {
+        "user": dict(user_row),
+        "conversations": [dict(r) for r in rows],
+        "total": len(rows),
+    })
+
+
+def handle_admin_chat_detail(environ, start_response, conv_id: str):
+    """GET /api/admin/chat/:id — view any conversation's full messages."""
+    conn = _get_db()
+    conv = conn.execute(
+        "SELECT id, user_id, title, message_count, created_at, updated_at FROM chat_conversations "
+        "WHERE id = ?",
+        (conv_id,)
+    ).fetchone()
+
+    if conv is None:
+        conn.close()
+        return _json_error(start_response, "Conversation not found", "404 Not Found")
+
+    conv = dict(conv)
+    # Get user info
+    user_row = conn.execute(
+        "SELECT email FROM users WHERE id = ?", (conv["user_id"],)
+    ).fetchone()
+    conv["user_email"] = user_row["email"] if user_row else "unknown"
+
+    messages = conn.execute(
+        "SELECT id, role, content, created_at FROM chat_messages WHERE conversation_id = ? ORDER BY created_at",
+        (conv_id,)
+    ).fetchall()
+    conn.close()
+
+    return _json(start_response, {
+        "conversation": conv,
+        "messages": [dict(m) for m in messages],
+    })
+
+
 # ════════════════════════════════════════════════════════════
 # CORS preflight & routing helper
 # ════════════════════════════════════════════════════════════
@@ -467,21 +766,73 @@ def handle_auth_route(environ, start_response, path: str, method: str) -> list[b
     if path == "/api/auth/me" and method == "GET":
         return handle_me(environ, start_response)
 
+    # ── Chat history routes ──
+    if path == "/api/auth/chat/save" and method == "POST":
+        return handle_chat_save(environ, start_response)
+
+    if path == "/api/auth/chat-history" and method == "GET":
+        return handle_chat_history(environ, start_response)
+
+    if path.startswith("/api/auth/chat/") and method == "GET":
+        conv_id = path[len("/api/auth/chat/"):]
+        if conv_id and "/" not in conv_id:
+            return handle_chat_detail(environ, start_response, conv_id)
+
     # ── Admin routes ──
-    if path == "/api/admin/users" and method == "GET":
-        user = require_admin(environ, start_response)
+    if path == "/api/admin/stats" and method == "GET":
+        check = require_role("ops", "admin")
+        user = check(environ, start_response)
         if user is None:
-            return []  # error already sent
+            return []
+        return handle_admin_stats(start_response, user)
+
+    if path == "/api/admin/users" and method == "GET":
+        check = require_role("ops", "admin")
+        user = check(environ, start_response)
+        if user is None:
+            return []
         return handle_admin_users(start_response)
 
     if path.startswith("/api/admin/users/") and method == "DELETE":
-        user = require_admin(environ, start_response)
+        check = require_role("ops", "admin")
+        user = check(environ, start_response)
         if user is None:
             return []
         user_id = path[len("/api/admin/users/"):]
-        if not user_id:
-            return _json_error(start_response, "User ID required", "400 Bad Request")
+        if not user_id or "/" in user_id:
+            return _json_error(start_response, "Invalid user ID", "400 Bad Request")
         return handle_admin_delete(environ, start_response, user_id)
+
+    # PATCH /api/admin/users/:id — admin only (can edit role/status)
+    admin_patch_match = path.startswith("/api/admin/users/") and method == "PATCH"
+    if admin_patch_match:
+        user_id = path[len("/api/admin/users/"):]
+        if user_id and "/" not in user_id:
+            check = require_role("admin")
+            user = check(environ, start_response)
+            if user is None:
+                return []
+            return handle_admin_user_update(environ, start_response, user_id)
+
+    # GET /api/admin/users/:id/chat — ops/admin view user conversations
+    if path.startswith("/api/admin/users/") and path.endswith("/chat") and method == "GET":
+        user_id = path[len("/api/admin/users/"):-len("/chat")]
+        if user_id and "/" not in user_id:
+            check = require_role("ops", "admin")
+            user = check(environ, start_response)
+            if user is None:
+                return []
+            return handle_admin_user_chat(environ, start_response, user_id)
+
+    # GET /api/admin/chat/:id — ops/admin view conversation details
+    if path.startswith("/api/admin/chat/") and method == "GET":
+        conv_id = path[len("/api/admin/chat/"):]
+        if conv_id and "/" not in conv_id:
+            check = require_role("ops", "admin")
+            user = check(environ, start_response)
+            if user is None:
+                return []
+            return handle_admin_chat_detail(environ, start_response, conv_id)
 
     # ── Trip routes ──
     if path == "/api/trips" and method == "GET":

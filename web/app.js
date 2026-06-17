@@ -1371,6 +1371,288 @@ const VP = (function(){
     renderSuggestions();
   }
 
+  // ════════════════════════════════════════════════════════════
+  // AUTH MODULE
+  // ════════════════════════════════════════════════════════════
+
+  var _authToken = localStorage.getItem('vp_token');
+  var _authUser = null;
+
+  if (_authToken) {
+    // Try to restore session on load
+    fetch('/api/auth/me', {
+      headers: {'Authorization': 'Bearer ' + _authToken}
+    }).then(function(r){
+      if (r.ok) return r.json();
+      _authToken = null;
+      localStorage.removeItem('vp_token');
+    }).then(function(data){
+      if (data && data.user) {
+        _authUser = data.user;
+        localStorage.setItem('vp_user', JSON.stringify(data.user));
+        _updateAuthUI();
+      }
+    }).catch(function(){
+      _authToken = null;
+      localStorage.removeItem('vp_token');
+    });
+  }
+
+  function _updateAuthUI() {
+    var authBtn = document.getElementById('auth-btn');
+    var userMenu = document.getElementById('user-menu');
+    var adminLink = document.getElementById('admin-link');
+    if (_authToken && _authUser) {
+      authBtn.style.display = 'none';
+      userMenu.style.display = 'block';
+      document.getElementById('user-avatar-text').textContent =
+        (_authUser.display_name || _authUser.email || 'U')[0].toUpperCase();
+      document.getElementById('dropdown-user-email').textContent =
+        _authUser.display_name || _authUser.email || '';
+      if (adminLink) {
+        adminLink.style.display = (_authUser.role === 'admin' || _authUser.role === 'ops') ? 'block' : 'none';
+      }
+    } else {
+      authBtn.style.display = 'block';
+      userMenu.style.display = 'none';
+    }
+  }
+
+  var auth = {
+    // State
+    isLoggedIn: function() { return !!_authToken && !!_authUser; },
+    getUser: function() { return _authUser; },
+    getToken: function() { return _authToken; },
+
+    // Show login modal
+    showModal: function() {
+      document.getElementById('auth-modal-overlay').classList.remove('hidden');
+      document.getElementById('auth-error').classList.add('hidden');
+      document.getElementById('auth-reg-error').classList.add('hidden');
+      document.getElementById('auth-login-form').classList.remove('hidden');
+      document.getElementById('auth-register-form').classList.add('hidden');
+      document.getElementById('auth-success').classList.add('hidden');
+      document.getElementById('login-email').value = '';
+      document.getElementById('login-password').value = '';
+      document.getElementById('login-email').focus();
+    },
+
+    closeModal: function() {
+      document.getElementById('auth-modal-overlay').classList.add('hidden');
+    },
+
+    showLogin: function() {
+      document.getElementById('auth-login-form').classList.remove('hidden');
+      document.getElementById('auth-register-form').classList.add('hidden');
+      document.getElementById('auth-success').classList.add('hidden');
+      document.getElementById('auth-error').classList.add('hidden');
+    },
+
+    showRegister: function() {
+      document.getElementById('auth-login-form').classList.add('hidden');
+      document.getElementById('auth-register-form').classList.remove('hidden');
+      document.getElementById('auth-success').classList.add('hidden');
+      document.getElementById('auth-reg-error').classList.add('hidden');
+    },
+
+    // Login
+    login: function() {
+      var email = document.getElementById('login-email').value.trim();
+      var password = document.getElementById('login-password').value;
+      var errEl = document.getElementById('auth-error');
+
+      if (!email || !password) {
+        errEl.textContent = 'Please enter email and password';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      errEl.classList.add('hidden');
+      var btn = document.querySelector('#auth-login-form .auth-submit');
+      btn.disabled = true;
+      btn.textContent = 'Signing in...';
+
+      fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({email: email, password: password})
+      }).then(function(r){
+        return r.json().then(function(d){ d._status = r.status; return d; });
+      }).then(function(data){
+        if (data._status >= 400) {
+          throw new Error(data.error || 'Login failed');
+        }
+        _authToken = data.token;
+        _authUser = data.user;
+        localStorage.setItem('vp_token', _authToken);
+        localStorage.setItem('vp_user', JSON.stringify(data.user));
+        _updateAuthUI();
+        // Show success
+        document.getElementById('auth-login-form').classList.add('hidden');
+        document.getElementById('auth-success-title').textContent = 'Welcome back! 🐼';
+        document.getElementById('auth-success-msg').textContent = 'You\'re signed in as ' + email;
+        document.getElementById('auth-success').classList.remove('hidden');
+      }).catch(function(err){
+        errEl.textContent = err.message;
+        errEl.classList.remove('hidden');
+        btn.disabled = false;
+        btn.textContent = 'Sign In';
+      });
+    },
+
+    // Register
+    register: function() {
+      var email = document.getElementById('reg-email').value.trim();
+      var password = document.getElementById('reg-password').value;
+      var name = document.getElementById('reg-name').value.trim();
+      var errEl = document.getElementById('auth-reg-error');
+
+      if (!email || !password) {
+        errEl.textContent = 'Email and password are required';
+        errEl.classList.remove('hidden');
+        return;
+      }
+      if (password.length < 6) {
+        errEl.textContent = 'Password must be at least 6 characters';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      errEl.classList.add('hidden');
+      var btn = document.querySelector('#auth-register-form .auth-submit');
+      btn.disabled = true;
+      btn.textContent = 'Creating account...';
+
+      var payload = {email: email, password: password};
+      if (name) payload.display_name = name;
+
+      fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+      }).then(function(r){
+        return r.json().then(function(d){ d._status = r.status; return d; });
+      }).then(function(data){
+        if (data._status >= 400) {
+          throw new Error(data.error || 'Registration failed');
+        }
+        // Auto-login after register
+        return fetch('/api/auth/login', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({email: email, password: password})
+        }).then(function(r){
+          return r.json().then(function(d){ d._status = r.status; return d; });
+        }).then(function(loginData){
+          if (loginData._status >= 400) throw new Error('Auto-login failed');
+          _authToken = loginData.token;
+          _authUser = loginData.user;
+          localStorage.setItem('vp_token', _authToken);
+          localStorage.setItem('vp_user', JSON.stringify(loginData.user));
+          _updateAuthUI();
+          document.getElementById('auth-register-form').classList.add('hidden');
+          document.getElementById('auth-success-title').textContent = 'Account created! 🎉';
+          document.getElementById('auth-success-msg').textContent = 'Welcome to VisePanda, ' + email;
+          document.getElementById('auth-success').classList.remove('hidden');
+        });
+      }).catch(function(err){
+        errEl.textContent = err.message;
+        errEl.classList.remove('hidden');
+        btn.disabled = false;
+        btn.textContent = 'Create Account';
+      });
+    },
+
+    // Logout
+    logout: function() {
+      _authToken = null;
+      _authUser = null;
+      localStorage.removeItem('vp_token');
+      localStorage.removeItem('vp_user');
+      _updateAuthUI();
+      // Close dropdown
+      document.getElementById('user-dropdown').classList.add('hidden');
+      // Reload to reset all state
+      location.reload();
+    },
+
+    // User menu dropdown
+    toggleMenu: function() {
+      var dd = document.getElementById('user-dropdown');
+      dd.classList.toggle('hidden');
+    },
+
+    // My Chats modal
+    showMyChats: function() {
+      document.getElementById('user-dropdown').classList.add('hidden');
+      document.getElementById('chats-modal-overlay').classList.remove('hidden');
+      document.getElementById('chats-list').innerHTML = '<p class="chats-empty">Loading...</p>';
+
+      fetch('/api/auth/chat-history', {
+        headers: {'Authorization': 'Bearer ' + _authToken}
+      }).then(function(r){ return r.json(); }).then(function(data){
+        var html = '';
+        if (!data.conversations || data.conversations.length === 0) {
+          html = '<p class="chats-empty">No saved conversations yet.</p>';
+        } else {
+          data.conversations.forEach(function(conv){
+            var title = conv.title || 'Chat';
+            var date = (conv.updated_at || conv.created_at || '').split('T')[0] || '';
+            html += '<div class="chat-item" onclick="VP.auth.loadChat(\'' + conv.id + '\')">'
+              + '<div class="chat-item-title">' + escHtml(title) + '</div>'
+              + '<div class="chat-item-meta">' + (conv.message_count || 0) + ' messages · ' + date + '</div>'
+              + '</div>';
+          });
+        }
+        document.getElementById('chats-list').innerHTML = html;
+      }).catch(function(){
+        document.getElementById('chats-list').innerHTML = '<p class="chats-empty">Failed to load conversations.</p>';
+      });
+    },
+
+    closeChatsModal: function() {
+      document.getElementById('chats-modal-overlay').classList.add('hidden');
+    },
+
+    loadChat: function(convId) {
+      // Navigate to chat and load conversation
+      document.getElementById('chats-modal-overlay').classList.add('hidden');
+      navigate('chat');
+      // Could trigger load of conversation messages
+      console.log('Load chat:', convId);
+    },
+
+    showMyTrips: function() {
+      document.getElementById('user-dropdown').classList.add('hidden');
+      navigate('trips');
+    },
+
+    goToAdmin: function() {
+      window.open('/admin', '_blank');
+    },
+
+    // Save current chat (to be called from chat module)
+    saveChat: function(convId, messages) {
+      if (!_authToken) return Promise.resolve(null);
+      var title = '';
+      if (messages && messages.length > 0 && messages[0].content) {
+        title = messages[0].content.substring(0, 50);
+      }
+      return fetch('/api/auth/chat/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + _authToken
+        },
+        body: JSON.stringify({
+          conversation_id: convId || null,
+          title: title,
+          messages: messages || []
+        })
+      }).then(function(r){ return r.json(); });
+    },
+  };
+
   // ── Expose public API ──
   return {
     navigate,
@@ -1389,6 +1671,7 @@ const VP = (function(){
     mapOpenChat,
     chatOverlayBack,
     init,
+    auth,
   };
 })();
 

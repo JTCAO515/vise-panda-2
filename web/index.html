@@ -40,6 +40,25 @@
     </nav>
     <div class="header-right">
       <span id="version-badge" class="version-badge">v3.0.8</span>
+      <div id="auth-area" class="auth-area">
+        <button id="auth-btn" class="auth-btn" onclick="VP.auth.showModal()" style="display:none">Sign In</button>
+        <div id="user-menu" class="user-menu" style="display:none">
+          <button class="user-avatar" onclick="VP.auth.toggleMenu()">
+            <span id="user-avatar-text">U</span>
+          </button>
+          <div id="user-dropdown" class="user-dropdown hidden">
+            <div class="dropdown-user-info">
+              <span id="dropdown-user-email">user@email.com</span>
+            </div>
+            <div class="dropdown-divider"></div>
+            <button onclick="VP.auth.showMyChats()">💬 My Chats</button>
+            <button onclick="VP.auth.showMyTrips()">📋 My Trips</button>
+            <button id="admin-link" onclick="VP.auth.goToAdmin()" style="display:none">⚙️ Admin Panel</button>
+            <div class="dropdown-divider"></div>
+            <button onclick="VP.auth.logout()" class="dropdown-danger">🚪 Sign Out</button>
+          </div>
+        </div>
+      </div>
       <button class="theme-toggle" onclick="VP.toggleTheme()" aria-label="Toggle theme">🌙</button>
     </div>
   </header>
@@ -182,6 +201,69 @@
           <button id="chat-send-overlay" class="chat-send" disabled>Send</button>
           <button id="chat-stop-overlay" class="chat-stop" style="display:none">⏹ Stop</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ AUTH MODAL ═══ -->
+  <div id="auth-modal-overlay" class="modal-overlay auth-modal-overlay hidden" onclick="if(event.target===this)VP.auth.closeModal()">
+    <div id="auth-modal-panel" class="modal-panel auth-modal-panel">
+      <button class="auth-modal-close" onclick="VP.auth.closeModal()">✕</button>
+      <div id="auth-modal-body">
+        <!-- Login form -->
+        <div id="auth-login-form" class="auth-form">
+          <h2 class="auth-title">Sign In</h2>
+          <p class="auth-subtitle">Sign in to save your trips &amp; chat history</p>
+          <div class="auth-field">
+            <label>Email</label>
+            <input type="email" id="login-email" placeholder="your@email.com" autocomplete="email">
+          </div>
+          <div class="auth-field">
+            <label>Password</label>
+            <input type="password" id="login-password" placeholder="Enter password" autocomplete="current-password">
+          </div>
+          <div id="auth-error" class="auth-error hidden"></div>
+          <button class="auth-submit" onclick="VP.auth.login()">Sign In</button>
+          <p class="auth-switch">Don't have an account? <a href="#" onclick="VP.auth.showRegister();return false">Create one</a></p>
+        </div>
+        <!-- Register form -->
+        <div id="auth-register-form" class="auth-form hidden">
+          <h2 class="auth-title">Create Account</h2>
+          <p class="auth-subtitle">Join VisePanda to save and manage your trips</p>
+          <div class="auth-field">
+            <label>Email</label>
+            <input type="email" id="reg-email" placeholder="your@email.com" autocomplete="email">
+          </div>
+          <div class="auth-field">
+            <label>Nickname (optional)</label>
+            <input type="text" id="reg-name" placeholder="Your nickname" autocomplete="name">
+          </div>
+          <div class="auth-field">
+            <label>Password</label>
+            <input type="password" id="reg-password" placeholder="At least 6 characters" autocomplete="new-password">
+          </div>
+          <div id="auth-reg-error" class="auth-error hidden"></div>
+          <button class="auth-submit" onclick="VP.auth.register()">Create Account</button>
+          <p class="auth-switch">Already have an account? <a href="#" onclick="VP.auth.showLogin();return false">Sign in</a></p>
+        </div>
+        <!-- Success state -->
+        <div id="auth-success" class="auth-form hidden">
+          <div class="auth-success-icon">✅</div>
+          <h2 class="auth-title" id="auth-success-title">Success!</h2>
+          <p id="auth-success-msg" class="auth-subtitle">You're now signed in.</p>
+          <button class="auth-submit" onclick="VP.auth.closeModal()">Continue</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MY CHATS MODAL ═══ -->
+  <div id="chats-modal-overlay" class="modal-overlay hidden" onclick="if(event.target===this)VP.auth.closeChatsModal()">
+    <div id="chats-modal-panel" class="modal-panel chats-modal-panel">
+      <button class="auth-modal-close" onclick="VP.auth.closeChatsModal()">✕</button>
+      <h2 class="auth-title">💬 My Chats</h2>
+      <div id="chats-list" class="chats-list">
+        <p class="chats-empty">Loading...</p>
       </div>
     </div>
   </div>
