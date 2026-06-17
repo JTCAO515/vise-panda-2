@@ -1077,3 +1077,24 @@ body{
   #map-canvas{min-height:250px}
   .map-city-detail{width:calc(100vw - 24px);top:8px;right:8px;padding:16px}
 }
+
+/* Chat View Modal */
+.chat-viewer{display:none;margin-top:16px}
+.chat-viewer.active{display:block}
+.chat-viewer-back{color:var(--accent-gold);cursor:pointer;font-size:13px;margin-bottom:12px;display:inline-block}
+.chat-viewer-back:hover{text-decoration:underline}
+.chat-viewer-title{font-size:15px;font-weight:600;margin-bottom:12px}
+.chat-messages{max-height:420px;overflow-y:auto;padding:12px;background:var(--bg-secondary);border-radius:8px;border:1px solid var(--border-strong)}
+.chat-message-item{padding:10px 0;border-bottom:1px solid var(--border-subtle)}
+.chat-message-item:last-child{border-bottom:none}
+.chat-message-role{font-size:11px;font-weight:600;text-transform:uppercase;margin-bottom:4px}
+.chat-message-role.user{color:var(--accent-blue)}
+.chat-message-role.assistant{color:var(--accent-gold)}
+.chat-message-content{font-size:13px;line-height:1.6;white-space:pre-wrap;word-break:break-word;color:var(--text-primary)}
+.chat-message-time{font-size:11px;color:var(--text-dim);margin-top:4px}
+.chat-loading{text-align:center;padding:24px;color:var(--text-muted);font-size:13px}
+
+/* Settings Modal */
+.settings-modal-panel{max-width:420px;width:90%;background:var(--bg-primary);border-radius:16px;padding:32px;border:1px solid var(--border-strong);position:relative}
+.settings-modal-panel .auth-title{margin-bottom:20px}
+.settings-success{background:rgba(74,156,109,.12);color:#4a9c6d;padding:8px 12px;border-radius:8px;font-size:13px;margin-bottom:12px}

@@ -54,6 +54,7 @@
             <div class="dropdown-divider"></div>
             <button onclick="VP.auth.showMyChats()">💬 My Chats</button>
             <button onclick="VP.auth.showMyTrips()">📋 My Trips</button>
+            <button onclick="VP.auth.showSettings()">⚙️ Settings</button>
             <button id="admin-link" onclick="VP.auth.goToAdmin()" style="display:none">⚙️ Admin Panel</button>
             <div class="dropdown-divider"></div>
             <button onclick="VP.auth.logout()" class="dropdown-danger">🚪 Sign Out</button>
@@ -280,10 +281,42 @@
   <div id="chats-modal-overlay" class="modal-overlay hidden" onclick="if(event.target===this)VP.auth.closeChatsModal()">
     <div id="chats-modal-panel" class="modal-panel chats-modal-panel">
       <button class="auth-modal-close" onclick="VP.auth.closeChatsModal()">✕</button>
-      <h2 class="auth-title">💬 My Chats</h2>
+
+      <!-- Chat List -->
       <div id="chats-list" class="chats-list">
         <p class="chats-empty">Loading...</p>
       </div>
+
+      <!-- Chat Viewer (hidden until a chat is selected) -->
+      <div id="chat-viewer" class="chat-viewer">
+        <div class="chat-viewer-back" onclick="VP.auth.backToChatList()">← Back</div>
+        <div id="chat-viewer-title" class="chat-viewer-title">Chat</div>
+        <div id="chat-messages" class="chat-messages"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SETTINGS MODAL ═══ -->
+  <div id="settings-modal-overlay" class="modal-overlay auth-modal-overlay hidden" onclick="if(event.target===this)VP.auth.closeSettings()">
+    <div class="modal-panel settings-modal-panel">
+      <button class="auth-modal-close" onclick="VP.auth.closeSettings()">✕</button>
+      <h2 class="auth-title">⚙️ Settings</h2>
+      <p class="auth-subtitle">Manage your account</p>
+      <div id="settings-error" class="auth-error hidden"></div>
+      <div id="settings-success" class="settings-success hidden"></div>
+      <div class="auth-field">
+        <label>Display Name</label>
+        <input type="text" id="settings-name" placeholder="Your name" autocomplete="name">
+      </div>
+      <div class="auth-field">
+        <label>New Password (leave blank to keep current)</label>
+        <input type="password" id="settings-password" placeholder="New password" autocomplete="new-password">
+      </div>
+      <div class="auth-field">
+        <label>Confirm Password</label>
+        <input type="password" id="settings-password-confirm" placeholder="Confirm new password" autocomplete="new-password">
+      </div>
+      <button class="auth-submit" onclick="VP.auth.saveSettings()">Save Changes</button>
     </div>
   </div>
 

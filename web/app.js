@@ -1615,11 +1615,48 @@ const VP = (function(){
     },
 
     loadChat: function(convId) {
-      // Navigate to chat and load conversation
-      document.getElementById('chats-modal-overlay').classList.add('hidden');
-      navigate('chat');
-      // Could trigger load of conversation messages
-      console.log('Load chat:', convId);
+      // Fetch and display conversation messages in the modal
+      var viewer = document.getElementById('chat-viewer');
+      var list = document.getElementById('chats-list');
+      var msgsEl = document.getElementById('chat-messages');
+      var titleEl = document.getElementById('chat-viewer-title');
+
+      msgsEl.innerHTML = '<div class="chat-loading">Loading...</div>';
+      list.style.display = 'none';
+      viewer.classList.add('active');
+
+      fetch('/api/auth/chat/' + convId, {
+        headers: {'Authorization': 'Bearer ' + _authToken}
+      }).then(function(r){ return r.json(); }).then(function(data){
+        if (data.error) {
+          msgsEl.innerHTML = '<div class="chats-empty">' + escHtml(data.error) + '</div>';
+          return;
+        }
+        titleEl.textContent = (data.conversation && data.conversation.title) || 'Chat';
+        var msgs = data.messages || [];
+        if (msgs.length === 0) {
+          msgsEl.innerHTML = '<div class="chats-empty">No messages</div>';
+          return;
+        }
+        msgsEl.innerHTML = msgs.map(function(m){
+          var roleClass = m.role === 'user' ? 'user' : 'assistant';
+          var time = (m.created_at || '').split('T').join(' ');
+          return '<div class="chat-message-item">'
+            + '<div class="chat-message-role ' + roleClass + '">' + escHtml(m.role) + '</div>'
+            + '<div class="chat-message-content">' + escHtml(m.content) + '</div>'
+            + '<div class="chat-message-time">' + time + '</div>'
+            + '</div>';
+        }).join('');
+        // Scroll to bottom
+        msgsEl.scrollTop = msgsEl.scrollHeight;
+      }).catch(function(){
+        msgsEl.innerHTML = '<div class="chats-empty">Failed to load conversation.</div>';
+      });
+    },
+
+    backToChatList: function() {
+      document.getElementById('chat-viewer').classList.remove('active');
+      document.getElementById('chats-list').style.display = '';
     },
 
     showMyTrips: function() {
@@ -1629,6 +1666,86 @@ const VP = (function(){
 
     goToAdmin: function() {
       window.open('/admin', '_blank');
+    },
+
+    // ═══ Settings ═══
+    showSettings: function() {
+      document.getElementById('user-dropdown').classList.add('hidden');
+      // Pre-fill display name
+      var nameInput = document.getElementById('settings-name');
+      if (_authUser && _authUser.display_name) {
+        nameInput.value = _authUser.display_name;
+      } else {
+        nameInput.value = '';
+      }
+      document.getElementById('settings-password').value = '';
+      document.getElementById('settings-password-confirm').value = '';
+      document.getElementById('settings-error').classList.add('hidden');
+      document.getElementById('settings-success').classList.add('hidden');
+      document.getElementById('settings-modal-overlay').classList.remove('hidden');
+    },
+
+    closeSettings: function() {
+      document.getElementById('settings-modal-overlay').classList.add('hidden');
+    },
+
+    saveSettings: function() {
+      var errEl = document.getElementById('settings-error');
+      var succEl = document.getElementById('settings-success');
+      errEl.classList.add('hidden');
+      succEl.classList.add('hidden');
+
+      var name = document.getElementById('settings-name').value.trim();
+      var pw = document.getElementById('settings-password').value;
+      var pw2 = document.getElementById('settings-password-confirm').value;
+
+      if (!name && !pw) {
+        errEl.textContent = 'No changes to save.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      if (pw && pw !== pw2) {
+        errEl.textContent = 'Passwords do not match.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      if (pw && pw.length < 4) {
+        errEl.textContent = 'Password must be at least 4 characters.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      var body = {};
+      if (name) body.display_name = name;
+      if (pw) body.password = pw;
+
+      fetch('/api/auth/update-profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + _authToken
+        },
+        body: JSON.stringify(body)
+      }).then(function(r){ return r.json(); }).then(function(data){
+        if (data.error) {
+          errEl.textContent = data.error;
+          errEl.classList.remove('hidden');
+          return;
+        }
+        // Update local user info
+        if (_authUser && name) _authUser.display_name = name;
+        // Show success
+        succEl.textContent = 'Settings saved!';
+        succEl.classList.remove('hidden');
+        // Clear password fields
+        document.getElementById('settings-password').value = '';
+        document.getElementById('settings-password-confirm').value = '';
+      }).catch(function(){
+        errEl.textContent = 'Failed to save. Try again.';
+        errEl.classList.remove('hidden');
+      });
     },
 
     // Save current chat (to be called from chat module)

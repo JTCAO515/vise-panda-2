@@ -750,6 +750,60 @@ def handle_chat_detail(environ, start_response, conv_id: str):
 
 
 # ════════════════════════════════════════════════════════════
+# USER SETTINGS API
+# ════════════════════════════════════════════════════════════
+
+def handle_update_profile(environ, start_response):
+    """PATCH /api/auth/update-profile — update display_name, password."""
+    check_auth = require_role("user", "ops", "admin")
+    user = check_auth(environ, start_response)
+    if user is None:
+        return []
+
+    data = _read_post(environ)
+    if not data:
+        return _json_error(start_response, "No data provided")
+
+    conn = _get_db()
+    updates = []
+    params = []
+
+    # Display name
+    if "display_name" in data and data["display_name"] is not None:
+        name = data["display_name"].strip()
+        if name:
+            updates.append("display_name = ?")
+            params.append(name)
+
+    # Password
+    if "password" in data and data["password"]:
+        pw = data["password"]
+        if len(pw) < 4:
+            conn.close()
+            return _json_error(start_response, "Password must be at least 4 characters")
+        pw_hash, salt = _hash_password(pw)
+        updates.append("password_hash = ?")
+        params.append(pw_hash)
+        updates.append("salt = ?")
+        params.append(salt)
+
+    if not updates:
+        conn.close()
+        return _json_error(start_response, "Nothing to update")
+
+    updates.append("updated_at = datetime('now')")
+    params.append(user["id"])
+
+    conn.execute(
+        f"UPDATE users SET {', '.join(updates)} WHERE id = ?",
+        params
+    )
+    conn.commit()
+    conn.close()
+    return _json(start_response, {"message": "Profile updated"})
+
+
+# ════════════════════════════════════════════════════════════
 # ADMIN API
 # ════════════════════════════════════════════════════════════
 
@@ -948,6 +1002,10 @@ def handle_auth_route(environ, start_response, path: str, method: str) -> list[b
         conv_id = path[len("/api/auth/chat/"):]
         if conv_id and "/" not in conv_id:
             return handle_chat_detail(environ, start_response, conv_id)
+
+    # ── User settings ──
+    if path == "/api/auth/update-profile" and method == "POST":
+        return handle_update_profile(environ, start_response)
 
     # ── Admin routes ──
     if path == "/api/admin/stats" and method == "GET":
