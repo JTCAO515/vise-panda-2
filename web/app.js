@@ -903,7 +903,11 @@ const VP = (function(){
         }
       } else {
         removeMessage(typingId);
-        addMessage('Connection error. Please try again.', 'bot');
+        const errMsg = document.createElement('div');
+        errMsg.className = 'msg msg-bot';
+        errMsg.innerHTML = '<div class="msg-avatar">🐼</div><div class="msg-body"><div class="msg-sender">VisePanda</div><div class="msg-text" style="color:#e74c3c">⚠️ Connection error. <a href="#" onclick="const i=document.getElementById(\'chat-input\');if(i){const e=new Event(\'keydown\');e.key=\'Enter\';i.dispatchEvent(e)}return false" style="color:var(--accent,#e67e22);font-weight:600">Retry ↻</a></div></div>';
+        const container = document.getElementById('chat-messages');
+        if (container) container.appendChild(errMsg);
       }
     } finally {
       state.isStreaming = false;
