@@ -37,10 +37,12 @@ def handle_cities(start_response, path: str):
         summary = {}
         for name, info in cities.items():
             summary[name] = {
+                "name_en": info.get("name_en", ""),
                 "name_cn": info.get("name_cn", ""),
                 "best_season": info.get("best_season", ""),
                 "days": info.get("days", ""),
                 "vibe": info.get("vibe", ""),
+                "province": info.get("province", ""),
                 "highlights": info.get("highlights", []),
                 "image": f"/static/img/city-{name}.jpg" if (
                     STATIC_DIR / "img" / f"city-{name}.jpg"
@@ -190,7 +192,7 @@ def handle_cities_compare(environ, start_response):
 
         entry = {
             "name_en": "Unknown",
-            "name_cn": "未知",
+            "name_cn": "",
             "vibe": None,
             "best_season": None,
             "days": None,

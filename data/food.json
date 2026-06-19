@@ -4,8 +4,8 @@
       "name_zh": "北京烤鸭",
       "name_en": "Peking Duck",
       "type": "famous",
-      "price_range": "¥150-300/只",
-      "description": "皮脆肉嫩，全聚德/大董/四季民福",
+      "price_range": "¥150-300/each",
+      "description": "Crispy skin, tender meat — try Quanjude（全聚德）, Dadong（大董）, or Sijiminfu（四季民福）",
       "must_try": true
     },
     {
@@ -13,15 +13,15 @@
       "name_en": "Zhajiang Noodles",
       "type": "street",
       "price_range": "¥15-30",
-      "description": "老北京家常面，方砖厂69号有名",
+      "description": "Classic Beijing home-style noodles, Fangzhuancang No.69（方砖厂69号） is famous",
       "must_try": true
     },
     {
       "name_zh": "涮羊肉",
       "name_en": "Mutton Hot Pot",
       "type": "famous",
-      "price_range": "¥80-150/人",
-      "description": "东来顺/聚宝源铜锅涮肉",
+      "price_range": "¥80-150/person",
+      "description": "Traditional copper-pot hot pot — Donglaishun（东来顺） or Jubao Yuan（聚宝源）",
       "must_try": true
     },
     {
@@ -29,7 +29,7 @@
       "name_en": "Douzhi (Fermented Bean Drink)",
       "type": "street",
       "price_range": "¥5-10",
-      "description": "老北京挑战级饮品，酸甜馊味",
+      "description": "A challenging drink for adventurous eaters — sour, sweet, and funky",
       "must_try": false
     },
     {
@@ -37,7 +37,7 @@
       "name_en": "Bingtang Hulu",
       "type": "snack",
       "price_range": "¥5-15",
-      "description": "山楂裹糖，儿时记忆",
+      "description": "Hawthorn skewers glazed in sugar, a childhood memory",
       "must_try": false
     }
   ],
@@ -46,16 +46,16 @@
       "name_zh": "小笼包",
       "name_en": "Xiaolongbao (Soup Dumplings)",
       "type": "famous",
-      "price_range": "¥8-15/笼",
-      "description": "汤汁丰富，佳家汤包/南翔馒头店",
+      "price_range": "¥8-15/basket",
+      "description": "Soup-packed — try Jiajia Tangbao（佳家汤包） or Nanxiang Steamed Bun（南翔馒头店）",
       "must_try": true
     },
     {
       "name_zh": "生煎包",
       "name_en": "Shengjianbao",
       "type": "street",
-      "price_range": "¥6-12/两",
-      "description": "底部焦脆，小杨生煎/大壶春",
+      "price_range": "¥6-12/2 pieces",
+      "description": "Crispy bottom — Xiao Yang Shengjian（小杨生煎） or Da Huchun（大壶春）",
       "must_try": true
     },
     {
@@ -63,15 +63,15 @@
       "name_en": "Braised Pork Belly",
       "type": "famous",
       "price_range": "¥60-100",
-      "description": "浓油赤酱，外婆家/兰心",
+      "description": "Rich soy-braised, Grandma's Home（外婆家） or Lanxin（兰心）",
       "must_try": true
     },
     {
       "name_zh": "大闸蟹",
       "name_en": "Hairy Crab",
       "type": "famous",
-      "price_range": "¥100-300/只",
-      "description": "秋季限定，阳澄湖大闸蟹",
+      "price_range": "¥100-300/each",
+      "description": "Seasonal autumn delicacy, Yangcheng Lake（阳澄湖） hairy crabs",
       "must_try": false
     },
     {
@@ -79,7 +79,7 @@
       "name_en": "Scallion Oil Noodles",
       "type": "street",
       "price_range": "¥10-20",
-      "description": "简单但香浓",
+      "description": "Simple yet fragrant and savory",
       "must_try": false
     }
   ],
@@ -88,16 +88,16 @@
       "name_zh": "火锅",
       "name_en": "Sichuan Hot Pot",
       "type": "famous",
-      "price_range": "¥60-120/人",
-      "description": "麻辣鲜香，小龙坎/大龙燚/蜀大侠",
+      "price_range": "¥60-120/person",
+      "description": "Numbing and spicy — Xiaolongkan（小龙坎）, Dalongyi（大龙燚）, or Shudaxia（蜀大侠）",
       "must_try": true
     },
     {
       "name_zh": "串串香",
       "name_en": "Chuan Chuan",
       "type": "street",
-      "price_range": "¥30-60/人",
-      "description": "自选串串煮着吃，冒椒火辣/钢管厂五区",
+      "price_range": "¥30-60/person",
+      "description": "Self-serve skewers boiled in spicy broth — Maojiao Huola（冒椒火辣） or Steel Factory（钢管厂五区）",
       "must_try": true
     },
     {
@@ -105,7 +105,7 @@
       "name_en": "Dandan Noodles",
       "type": "famous",
       "price_range": "¥10-20",
-      "description": "花生碎+肉末，甜水面类似",
+      "description": "Peanut crumble + minced pork, similar to Sweet Water Noodles（甜水面）",
       "must_try": true
     },
     {
@@ -113,7 +113,7 @@
       "name_en": "Mapo Tofu",
       "type": "famous",
       "price_range": "¥20-40",
-      "description": "陈麻婆豆腐是始祖",
+      "description": "Chen Mapo Tofu（陈麻婆豆腐） is the original",
       "must_try": true
     },
     {
@@ -121,7 +121,7 @@
       "name_en": "Fuqi Feipian",
       "type": "famous",
       "price_range": "¥30-50",
-      "description": "红油凉拌牛肉牛杂",
+      "description": "Chili oil tossed beef and offal",
       "must_try": false
     },
     {
@@ -129,7 +129,7 @@
       "name_en": "Ice Jelly",
       "type": "snack",
       "price_range": "¥8-15",
-      "description": "火锅必备解辣甜品",
+      "description": "Essential post-hot-pot, palate-cooling dessert",
       "must_try": false
     }
   ],
@@ -139,7 +139,7 @@
       "name_en": "Roujiamo (Chinese Burger)",
       "type": "street",
       "price_range": "¥8-15",
-      "description": "腊汁肉夹白吉馍，潼关肉夹馍更酥脆",
+      "description": "Braised pork stuffed in baijimo（白吉馍） flatbread — Tongguan（潼关） style is crispier",
       "must_try": true
     },
     {
@@ -147,7 +147,7 @@
       "name_en": "Yangrou Paomo",
       "type": "famous",
       "price_range": "¥25-40",
-      "description": "自己掰馍才有灵魂，老孙家/同盛祥",
+      "description": "Tear the bread yourself for the real experience — Lao Sun Jia（老孙家） or Tong Sheng Xiang（同盛祥）",
       "must_try": true
     },
     {
@@ -155,7 +155,7 @@
       "name_en": "Biangbiang Noodles",
       "type": "famous",
       "price_range": "¥15-25",
-      "description": "宽如裤带，油泼辣子最香",
+      "description": "Belt-wide noodles, most fragrant with sizzling chili oil（油泼辣子）",
       "must_try": true
     },
     {
@@ -163,15 +163,15 @@
       "name_en": "Liangpi (Cold Noodles)",
       "type": "street",
       "price_range": "¥6-12",
-      "description": "陕西凉皮/米皮，酸辣开胃",
+      "description": "Shaanxi-style cold noodles, tangy and spicy appetizer",
       "must_try": true
     },
     {
       "name_zh": "灌汤包子",
       "name_en": "Soup Dumplings",
       "type": "street",
-      "price_range": "¥10-18/笼",
-      "description": "贾三灌汤包子最出名",
+      "price_range": "¥10-18/basket",
+      "description": "Jia San（贾三） soup dumplings are the most famous",
       "must_try": false
     }
   ],
@@ -181,7 +181,7 @@
       "name_en": "Guilin Rice Noodles",
       "type": "street",
       "price_range": "¥8-15",
-      "description": "卤水是灵魂，配锅烧肉",
+      "description": "The marinade（卤水） is the soul, pairs with crispy pork",
       "must_try": true
     },
     {
@@ -189,7 +189,7 @@
       "name_en": "Beer Fish",
       "type": "famous",
       "price_range": "¥60-100",
-      "description": "阳朔招牌菜，用漓江啤酒做",
+      "description": "Yangshuo's signature dish, made with Li River（漓江） beer",
       "must_try": true
     },
     {
@@ -197,7 +197,7 @@
       "name_en": "Stuffed Snails",
       "type": "street",
       "price_range": "¥20-35",
-      "description": "螺肉+肉末塞回螺壳",
+      "description": "Snail meat + minced pork stuffed back into shells",
       "must_try": false
     },
     {
@@ -205,7 +205,7 @@
       "name_en": "Lipu Taro Pork Belly",
       "type": "famous",
       "price_range": "¥40-60",
-      "description": "荔浦芋头+五花肉蒸",
+      "description": "Lipu（荔浦） taro layered with pork belly, steamed",
       "must_try": false
     },
     {
@@ -213,7 +213,7 @@
       "name_en": "Oil Tea",
       "type": "street",
       "price_range": "¥5-10",
-      "description": "恭城油茶，配米花/花生",
+      "description": "Gongcheng（恭城） oil tea, served with puffed rice and peanuts",
       "must_try": false
     }
   ],
@@ -222,16 +222,16 @@
       "name_zh": "早茶",
       "name_en": "Dim Sum (Yum Cha)",
       "type": "restaurant",
-      "price_range": "¥40-100/人",
-      "description": "虾饺/烧卖/凤爪/肠粉，陶陶居/点都德",
+      "price_range": "¥40-100/person",
+      "description": "Har gow/siu mai/chicken feet/rice rolls — Tao Tao Ju（陶陶居） or Dian Du De（点都德）",
       "must_try": true
     },
     {
       "name_zh": "白切鸡",
       "name_en": "White Cut Chicken",
       "type": "famous",
-      "price_range": "¥50-80/半只",
-      "description": "皮滑肉嫩，配姜葱酱",
+      "price_range": "¥50-80/half bird",
+      "description": "Silky skin, tender meat, served with ginger-scallion dip",
       "must_try": true
     },
     {
@@ -239,7 +239,7 @@
       "name_en": "Claypot Rice",
       "type": "street",
       "price_range": "¥20-40",
-      "description": "腊味/排骨煲仔饭，底有锅巴",
+      "description": "Cured meat or spare ribs over rice with crispy bottom crust",
       "must_try": true
     },
     {
@@ -247,7 +247,7 @@
       "name_en": "Double-skin Milk",
       "type": "snack",
       "price_range": "¥10-20",
-      "description": "顺德甜品，南信/仁信",
+      "description": "Shunde（顺德） dessert — Nan Xin（南信） or Ren Xin（仁信）",
       "must_try": true
     },
     {
@@ -255,15 +255,15 @@
       "name_en": "Wonton Noodles",
       "type": "street",
       "price_range": "¥15-25",
-      "description": "竹升面+鲜虾云吞，坚记面店",
+      "description": "Egg noodles + fresh shrimp wontons, Jian Ji Noodle Shop（坚记面店）",
       "must_try": true
     },
     {
       "name_zh": "烧鹅",
       "name_en": "Roasted Goose",
       "type": "famous",
-      "price_range": "¥50-80/例",
-      "description": "皮脆肉嫩，炳胜/太兴",
+      "price_range": "¥50-80/serving",
+      "description": "Crispy skin, tender meat — Bing Sheng（炳胜） or Tai Hing（太兴）",
       "must_try": false
     }
   ],
@@ -272,8 +272,8 @@
       "name_zh": "重庆火锅",
       "name_en": "Chongqing Hot Pot",
       "type": "famous",
-      "price_range": "¥50-100/人",
-      "description": "九宫格+牛油锅底，佩姐/周师兄",
+      "price_range": "¥50-100/person",
+      "description": "Nine-grid + beef tallow broth — Pei Jie（佩姐） or Zhou Shixiong（周师兄）",
       "must_try": true
     },
     {
@@ -281,7 +281,7 @@
       "name_en": "Chongqing Xiao Mian",
       "type": "street",
       "price_range": "¥8-15",
-      "description": "红油汤底，秦云老太婆摊摊面",
+      "description": "Chili oil broth — Qin Yun Old Lady Noodles（秦云老太婆摊摊面）",
       "must_try": true
     },
     {
@@ -289,7 +289,7 @@
       "name_en": "Mao Xue Wang",
       "type": "famous",
       "price_range": "¥40-70",
-      "description": "鸭血+毛肚+豆芽，麻辣鲜香",
+      "description": "Duck blood + tripe + bean sprouts, numbing and spicy",
       "must_try": true
     },
     {
@@ -297,7 +297,7 @@
       "name_en": "Suan La Fen",
       "type": "street",
       "price_range": "¥8-15",
-      "description": "红薯粉条酸辣Q弹",
+      "description": "Sweet potato noodles, sour-spicy with a Q-elastic texture",
       "must_try": false
     },
     {
@@ -305,7 +305,7 @@
       "name_en": "Chongqing Spicy Chicken",
       "type": "famous",
       "price_range": "¥40-70",
-      "description": "干辣椒里找鸡丁",
+      "description": "Find the chicken bits hidden in a mountain of dried chilies",
       "must_try": false
     }
   ],
@@ -315,15 +315,15 @@
       "name_en": "Crossing Bridge Noodles",
       "type": "famous",
       "price_range": "¥25-80",
-      "description": "滚烫鸡汤+生料现烫",
+      "description": "Scalding hot chicken broth — raw ingredients cooked at the table",
       "must_try": true
     },
     {
       "name_zh": "野生菌火锅",
       "name_en": "Wild Mushroom Hot Pot",
       "type": "famous",
-      "price_range": "¥80-200/人",
-      "description": "雨季限定，菌子种类丰富",
+      "price_range": "¥80-200/person",
+      "description": "Rainy season specialty, wide variety of wild mushrooms",
       "must_try": true
     },
     {
@@ -331,7 +331,7 @@
       "name_en": "Steam Pot Chicken",
       "type": "famous",
       "price_range": "¥50-90",
-      "description": "不加一滴水，蒸汽凝结为汤",
+      "description": "No water added — pure steam-condensed chicken broth",
       "must_try": true
     },
     {
@@ -339,7 +339,7 @@
       "name_en": "Roasted Milk Fan",
       "type": "street",
       "price_range": "¥5-10",
-      "description": "大理街头小吃，奶香酥脆",
+      "description": "Dali street snack, milky and crispy",
       "must_try": false
     },
     {
@@ -347,15 +347,15 @@
       "name_en": "Water Lily Stem",
       "type": "famous",
       "price_range": "¥20-35",
-      "description": "泸沽湖水草，口感滑嫩",
+      "description": "Lugu Lake（泸沽湖） water plant, smooth and tender texture",
       "must_try": false
     },
     {
       "name_zh": "鲜花饼",
       "name_en": "Flower Cake",
       "type": "snack",
-      "price_range": "¥3-8/个",
-      "description": "玫瑰花瓣馅，嘉华/潘祥记",
+      "price_range": "¥3-8/piece",
+      "description": "Rose petal filling — Jiahua（嘉华） or Pan Xiang Ji（潘祥记）",
       "must_try": true
     },
     {
@@ -363,7 +363,7 @@
       "name_en": "Cold Chicken Rice Noodles",
       "type": "street",
       "price_range": "¥10-15",
-      "description": "大理特色，酸甜口感",
+      "description": "Dali specialty, sweet and sour flavor",
       "must_try": false
     }
   ],
@@ -373,23 +373,23 @@
       "name_en": "Stinky Tofu",
       "type": "street",
       "price_range": "¥5-10",
-      "description": "黑色经典，外脆里嫩",
+      "description": "Black classic — crispy outside, tender inside",
       "must_try": true
     },
     {
       "name_zh": "茶颜悦色",
       "name_en": "Sexy Tea Brand",
       "type": "snack",
-      "price_range": "¥12-18/杯",
-      "description": "长沙之光，幽兰拿铁必喝",
+      "price_range": "¥12-18/cup",
+      "description": "Changsha's pride, Youlan Latte（幽兰拿铁） is a must",
       "must_try": true
     },
     {
       "name_zh": "口味虾",
       "name_en": "Flavor Crayfish",
       "type": "famous",
-      "price_range": "¥60-100/份",
-      "description": "麻辣小龙虾，文和友最出名",
+      "price_range": "¥60-100/plate",
+      "description": "Spicy crawfish — Wenheyou（文和友） is the most famous",
       "must_try": true
     },
     {
@@ -397,7 +397,7 @@
       "name_en": "Tangyou BABA",
       "type": "street",
       "price_range": "¥5-10",
-      "description": "糯米团子炸后裹糖，甜糯",
+      "description": "Glutinous rice balls fried then coated in sugar, sweet and chewy",
       "must_try": false
     },
     {
@@ -405,7 +405,7 @@
       "name_en": "Steamed Fish Head with Chopped Chili",
       "type": "famous",
       "price_range": "¥60-100",
-      "description": "湘菜经典招牌",
+      "description": "Hunan cuisine's classic signature dish",
       "must_try": false
     }
   ],
@@ -415,7 +415,7 @@
       "name_en": "West Lake Vinegar Fish",
       "type": "famous",
       "price_range": "¥80-150",
-      "description": "草鱼+糖醋汁，楼外楼最经典",
+      "description": "Grass carp in sweet-and-sour sauce, Lou Wai Lou（楼外楼） is the most classic",
       "must_try": true
     },
     {
@@ -423,7 +423,7 @@
       "name_en": "Dongpo Pork",
       "type": "famous",
       "price_range": "¥60-100",
-      "description": "苏东坡发明的红烧肉做法",
+      "description": "Invented by Su Dongpo（苏东坡）, a braised pork masterpiece",
       "must_try": true
     },
     {
@@ -431,7 +431,7 @@
       "name_en": "Longjing Shrimp",
       "type": "famous",
       "price_range": "¥80-120",
-      "description": "龙井茶叶炒虾仁，清香",
+      "description": "Longjing（龙井） tea leaves stir-fried with shrimp, delicately fragrant",
       "must_try": true
     },
     {
@@ -439,7 +439,7 @@
       "name_en": "Dingsheng Cake",
       "type": "snack",
       "price_range": "¥10-25",
-      "description": "杭州传统糕点",
+      "description": "Traditional Hangzhou pastry",
       "must_try": false
     },
     {
@@ -447,7 +447,7 @@
       "name_en": "Pianerchuan Noodles",
       "type": "street",
       "price_range": "¥15-25",
-      "description": "杭州特色面条",
+      "description": "Hangzhou-style noodles",
       "must_try": false
     }
   ],
@@ -457,7 +457,7 @@
       "name_en": "Duck Blood Vermicelli Soup",
       "type": "street",
       "price_range": "¥15-25",
-      "description": "鸭血+粉丝+豆腐泡，回味鸭血粉丝",
+      "description": "Duck blood + vermicelli + tofu puffs — Huiwei（回味） is the famous brand",
       "must_try": true
     },
     {
@@ -465,7 +465,7 @@
       "name_en": "Nanjing Salted Duck",
       "type": "famous",
       "price_range": "¥30-60",
-      "description": "金陵一绝，皮白肉嫩",
+      "description": "A Jinling（金陵） specialty, white skin and tender meat",
       "must_try": true
     },
     {
@@ -473,7 +473,7 @@
       "name_en": "Beef Potstickers",
       "type": "street",
       "price_range": "¥10-20",
-      "description": "底部金黄，汁水丰富",
+      "description": "Golden crispy bottom, juicy filling",
       "must_try": false
     },
     {
@@ -481,7 +481,7 @@
       "name_en": "Plum Cake",
       "type": "snack",
       "price_range": "¥5-10",
-      "description": "传统小吃，豆沙馅",
+      "description": "Traditional snack with red bean paste filling",
       "must_try": false
     }
   ],
@@ -491,7 +491,7 @@
       "name_en": "Squirrel-shaped Mandarin Fish",
       "type": "famous",
       "price_range": "¥150-250",
-      "description": "刀工+酸甜汁，形如松鼠",
+      "description": "Masterful knife work + sweet-sour sauce, shaped like a squirrel",
       "must_try": true
     },
     {
@@ -499,7 +499,7 @@
       "name_en": "Biluochun Shrimp",
       "type": "famous",
       "price_range": "¥80-120",
-      "description": "碧螺春茶炒虾仁",
+      "description": "Biluochun（碧螺春） tea leaves stir-fried with shrimp",
       "must_try": true
     },
     {
@@ -507,7 +507,7 @@
       "name_en": "Suzhou Soup Noodles",
       "type": "street",
       "price_range": "¥15-35",
-      "description": "面细汤鲜，秃黄油面是至尊",
+      "description": "Thin noodles in savory broth, Tu Huang You（秃黄油） noodles are the ultimate",
       "must_try": true
     },
     {
@@ -515,7 +515,7 @@
       "name_en": "Osmanthus Lotus Root",
       "type": "snack",
       "price_range": "¥15-25",
-      "description": "糯米塞莲藕，桂花蜜汁",
+      "description": "Glutinous rice stuffed in lotus root with osmanthus honey",
       "must_try": false
     }
   ],
@@ -525,7 +525,7 @@
       "name_en": "Guobaorou",
       "type": "famous",
       "price_range": "¥35-55",
-      "description": "哈尔滨起源，酸甜酥脆",
+      "description": "Originated in Harbin, sweet-sour and crispy",
       "must_try": true
     },
     {
@@ -533,7 +533,7 @@
       "name_en": "Modern Ice Cream",
       "type": "snack",
       "price_range": "¥5-10",
-      "description": "中央大街百年冰棍，冬天也吃",
+      "description": "Century-old ice cream on Central Street（中央大街）, even eaten in winter",
       "must_try": true
     },
     {
@@ -541,15 +541,15 @@
       "name_en": "Braised Pork Bone",
       "type": "famous",
       "price_range": "¥40-70",
-      "description": "大口吃肉",
+      "description": "Hearty meat experience",
       "must_try": false
     },
     {
       "name_zh": "红肠",
       "name_en": "Red Sausage",
       "type": "snack",
-      "price_range": "¥10-20/根",
-      "description": "俄式红肠，秋林里道斯",
+      "price_range": "¥10-20/piece",
+      "description": "Russian-style red sausage — Qiulin（秋林） or Lidos（里道斯）",
       "must_try": false
     }
   ],
@@ -558,8 +558,8 @@
       "name_zh": "椰子鸡火锅",
       "name_en": "Coconut Chicken Hot Pot",
       "type": "famous",
-      "price_range": "¥80-150/人",
-      "description": "深圳本地产物，椰汁煮鸡，润园四季",
+      "price_range": "¥80-150/person",
+      "description": "Born in Shenzhen, coconut broth poached chicken — Runyuan Siji（润园四季）",
       "must_try": true
     },
     {
@@ -567,7 +567,7 @@
       "name_en": "Claypot Congee",
       "type": "street",
       "price_range": "¥20-50",
-      "description": "潮汕砂锅粥加海鲜，金稻园",
+      "description": "Teochew claypot congee with seafood — Jin Daoyuan（金稻园）",
       "must_try": true
     },
     {
@@ -575,7 +575,7 @@
       "name_en": "Roasted Goose",
       "type": "famous",
       "price_range": "¥50-80",
-      "description": "光明乳鸽是深圳特色",
+      "description": "Guangming（光明） pigeon is a Shenzhen specialty",
       "must_try": false
     },
     {
@@ -583,15 +583,15 @@
       "name_en": "Rice Noodle Roll",
       "type": "street",
       "price_range": "¥6-15",
-      "description": "广式肠粉当早餐，红荔村",
+      "description": "Cantonese rice rolls for breakfast — Hong Li Cun（红荔村）",
       "must_try": true
     },
     {
       "name_zh": "早茶",
       "name_en": "Dim Sum (Yum Cha)",
       "type": "restaurant",
-      "price_range": "¥40-100/人",
-      "description": "点都德/广州酒家/凤凰楼",
+      "price_range": "¥40-100/person",
+      "description": "Dian Du De（点都德） / Guangzhou Restaurant（广州酒家） / Phoenix Tower（凤凰楼）",
       "must_try": true
     }
   ],
@@ -600,8 +600,8 @@
       "name_zh": "腊排骨火锅",
       "name_en": "Smoked Pork Rib Hot Pot",
       "type": "famous",
-      "price_range": "¥60-100/人",
-      "description": "丽江必吃，象山市场腊排骨",
+      "price_range": "¥60-100/person",
+      "description": "Lijiang must-eat — Elephant Mountain Market（象山市场） smoked ribs",
       "must_try": true
     },
     {
@@ -609,7 +609,7 @@
       "name_en": "Chicken Bean Jelly",
       "type": "street",
       "price_range": "¥8-15",
-      "description": "丽江特有，煎/凉拌两种吃法",
+      "description": "Unique to Lijiang, pan-fried or cold-tossed",
       "must_try": true
     },
     {
@@ -617,15 +617,15 @@
       "name_en": "Naxi Grilled Fish",
       "type": "restaurant",
       "price_range": "¥40-70",
-      "description": "纳西族特色烤鱼配香料",
+      "description": "Naxi（纳西） ethnic specialty grilled fish with spices",
       "must_try": false
     },
     {
       "name_zh": "黑山羊火锅",
       "name_en": "Black Goat Hot Pot",
       "type": "famous",
-      "price_range": "¥50-80/人",
-      "description": "丽江黑山羊汤锅，暖身首选",
+      "price_range": "¥50-80/person",
+      "description": "Lijiang black goat soup pot, perfect for warming up",
       "must_try": false
     },
     {
@@ -633,7 +633,7 @@
       "name_en": "Butter Tea",
       "type": "snack",
       "price_range": "¥10-20",
-      "description": "藏式酥油茶，高原必备",
+      "description": "Tibetan butter tea, essential on the plateau",
       "must_try": false
     },
     {
@@ -641,7 +641,7 @@
       "name_en": "Baba (Flatbread)",
       "type": "street",
       "price_range": "¥5-10",
-      "description": "丽江粑粑，酥油煎制",
+      "description": "Lijiang flatbread（粑粑）, pan-fried in yak butter",
       "must_try": false
     }
   ],
@@ -651,15 +651,15 @@
       "name_en": "Tibetan Noodles",
       "type": "street",
       "price_range": "¥10-20",
-      "description": "牦牛骨汤底+粗面，光明港琼甜茶馆",
+      "description": "Yak bone broth + thick noodles, Guangming Gangqiong（光明港琼） sweet tea house",
       "must_try": true
     },
     {
       "name_zh": "甜茶",
       "name_en": "Sweet Tea",
       "type": "snack",
-      "price_range": "¥1-3/杯",
-      "description": "拉萨人民的精神饮料",
+      "price_range": "¥1-3/cup",
+      "description": "Lhasa's spiritual beverage",
       "must_try": true
     },
     {
@@ -667,15 +667,15 @@
       "name_en": "Tsampa (Roasted Barley Dough)",
       "type": "famous",
       "price_range": "¥5-10",
-      "description": "青稞炒面+酥油茶捏成团",
+      "description": "Roasted barley flour kneaded with butter tea into dough balls",
       "must_try": false
     },
     {
       "name_zh": "牦牛肉火锅",
       "name_en": "Yak Meat Hot Pot",
       "type": "famous",
-      "price_range": "¥60-120/人",
-      "description": "高原牦牛肉，滋补暖身",
+      "price_range": "¥60-120/person",
+      "description": "Highland yak meat, nourishing and warming",
       "must_try": true
     },
     {
@@ -683,15 +683,15 @@
       "name_en": "Tibetan Yogurt",
       "type": "snack",
       "price_range": "¥8-15",
-      "description": "牦牛酸奶配蜂蜜，酸到皱眉",
+      "description": "Yak yogurt with honey — sour enough to make you pucker",
       "must_try": true
     },
     {
       "name_zh": "青稞酒",
       "name_en": "Highland Barley Wine",
       "type": "snack",
-      "price_range": "¥5-15/杯",
-      "description": "度数不高但后劲足",
+      "price_range": "¥5-15/cup",
+      "description": "Low alcohol but strong after-effect",
       "must_try": false
     }
   ],
@@ -701,7 +701,7 @@
       "name_en": "Sanxiaguo (Three-Pot Mix)",
       "type": "famous",
       "price_range": "¥40-80",
-      "description": "张家界必吃，腊肉+蔬菜+豆腐一锅炖",
+      "description": "Zhangjiajie must-eat — smoked meat + veggies + tofu stewed together",
       "must_try": true
     },
     {
@@ -709,7 +709,7 @@
       "name_en": "Tujia Smoked Pork",
       "type": "famous",
       "price_range": "¥30-60",
-      "description": "烟熏腊肉配蒜苗",
+      "description": "Smoked cured pork with garlic sprouts",
       "must_try": true
     },
     {
@@ -717,7 +717,7 @@
       "name_en": "Rock Ear Mushroom Stewed Chicken",
       "type": "famous",
       "price_range": "¥60-120",
-      "description": "悬崖岩耳，鲜香无比",
+      "description": "Cliff rock ear mushroom, incredibly savory",
       "must_try": false
     },
     {
@@ -725,7 +725,7 @@
       "name_en": "Kudzu Root Jelly",
       "type": "snack",
       "price_range": "¥5-10",
-      "description": "山上特产，清火解暑",
+      "description": "Mountain specialty, cools and refreshes",
       "must_try": false
     },
     {
@@ -733,7 +733,7 @@
       "name_en": "Sour Pork",
       "type": "street",
       "price_range": "¥15-30",
-      "description": "土家族传统发酵肉",
+      "description": "Tujia（土家族） traditional fermented meat",
       "must_try": false
     }
   ],
@@ -743,7 +743,7 @@
       "name_en": "Hot Dry Noodles",
       "type": "street",
       "price_range": "¥5-10",
-      "description": "武汉灵魂早餐，蔡林记/天天红油赵师傅",
+      "description": "Wuhan's soul breakfast — Cai Lin Ji（蔡林记） or Chef Zhao（天天红油赵师傅）",
       "must_try": true
     },
     {
@@ -751,7 +751,7 @@
       "name_en": "Wuchang Fish",
       "type": "famous",
       "price_range": "¥50-100",
-      "description": "清蒸武昌鱼，毛主席诗词里写过",
+      "description": "Steamed Wuchang（武昌） fish, mentioned in Chairman Mao's poem",
       "must_try": true
     },
     {
@@ -759,7 +759,7 @@
       "name_en": "Duck Neck",
       "type": "snack",
       "price_range": "¥10-30",
-      "description": "周黑鸭/绝味/精武鸭脖",
+      "description": "Zhou Hei Ya（周黑鸭） / Juewei（绝味） / Jingwu（精武） duck necks",
       "must_try": true
     },
     {
@@ -767,7 +767,7 @@
       "name_en": "Doupi (Tofu Skin Wrap)",
       "type": "street",
       "price_range": "¥6-12",
-      "description": "老通城豆皮最有名",
+      "description": "Lao Tong Cheng（老通城） doupi is the most famous",
       "must_try": false
     },
     {
@@ -775,7 +775,7 @@
       "name_en": "Pork Rib Lotus Root Soup",
       "type": "famous",
       "price_range": "¥30-60",
-      "description": "湖北莲藕炖排骨，粉糯鲜香",
+      "description": "Hubei lotus root stewed with ribs, silky and savory",
       "must_try": false
     }
   ],
@@ -785,7 +785,7 @@
       "name_en": "Seafood Dumplings",
       "type": "famous",
       "price_range": "¥30-60",
-      "description": "鲅鱼/墨鱼/黄花鱼水饺，船歌渔",
+      "description": "Mackerel/cuttlefish/yellow croaker dumplings — Chuan Ge Yu（船歌渔）",
       "must_try": true
     },
     {
@@ -793,15 +793,15 @@
       "name_en": "Spicy Stir-fried Clams",
       "type": "street",
       "price_range": "¥15-30",
-      "description": "青岛人夏天的灵魂",
+      "description": "The soul of Qingdao summers",
       "must_try": true
     },
     {
       "name_zh": "青岛啤酒",
       "name_en": "Tsingtao Beer",
       "type": "snack",
-      "price_range": "¥5-15/杯",
-      "description": "登州路啤酒街喝原浆/纯生",
+      "price_range": "¥5-15/cup",
+      "description": "Dengzhou Road（登州路） Beer Street — try draft or pure raw beer",
       "must_try": true
     },
     {
@@ -809,7 +809,7 @@
       "name_en": "Grilled Seafood",
       "type": "street",
       "price_range": "¥10-40",
-      "description": "烤生蚝/烤鱿鱼/烤海胆",
+      "description": "Grilled oysters/squid/sea urchin",
       "must_try": false
     },
     {
@@ -817,7 +817,7 @@
       "name_en": "Seafood Noodles",
       "type": "street",
       "price_range": "¥15-25",
-      "description": "青岛特色面食",
+      "description": "Qingdao-style noodles",
       "must_try": false
     }
   ],
@@ -827,7 +827,7 @@
       "name_en": "Satay Noodles",
       "type": "street",
       "price_range": "¥15-30",
-      "description": "沙茶酱汤底，月华/乌糖沙茶面",
+      "description": "Satay sauce broth — Yuehua（月华） or Wutang（乌糖） satay noodles",
       "must_try": true
     },
     {
@@ -835,7 +835,7 @@
       "name_en": "Oyster Omelette",
       "type": "street",
       "price_range": "¥15-25",
-      "description": "蚵仔煎，莲欢海蛎煎最老牌",
+      "description": "Oyster omelette — Lian Huan（莲欢） is the oldest shop",
       "must_try": true
     },
     {
@@ -843,7 +843,7 @@
       "name_en": "Tusun冻 (Sea Worm Jelly)",
       "type": "street",
       "price_range": "¥10-20",
-      "description": "厦门特色，沙虫冻配酱油醋",
+      "description": "Xiamen specialty, sea worm jelly with soy sauce and vinegar",
       "must_try": false
     },
     {
@@ -851,7 +851,7 @@
       "name_en": "Ginger Duck",
       "type": "famous",
       "price_range": "¥60-120",
-      "description": "砂锅焖鸭，开胃暖身",
+      "description": "Claypot braised duck, appetite-stimulating and warming",
       "must_try": true
     },
     {
@@ -859,7 +859,7 @@
       "name_en": "Peanut Soup",
       "type": "snack",
       "price_range": "¥5-10",
-      "description": "黄则和花生汤，甜糯",
+      "description": "Huang Ze He（黄则和） peanut soup, sweet and creamy",
       "must_try": false
     }
   ],
@@ -869,7 +869,7 @@
       "name_en": "Wenchang Chicken",
       "type": "famous",
       "price_range": "¥40-80",
-      "description": "白切文昌鸡，海南四大名菜之首",
+      "description": "Poached Wenchang（文昌） chicken, No.1 of Hainan's four famous dishes",
       "must_try": true
     },
     {
@@ -877,15 +877,15 @@
       "name_en": "Coconut Rice",
       "type": "famous",
       "price_range": "¥15-30",
-      "description": "糯米+椰子肉蒸制",
+      "description": "Glutinous rice + coconut meat steamed together",
       "must_try": true
     },
     {
       "name_zh": "海鲜大餐",
       "name_en": "Seafood Feast",
       "type": "restaurant",
-      "price_range": "¥80-200/人",
-      "description": "第一市场/春园海鲜广场自选加工",
+      "price_range": "¥80-200/person",
+      "description": "No.1 Market（第一市场） or Chunyuan（春园） Seafood Plaza — buy your own, have it cooked",
       "must_try": true
     },
     {
@@ -893,7 +893,7 @@
       "name_en": "Qingbuliang (Coconut Dessert)",
       "type": "snack",
       "price_range": "¥10-20",
-      "description": "椰奶+红豆+芋头+西瓜，解暑神器",
+      "description": "Coconut milk + red beans + taro + watermelon, ultimate summer cooler",
       "must_try": true
     },
     {
@@ -901,7 +901,7 @@
       "name_en": "Baoluo Rice Noodles",
       "type": "street",
       "price_range": "¥10-20",
-      "description": "海南特色汤粉",
+      "description": "Hainan-style rice noodle soup",
       "must_try": false
     }
   ],
@@ -911,7 +911,7 @@
       "name_en": "Buddha Jumps Over the Wall",
       "type": "famous",
       "price_range": "¥200-500",
-      "description": "闽菜至尊，鲍鱼海参花胶炖盅",
+      "description": "The king of Fujian cuisine — abalone, sea cucumber, fish maw slow-cooked",
       "must_try": true
     },
     {
@@ -919,7 +919,7 @@
       "name_en": "Fish Balls",
       "type": "street",
       "price_range": "¥10-20",
-      "description": "福州鱼丸，包心鱼丸最正宗",
+      "description": "Fuzhou fish balls, stuffed fish balls are the most authentic",
       "must_try": true
     },
     {
@@ -927,7 +927,7 @@
       "name_en": "Lychee Pork",
       "type": "famous",
       "price_range": "¥30-50",
-      "description": "酸甜口味，形如荔枝",
+      "description": "Sweet and sour, shaped like lychee",
       "must_try": true
     },
     {
@@ -935,7 +935,7 @@
       "name_en": "Guobianhu (Rice Noodle Soup)",
       "type": "street",
       "price_range": "¥8-15",
-      "description": "福州早餐经典",
+      "description": "Fuzhou breakfast classic",
       "must_try": false
     },
     {
@@ -943,7 +943,7 @@
       "name_en": "Rouyan (Meat Wontons)",
       "type": "street",
       "price_range": "¥10-20",
-      "description": "燕皮包肉馅，口感独特",
+      "description": "Wonton wrapper made from meat, unique texture",
       "must_try": false
     }
   ],
@@ -953,7 +953,7 @@
       "name_en": "Donkey Meat Yellow Noodles",
       "type": "famous",
       "price_range": "¥20-40",
-      "description": "敦煌必吃，顺张驴肉黄面最老牌",
+      "description": "Dunhuang must-eat — Shunzhang（顺张） donkey meat yellow noodles, the most legendary shop",
       "must_try": true
     },
     {
@@ -961,7 +961,7 @@
       "name_en": "Apricot Peel Drink",
       "type": "snack",
       "price_range": "¥5-10",
-      "description": "敦煌特色饮料，酸甜解渴",
+      "description": "Dunhuang's specialty drink, sweet and sour thirst-quencher",
       "must_try": true
     },
     {
@@ -969,23 +969,23 @@
       "name_en": "Lamb Hezhi Soup",
       "type": "famous",
       "price_range": "¥20-35",
-      "description": "羊肉汤配面食，当地人早餐",
+      "description": "Lamb soup with bread, a local breakfast",
       "must_try": false
     },
     {
       "name_zh": "烤羊肉串",
       "name_en": "Lamb Skewers",
       "type": "street",
-      "price_range": "¥3-6/串",
-      "description": "敦煌夜市必吃",
+      "price_range": "¥3-6/skewer",
+      "description": "Dunhuang night market must-have",
       "must_try": true
     },
     {
       "name_zh": "鸣沙山枣",
       "name_en": "Mingsha Mountain Dates",
       "type": "snack",
-      "price_range": "¥15-30/斤",
-      "description": "敦煌特产大枣",
+      "price_range": "¥15-30/jin",
+      "description": "Dunhuang specialty jujubes",
       "must_try": false
     }
   ],
@@ -995,7 +995,7 @@
       "name_en": "Lanzhou Beef Noodles",
       "type": "famous",
       "price_range": "¥8-15",
-      "description": "一清二白三红四绿五黄，马子禄/磨沟沿",
+      "description": "Clear broth-white radish-red chili-green coriander-yellow noodles — Ma Zilu（马子禄） or Mogouyan（磨沟沿）",
       "must_try": true
     },
     {
@@ -1003,7 +1003,7 @@
       "name_en": "Sweet Grey Bean Paste",
       "type": "snack",
       "price_range": "¥5-10",
-      "description": "兰州传统甜品，杜记甜食",
+      "description": "Lanzhou traditional dessert — Du Ji（杜记） sweets",
       "must_try": false
     },
     {
@@ -1011,7 +1011,7 @@
       "name_en": "Milk Egg Fermented Rice",
       "type": "snack",
       "price_range": "¥8-15",
-      "description": "正宁路夜市必喝",
+      "description": "Zhengning Road（正宁路） night market must-have",
       "must_try": true
     },
     {
@@ -1019,7 +1019,7 @@
       "name_en": "Hand-grabbed Lamb",
       "type": "famous",
       "price_range": "¥40-80",
-      "description": "甘肃羊肉不膻，春台手抓",
+      "description": "Gansu lamb has no gamey taste — Chuntai（春台） hand-grabbed lamb",
       "must_try": true
     },
     {
@@ -1027,7 +1027,7 @@
       "name_en": "Liangpi (Cold Noodles)",
       "type": "street",
       "price_range": "¥6-12",
-      "description": "甘肃凉皮，比陕西版更厚实",
+      "description": "Gansu-style, thicker than the Shaanxi version",
       "must_try": false
     }
   ],
@@ -1036,8 +1036,8 @@
       "name_zh": "水席",
       "name_en": "Luoyang Water Banquet",
       "type": "famous",
-      "price_range": "¥50-100/人",
-      "description": "24道汤菜，真不同水席最有名",
+      "price_range": "¥50-100/person",
+      "description": "24-course soup banquet — Zhen Bu Tong（真不同） is most famous",
       "must_try": true
     },
     {
@@ -1045,7 +1045,7 @@
       "name_en": "Luoyang Beef Soup",
       "type": "street",
       "price_range": "¥8-15",
-      "description": "洛阳人的早晨从一碗汤开始",
+      "description": "Luoyang mornings start with a bowl of soup",
       "must_try": true
     },
     {
@@ -1053,7 +1053,7 @@
       "name_en": "Fermented Noodles",
       "type": "street",
       "price_range": "¥5-10",
-      "description": "酸浆面条，洛阳特色",
+      "description": "Sour fermented noodles, a Luoyang specialty",
       "must_try": false
     },
     {
@@ -1061,7 +1061,7 @@
       "name_en": "Peony Cake",
       "type": "snack",
       "price_range": "¥10-20",
-      "description": "洛阳特色糕点，伴手礼首选",
+      "description": "Luoyang specialty pastry, perfect as a souvenir",
       "must_try": false
     },
     {
@@ -1069,7 +1069,7 @@
       "name_en": "Bufan Soup",
       "type": "street",
       "price_range": "¥10-20",
-      "description": "洛阳特色汤品",
+      "description": "Luoyang specialty soup",
       "must_try": false
     }
   ],
@@ -1079,7 +1079,7 @@
       "name_en": "Hairy Tofu",
       "type": "street",
       "price_range": "¥10-20",
-      "description": "黄山特产，发酵长毛后煎着吃",
+      "description": "Huangshan specialty — fermented until furry then pan-fried",
       "must_try": true
     },
     {
@@ -1087,15 +1087,15 @@
       "name_en": "Stinky Mandarin Fish",
       "type": "famous",
       "price_range": "¥60-100",
-      "description": "闻着臭吃着香，徽菜代表",
+      "description": "Stinky smell but delicious taste, the icon of Anhui cuisine",
       "must_try": true
     },
     {
       "name_zh": "黄山烧饼",
       "name_en": "Huangshan Sesame Cake",
       "type": "snack",
-      "price_range": "¥1-3/个",
-      "description": "梅干菜扣肉馅，酥脆",
+      "price_range": "¥1-3/piece",
+      "description": "Preserved vegetable and pork filling, crispy layers",
       "must_try": true
     },
     {
@@ -1103,7 +1103,7 @@
       "name_en": "Huizhou Yipin Pot",
       "type": "famous",
       "price_range": "¥50-100",
-      "description": "胡适家宴菜，层层叠叠一锅炖",
+      "description": "Hu Shi's（胡适） home banquet dish, layered one-pot stew",
       "must_try": false
     },
     {
@@ -1111,7 +1111,7 @@
       "name_en": "Dried Bamboo Shoot Braised Pork",
       "type": "famous",
       "price_range": "¥30-60",
-      "description": "徽州农家菜",
+      "description": "Huizhou farmhouse dish",
       "must_try": false
     }
   ],
@@ -1120,8 +1120,8 @@
       "name_zh": "牦牛肉火锅",
       "name_en": "Yak Meat Hot Pot",
       "type": "famous",
-      "price_range": "¥60-120/人",
-      "description": "高原牦牛骨汤底",
+      "price_range": "¥60-120/person",
+      "description": "Highland yak bone broth",
       "must_try": true
     },
     {
@@ -1129,7 +1129,7 @@
       "name_en": "Barley Cake",
       "type": "street",
       "price_range": "¥5-10",
-      "description": "九寨特色主食",
+      "description": "Jiuzhaigou specialty staple food",
       "must_try": true
     },
     {
@@ -1137,7 +1137,7 @@
       "name_en": "Butter Tea",
       "type": "snack",
       "price_range": "¥10-20",
-      "description": "藏区必备",
+      "description": "Tibetan region essential",
       "must_try": false
     },
     {
@@ -1145,7 +1145,7 @@
       "name_en": "Roasted Whole Lamb",
       "type": "famous",
       "price_range": "¥200-400",
-      "description": "藏族盛大宴席",
+      "description": "Tibetan grand feast",
       "must_try": false
     },
     {
@@ -1153,7 +1153,7 @@
       "name_en": "Saffron Steamed Egg",
       "type": "restaurant",
       "price_range": "¥15-30",
-      "description": "九寨特色养生菜",
+      "description": "Jiuzhaigou wellness specialty",
       "must_try": false
     }
   ],
@@ -1163,7 +1163,7 @@
       "name_en": "Sour Soup Fish",
       "type": "famous",
       "price_range": "¥40-80",
-      "description": "贵州代表菜，老凯里酸汤鱼",
+      "description": "Guizhou's signature dish — Old Kaili（老凯里） sour soup fish",
       "must_try": true
     },
     {
@@ -1171,7 +1171,7 @@
       "name_en": "Huaxi Beef Rice Noodles",
       "type": "street",
       "price_range": "¥10-18",
-      "description": "贵阳必吃早餐",
+      "description": "Guiyang must-eat breakfast",
       "must_try": true
     },
     {
@@ -1179,7 +1179,7 @@
       "name_en": "Siwawa",
       "type": "street",
       "price_range": "¥12-25",
-      "description": "自己动手卷的蔬菜小饼",
+      "description": "DIY vegetable wraps you roll yourself",
       "must_try": true
     },
     {
@@ -1187,7 +1187,7 @@
       "name_en": "Changwang Noodles",
       "type": "street",
       "price_range": "¥10-18",
-      "description": "猪肠+血旺+红油面",
+      "description": "Pork intestine + blood curd + chili oil noodles",
       "must_try": false
     },
     {
@@ -1195,7 +1195,7 @@
       "name_en": "Tofu Balls",
       "type": "street",
       "price_range": "¥5-10",
-      "description": "炸豆腐蘸辣椒面",
+      "description": "Fried tofu with chili powder dip",
       "must_try": false
     }
   ],
@@ -1205,7 +1205,7 @@
       "name_en": "Nanchang Mixed Rice Noodles",
       "type": "street",
       "price_range": "¥5-10",
-      "description": "江西人早饭灵魂，瓦罐汤标配",
+      "description": "Jiangxi breakfast soul, always paired with claypot soup",
       "must_try": true
     },
     {
@@ -1213,7 +1213,7 @@
       "name_en": "Claypot Soup",
       "type": "famous",
       "price_range": "¥8-20",
-      "description": "井冈山/鸡蛋肉饼汤最经典",
+      "description": "Jinggangshan（井冈山） or egg-mince pie soup, most classic",
       "must_try": true
     },
     {
@@ -1221,7 +1221,7 @@
       "name_en": "Stir-fried Artemisia with Bacon",
       "type": "famous",
       "price_range": "¥25-45",
-      "description": "鄱阳湖藜蒿+腊肉，江西名菜",
+      "description": "Poyang Lake（鄱阳湖） wormwood + bacon, Jiangxi famous dish",
       "must_try": true
     },
     {
@@ -1229,7 +1229,7 @@
       "name_en": "Sugar Cake",
       "type": "snack",
       "price_range": "¥5-10",
-      "description": "南昌传统甜点",
+      "description": "Nanchang traditional dessert",
       "must_try": false
     },
     {
@@ -1237,7 +1237,7 @@
       "name_en": "Stir-fried Rice Noodles with Beef",
       "type": "street",
       "price_range": "¥12-20",
-      "description": "江西米粉有名",
+      "description": "Jiangxi rice noodles are famous",
       "must_try": false
     }
   ],
@@ -1247,15 +1247,15 @@
       "name_en": "Hand-grabbed Lamb",
       "type": "famous",
       "price_range": "¥40-80",
-      "description": "内蒙古最地道的吃法",
+      "description": "Inner Mongolia's most authentic way to eat lamb",
       "must_try": true
     },
     {
       "name_zh": "涮羊肉",
       "name_en": "Mongolian Hot Pot",
       "type": "famous",
-      "price_range": "¥50-100/人",
-      "description": "内蒙羊肉+铜锅炭火，小肥羊起源地",
+      "price_range": "¥50-100/person",
+      "description": "Inner Mongolian lamb + copper pot charcoal fire, birthplace of Little Sheep（小肥羊）",
       "must_try": true
     },
     {
@@ -1263,7 +1263,7 @@
       "name_en": "Roasted Lamb Leg",
       "type": "famous",
       "price_range": "¥80-150",
-      "description": "蒙餐招牌",
+      "description": "Mongolian cuisine signature",
       "must_try": true
     },
     {
@@ -1271,7 +1271,7 @@
       "name_en": "Salty Milk Tea",
       "type": "snack",
       "price_range": "¥5-15",
-      "description": "内蒙咸奶茶，配炒米/奶皮",
+      "description": "Inner Mongolian salty milk tea, with fried millet and milk skin",
       "must_try": true
     },
     {
@@ -1279,7 +1279,7 @@
       "name_en": "Oat Noodles",
       "type": "street",
       "price_range": "¥10-20",
-      "description": "西北特色面食，配羊肉汤",
+      "description": "Northwest specialty noodles, served with lamb soup",
       "must_try": false
     }
   ],
@@ -1289,7 +1289,7 @@
       "name_en": "Liangpi",
       "type": "street",
       "price_range": "¥6-12",
-      "description": "青海酿皮，比甘肃版更厚",
+      "description": "Qinghai-style, thicker than Gansu version",
       "must_try": true
     },
     {
@@ -1297,7 +1297,7 @@
       "name_en": "Hand-grabbed Lamb",
       "type": "famous",
       "price_range": "¥40-70",
-      "description": "青海羊肉不膻，益鑫手抓",
+      "description": "Qinghai lamb has no gamey taste — Yi Xin（益鑫） hand-grabbed lamb",
       "must_try": true
     },
     {
@@ -1305,7 +1305,7 @@
       "name_en": "Sweet Fermented Barley",
       "type": "snack",
       "price_range": "¥5-8",
-      "description": "青海特色甜品，青稞发酵",
+      "description": "Qinghai specialty dessert, fermented highland barley",
       "must_try": false
     },
     {
@@ -1313,7 +1313,7 @@
       "name_en": "Yogurt",
       "type": "snack",
       "price_range": "¥5-10",
-      "description": "青海老酸奶，上面一层黄奶皮",
+      "description": "Qinghai old-style yogurt with a layer of yellow cream skin on top",
       "must_try": true
     },
     {
@@ -1321,7 +1321,7 @@
       "name_en": "Offal Soup",
       "type": "street",
       "price_range": "¥10-20",
-      "description": "羊杂碎汤配馍，早餐首选",
+      "description": "Lamb offal soup with flatbread, top breakfast choice",
       "must_try": false
     }
   ]

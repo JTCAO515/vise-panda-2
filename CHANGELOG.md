@@ -1,5 +1,22 @@
 # Changelog
 
+## v5.0.7 — 2026-06-19
+
+### Added
+- 英文原生网站内容收口：城市、餐饮、住宿等运行时主数据改为自然英文表达
+- 特殊地名与中文专属词采用 `English（中文）` 的显示格式
+- 前端新增统一双语显示 helper，城市、地图点位、餐饮条目与比较视图改为更一致的英文主展示
+- 前端结构测试同步更新到 `v5.0.7`
+
+### Changed
+- `/data/cities.json`、`/data/food.json`、`/data/hotels.json` 的用户可见文案改为英文原生
+- `/api/cities.py` 的 summary/compare 默认值改为英文口径
+- 统一后端 `APP_VERSION`、前端壳层显示与文档版本到 `v5.0.7`
+
+### Regression
+- 执行 `python3 -m unittest discover -s tests -v`，后端 14 项测试通过
+- 执行 `node --test web/tests/*.test.js`，前端 18 项结构测试通过
+
 ## v5.0.6 — 2026-06-19
 
 ### Added

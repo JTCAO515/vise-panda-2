@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-   VisePanda v5.0.6 — Frontend Application
+   VisePanda v5.0.7 — Frontend Application
    ═══════════════════════════════════════════════════════════ */
 
 const VP = (function(){
@@ -74,6 +74,7 @@ const VP = (function(){
     isStreaming: false,
     theme: document.documentElement.getAttribute('data-theme') || 'dark',
     cityFilter: 'all',
+    cityCatalog: null,
   };
   const supportedViews = new Set(['home', 'chat', 'trips', 'cities', 'tools', 'map']);
 
@@ -316,6 +317,32 @@ const VP = (function(){
     return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
   }
 
+  function formatDisplayText(primary, chinese) {
+    const first = typeof primary === 'string' ? primary.trim() : '';
+    const second = typeof chinese === 'string' ? chinese.trim() : '';
+    if (first && second && first !== second) return `${first}（${second}）`;
+    return first || second || '';
+  }
+
+  function humanizeCityKey(key) {
+    const special = {
+      xian: "Xi'an",
+      lasa: 'Lhasa',
+      hohhot: 'Hohhot',
+      jiuzhaigou: 'Jiuzhaigou',
+      zhangjiajie: 'Zhangjiajie',
+    };
+    if (!key) return '';
+    return special[key] || key.replace(/(^|-)([a-z])/g, (_, sep, ch) => `${sep === '-' ? ' ' : ''}${ch.toUpperCase()}`);
+  }
+
+  async function ensureCityCatalog() {
+    if (state.cityCatalog) return state.cityCatalog;
+    const data = await apiGet('/api/cities');
+    state.cityCatalog = data && data.cities ? data.cities : {};
+    return state.cityCatalog;
+  }
+
   // ── City emoji helper ──
   function getCityEmoji(name) {
     const map = {
@@ -372,14 +399,15 @@ const VP = (function(){
     const caption = info.vibe
       ? `Best for ${String(info.vibe).toLowerCase()} days with a quick dossier preview.`
       : 'Editorial browse card with a quick cue before opening the dossier.';
+    const displayName = formatDisplayText(info.name_en || humanizeCityKey(name), info.name_cn);
 
     card.innerHTML = imgHtml + `
       <div class="city-card-top">
         <span class="city-emoji">${emoji}</span>
       </div>
       <div class="city-card-bottom">
-        <div class="city-name">${name}</div>
-        <div class="city-sub">${info.name_cn || ''}</div>
+        <div class="city-name">${displayName}</div>
+        <div class="city-sub">${info.province || ''}</div>
         <div class="city-meta">${info.best_season || ''} · ${info.days || ''}</div>
         ${info.vibe ? `<div class="city-vibe">${info.vibe}</div>` : ''}
         <div class="city-card-caption">${caption}</div>
@@ -393,10 +421,10 @@ const VP = (function(){
   async function loadHomeCities() {
     const grid = document.getElementById('city-grid');
     if (!grid) return;
-    const data = await apiGet('/api/cities');
-    if (!data || !data.cities) return;
+    const cities = await ensureCityCatalog();
+    if (!cities) return;
     grid.innerHTML = '';
-    Object.entries(data.cities).slice(0, 8).forEach(([name, info]) => {
+    Object.entries(cities).slice(0, 8).forEach(([name, info]) => {
       grid.appendChild(createCityCard(name, info));
     });
   }
@@ -405,10 +433,10 @@ const VP = (function(){
   async function loadCities() {
     const grid = document.getElementById('cities-grid');
     if (!grid) return;
-    const data = await apiGet('/api/cities');
-    if (!data || !data.cities) return;
+    const cities = await ensureCityCatalog();
+    if (!cities) return;
     grid.innerHTML = '';
-    Object.entries(data.cities).forEach(([name, info]) => {
+    Object.entries(cities).forEach(([name, info]) => {
       grid.appendChild(createCityCard(name, info));
     });
     applyCitiesFilter(state.cityFilter);
@@ -502,6 +530,7 @@ const VP = (function(){
     const mapData = city.map || {};
     const hasMap = mapData.lat && mapData.lng;
     const est = city.estimate || {};
+    const displayName = formatDisplayText(city.name_en || humanizeCityKey(name), city.name_cn);
 
     // Build price estimate HTML
     let estHtml = '';
@@ -529,8 +558,9 @@ const VP = (function(){
       const items = city.food.map(f => {
         const star = f.must_try ? '⭐ ' : '';
         const cls = f.must_try ? 'food-item must' : 'food-item';
+        const foodName = formatDisplayText(f.name_en || '', f.name_zh || f.name_cn || '');
         return '<div class="' + cls + '">'
-          + '<div class="food-item-name">' + star + escHtml(f.name_en || '') + ' <span class="food-item-cn">' + escHtml(f.name_cn || '') + '</span></div>'
+          + '<div class="food-item-name">' + star + escHtml(foodName) + '</div>'
           + '<div class="food-item-desc">' + escHtml(f.description || '') + '</div>'
           + '<div class="food-item-price">💰 ' + escHtml(f.price_range || '') + '</div>'
           + '</div>';
@@ -563,8 +593,8 @@ const VP = (function(){
     panel.innerHTML =
       '<div class="detail-header">'
       + '<span class="detail-emoji">' + emoji + '</span>'
-      + '<div><h2 class="detail-name">' + name + '</h2>'
-      + '<div class="detail-sub">' + escHtml(city.name_cn || '') + ' · ' + escHtml(city.province || '') + '</div></div>'
+      + '<div><h2 class="detail-name">' + escHtml(displayName) + '</h2>'
+      + '<div class="detail-sub">' + escHtml(city.province || '') + '</div></div>'
       + '<button class="modal-close" onclick="VP.closeCityDetail()">✕</button></div>'
       + '<div class="detail-meta"><span>📅 Best: ' + escHtml(city.best_season || '') + '</span><span>⏱️ ' + escHtml(city.days || '') + '</span><span>' + escHtml(city.vibe || '') + '</span></div>'
       + (city.budget_tip ? '<div class="detail-tip">💰 ' + escHtml(city.budget_tip) + '</div>' : '')
@@ -643,7 +673,7 @@ const VP = (function(){
           iconAnchor: [5, 5],
         });
         var marker = window.L.marker([poi.lat, poi.lng], { icon: poiIcon }).addTo(map);
-        marker.bindPopup('<b>' + escHtml(poi.name) + '</b>' + (poi.name_cn ? '<br><span style="font-size:12px;color:#888">' + escHtml(poi.name_cn) + '</span>' : ''));
+        marker.bindPopup('<b>' + escHtml(formatDisplayText(poi.name, poi.name_cn)) + '</b>');
       });
     }
     
@@ -1382,7 +1412,7 @@ const VP = (function(){
     // Header row
     html += '<tr><th></th>';
     cities.forEach(c => {
-      html += '<th>' + escHtml(c.name_en || c.name_cn || '?') + '</th>';
+      html += '<th>' + escHtml(formatDisplayText(c.name_en || '', c.name_cn || '')) + '</th>';
     });
     html += '</tr>';
 
@@ -1791,7 +1821,8 @@ const VP = (function(){
     if (!detail || !nameEl) return;
 
     const tags = CITY_TAGS[cityKey] || {emoji: '📍', tag: 'regional', desc: ''};
-    const cityName = cityKey.charAt(0).toUpperCase() + cityKey.slice(1);
+    const summary = state.cityCatalog && state.cityCatalog[cityKey] ? state.cityCatalog[cityKey] : {};
+    const cityName = formatDisplayText(summary.name_en || humanizeCityKey(cityKey), summary.name_cn);
 
     nameEl.textContent = `${tags.emoji} ${cityName}`;
     descEl.textContent = tags.desc;
@@ -1837,7 +1868,7 @@ const VP = (function(){
 
     // Fetch client config to hydrate version and Google Sign-In settings
     fetch('/api/config').then(r => r.json()).then(config => {
-      const ver = config.version || '5.0.6';
+      const ver = config.version || '5.0.7';
       const badge = document.getElementById('version-badge');
       const footerVer = document.getElementById('footer-version');
       const gsi = document.getElementById('g_id_onload');
@@ -1866,6 +1897,7 @@ const VP = (function(){
 
     // Update suggestions based on conversation context
     updateSuggestions();
+    ensureCityCatalog().catch(() => {});
     setupCitiesFilterRail();
     applyCitiesFilter(state.cityFilter);
 

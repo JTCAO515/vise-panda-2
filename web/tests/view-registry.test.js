@@ -92,9 +92,9 @@ test('tools 视图包含移动端 gallery 壳层与辅助说明', () => {
   assert.match(css, /\.tools-mobile-gallery\b/);
 });
 
-test('visible version is updated to v5.0.6', () => {
-  assert.match(html, /v5\.0\.6/);
-  assert.match(appJs, /5\.0\.6/);
+test('visible version is updated to v5.0.7', () => {
+  assert.match(html, /v5\.0\.7/);
+  assert.match(appJs, /5\.0\.7/);
 });
 
 test('admin 页面包含 atlas 风格 hero 概览头', () => {
