@@ -1,8 +1,70 @@
 /* ═══════════════════════════════════════════════════════════
-   VisePanda v4.0.3 — Frontend Application
+   VisePanda v4.0.4 — Frontend Application
    ═══════════════════════════════════════════════════════════ */
 
 const VP = (function(){
+  // ── Panda Mood System ──
+  let _pandaMood = 'default';
+  const PANDA_MOODS = {
+    default:  {emoji: '🐼', label: 'Default'},
+    food:     {emoji: '😋', label: 'Food'},
+    money:    {emoji: '💰', label: 'Money'},
+    sight:    {emoji: '🕶️', label: 'Sightseeing'},
+    tip:      {emoji: '📌', label: 'Tip'},
+    happy:    {emoji: '😊', label: 'Happy'},
+    thinking: {emoji: '🤔', label: 'Thinking'},
+    sorry:    {emoji: '😅', label: 'Sorry'},
+    hotel:    {emoji: '🏨', label: 'Hotel'},
+    transit:  {emoji: '🚄', label: 'Transit'},
+  };
+
+  const PANDA_KEYWORDS = [
+    {pattern: /吃|eat|food|美食|restaurant|饭|菜|餐|尝|taste|delicious|yummy/i, mood: 'food'},
+    {pattern: /价格|price|cost|费用|budget|预算|money|¥|free|cheap|expensive|收费/i, mood: 'money'},
+    {pattern: /景点|visit|see|tour|attraction|逛|玩|gsight|park|temple|museum|palace|长城|故宫/i, mood: 'sight'},
+    {pattern: /tip|注意|建议|advice|小心|提醒|remember|别忘了/i, mood: 'tip'},
+    {pattern: /great|nice|good|wonderful|perfect|awesome|不错|好|棒/i, mood: 'happy'},
+    {pattern: /let me|let's|让我|我想|maybe|perhaps|可以|option/i, mood: 'thinking'},
+    {pattern: /sorry|抱歉|against|错误|error|unable|cannot|麻烦/i, mood: 'sorry'},
+    {pattern: /hotel|住宿|住|stay|room|房间|hostel|inn/i, mood: 'hotel'},
+    {pattern: /flight|飞机|高铁|train|地铁|bus|交通|transport|taxi|打车/i, mood: 'transit'},
+  ];
+
+  function setPandaMood(token) {
+    if (!token || typeof token !== 'string') return;
+    PANDA_KEYWORDS.some(({pattern, mood}) => {
+      if (pattern.test(token)) {
+        if (_pandaMood !== mood) {
+          _pandaMood = mood;
+          updatePandaAvatars();
+        }
+        return true;
+      }
+      return false;
+    });
+  }
+
+  function resetPandaMood() {
+    if (_pandaMood !== 'default') {
+      _pandaMood = 'default';
+      updatePandaAvatars();
+    }
+  }
+
+  function getPandaAvatar() {
+    const mood = PANDA_MOODS[_pandaMood] || PANDA_MOODS.default;
+    return `<span class="panda-avatar" data-mood="${_pandaMood}">🐼<span class="panda-mood-badge">${mood.emoji}</span></span>`;
+  }
+
+  function updatePandaAvatars() {
+    const html = getPandaAvatar();
+    document.querySelectorAll('.msg-avatar').forEach(el => {
+      // Only update assistant/typing avatars, not user ones
+      if (el.closest('.msg-assistant, .msg-bot') || el.closest('#typing-msg')) {
+        el.innerHTML = html;
+      }
+    });
+  }
   'use strict';
 
   // ── State ──
@@ -639,7 +701,7 @@ const VP = (function(){
     const msg = document.createElement('div');
     msg.className = `msg msg-${role}`;
     msg.innerHTML = `
-      <div class="msg-avatar">${role === 'assistant' || role === 'bot' ? '🐼' : '👤'}</div>
+      <div class="msg-avatar">${role === 'assistant' || role === 'bot' ? getPandaAvatar() : '👤'}</div>
       <div class="msg-body">
         <div class="msg-sender">${role === 'assistant' || role === 'bot' ? 'VisePanda' : 'You'}</div>
         <div class="msg-text">${role === 'user' ? text.replace(/\n/g, '<br>') : renderMD(text)}</div>
@@ -661,11 +723,12 @@ const VP = (function(){
     const msg = document.createElement('div');
     msg.className = 'msg msg-bot';
     msg.id = 'typing-msg';
+    const ta = getPandaAvatar();
     msg.innerHTML = `
-      <div class="msg-avatar">🐼</div>
+      <div class="msg-avatar">${ta}</div>
       <div class="msg-body">
         <div class="msg-sender">VisePanda</div>
-        <div class="msg-text"><span class="typing-dots"><span>.</span><span>.</span><span>.</span></span></div>
+        <div class="msg-text typing-indicator"><span></span><span></span><span></span></div>
       </div>
     `;
     container.appendChild(msg);
@@ -794,6 +857,7 @@ const VP = (function(){
             const parsed = JSON.parse(data);
             if (parsed.token) {
               currentBubble += parsed.token;
+              setPandaMood(parsed.token);
               updateTyping(typingId, currentBubble);
             } else if (parsed.split) {
               // Commit current bubble and start a new one
@@ -916,11 +980,12 @@ const VP = (function(){
         removeMessage(typingId);
         const errMsg = document.createElement('div');
         errMsg.className = 'msg msg-bot';
-        errMsg.innerHTML = '<div class="msg-avatar">🐼</div><div class="msg-body"><div class="msg-sender">VisePanda</div><div class="msg-text" style="color:#e74c3c">⚠️ Connection error. <a href="#" onclick="const i=document.getElementById(\'chat-input\');if(i){const e=new Event(\'keydown\');e.key=\'Enter\';i.dispatchEvent(e)}return false" style="color:var(--accent,#e67e22);font-weight:600">Retry ↻</a></div></div>';
+        errMsg.innerHTML = '<div class="msg-avatar">' + getPandaAvatar() + '</div><div class="msg-body"><div class="msg-sender">VisePanda</div><div class="msg-text" style="color:#e74c3c">⚠️ Connection error. <a href="#" onclick="const i=document.getElementById(\'chat-input\');if(i){const e=new Event(\'keydown\');e.key=\'Enter\';i.dispatchEvent(e)}return false" style="color:var(--accent,#e67e22);font-weight:600">Retry ↻</a></div></div>';
         const container = document.getElementById('chat-messages');
         if (container) container.appendChild(errMsg);
       }
     } finally {
+      resetPandaMood();
       state.isStreaming = false;
       toggleStopButton(false);
       abortController = null;

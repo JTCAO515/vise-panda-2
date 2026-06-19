@@ -1137,3 +1137,9 @@ body{
 .compare-footer{padding:12px 20px;border-top:1px solid var(--border);text-align:right}
 .compare-btn-chat{background:var(--accent);color:#fff;border:none;padding:8px 20px;border-radius:8px;font-size:13px;cursor:pointer}
 .compare-btn-chat:hover{opacity:.9}
+
+/* ═══ Panda Mood Avatar ═══ */
+.panda-avatar{position:relative;display:inline-flex;align-items:center;justify-content:center}
+.panda-mood-badge{position:absolute;bottom:-4px;right:-6px;font-size:10px;line-height:1;transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .3s ease;filter:drop-shadow(0 1px 2px rgba(0,0,0,.3));animation:pandaMoodPop .3s cubic-bezier(.34,1.56,.64,1)}
+[data-mood="default"] .panda-mood-badge{transform:scale(0);opacity:0}
+@keyframes pandaMoodPop{0%{transform:scale(0) rotate(-15deg);opacity:0}100%{transform:scale(1) rotate(0);opacity:1}}
