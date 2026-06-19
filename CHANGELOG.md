@@ -4,6 +4,13 @@
 - ✨ **Trip Persistence** — 登录用户自动同步行程到后端 API
 - 匿名用户继续使用 localStorage 降级
 - API 保存 + 本地缓存双写，即时反馈
+- **♻️ Backend Refactor** — 拆分 api/index.py (826行) → 模块化：
+  - `api/common.py` — 共用工具函数 (JSON/SSE/静态文件)
+  - `api/cities.py` — 城市+预算+校验+地图数据
+  - `api/chat.py` — SSE聊天+FAQ匹配+系统提示
+  - `api/tools.py` — 工具箱
+  - `api/config.py` — 地图+客户端配置
+  - `api/index.py` — 精简至84行，纯路由入口
 
 ## v3.1.0 — 2026-06-19
 - **⚙️ Admin Panel** — New standalone admin page (`/admin`), user management with stats dashboard. Role-based access (admin/ops only). Users table, delete user, real-time stats.
