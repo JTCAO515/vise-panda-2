@@ -42,7 +42,7 @@
       <button class="nav-btn" data-view="tools" onclick="VP.navigate('tools')">🧰 Tools</button>
     </nav>
     <div class="header-right">
-      <span id="version-badge" class="version-badge">v5.0.5</span>
+      <span id="version-badge" class="version-badge">v5.0.6</span>
       <div id="auth-area" class="auth-area">
         <button id="auth-btn" class="auth-btn" onclick="VP.auth.showModal()" style="display:none">Sign In</button>
         <div id="user-menu" class="user-menu" style="display:none">
@@ -171,12 +171,15 @@
             </div>
           </div>
         </div>
-        <div id="chat-suggestions" class="chat-suggestions"></div>
-        <aside id="chat-action-rail" class="chat-action-rail chat-action-rail-mobile" aria-label="Chat actions">
-          <button class="rail-btn" onclick="VP.saveCurrentTrip()">Save trip</button>
-          <button class="rail-btn" onclick="VP.navigate('map')">Open map</button>
-          <button class="rail-btn" onclick="VP.navigate('tools')">Visa &amp; tools</button>
-        </aside>
+        <div class="chat-quick-scroll">
+          <div id="chat-suggestions" class="chat-suggestions"></div>
+          <aside id="chat-action-rail" class="chat-action-rail chat-action-rail-mobile" aria-label="Chat actions">
+            <button class="rail-btn" onclick="VP.saveCurrentTrip()">Save trip</button>
+            <button class="rail-btn" onclick="VP.navigate('map')">Open map</button>
+            <button class="rail-btn" onclick="VP.navigate('tools')">Visa &amp; tools</button>
+          </aside>
+          <button id="chat-quick-scroll" class="chat-quick-scroll-btn" type="button" onclick="VP.scrollChatToLatest()">Latest</button>
+        </div>
         <div class="chat-input-bar chat-input-bar-safe">
           <textarea id="chat-input" class="chat-input" rows="1" placeholder="Ask about China travel... (e.g. '3 days in Beijing')" oninput="VP.autoResize(this)"></textarea>
           <button id="chat-send" class="chat-send" onclick="VP.sendMessage()" disabled>Send</button>
@@ -198,6 +201,11 @@
             <p class="trips-atlas-note-label">Atlas note</p>
             <p class="trips-atlas-note-copy">Recent plans stay ready for fast reloads, while the archive keeps older routes in a calmer library rhythm.</p>
           </aside>
+        </div>
+        <div class="trips-mobile-actions" aria-label="Trips quick actions">
+          <button class="trips-mobile-action-btn" type="button" onclick="VP.navigate('chat')">New trip</button>
+          <button class="trips-mobile-action-btn" type="button" onclick="VP.navigate('cities')">Browse cities</button>
+          <button class="trips-mobile-action-btn" type="button" onclick="VP.navigate('tools')">Open toolkit</button>
         </div>
         <div class="trips-groups">
           <section class="trips-group-section">
@@ -261,6 +269,10 @@
           <button class="cities-filter-chip" type="button" data-filter="nature" aria-pressed="false">Nature</button>
           <button class="cities-filter-chip" type="button" data-filter="urban" aria-pressed="false">Urban</button>
         </div>
+        <div class="cities-mobile-intro">
+          <span class="cities-mobile-intro-label">Mobile rhythm</span>
+          <p class="cities-mobile-intro-copy">Each card now surfaces a short browse cue first, so one-handed scanning feels lighter before you open the full city dossier.</p>
+        </div>
         <div class="cities-atlas-note">
           <span class="cities-atlas-note-label">Browsing mode</span>
           <p class="cities-atlas-note-copy">Filter cues are optional and keep the current city detail interactions unchanged.</p>
@@ -278,7 +290,13 @@
       <div class="section tools-section tools-section-mobile">
         <h2 class="section-title">🧰 Travel Toolkit</h2>
         <p class="section-sub">Visa, packing, pricing, phrases, and emergency references</p>
-        <div id="tools-grid" class="tools-grid"></div>
+        <div class="tools-mobile-gallery">
+          <div class="tools-mobile-gallery-copy">
+            <span class="tools-mobile-gallery-label">Pocket utilities</span>
+            <p class="tools-mobile-gallery-note">A lighter gallery rhythm for fast reach, quick glance, and single-thumb decisions on the move.</p>
+          </div>
+          <div id="tools-grid" class="tools-grid"></div>
+        </div>
       </div>
     </section>
   </main>
@@ -472,7 +490,7 @@
 
   <!-- ═══ FOOTER ═══ -->
   <footer id="footer">
-    <p><span id="footer-version">VisePanda v5.0.5</span> · AI China Travel Planner · 🐼 · <span class="footer-clear" onclick="VP.clearChatHistory()" style="cursor:pointer;text-decoration:underline;opacity:.5">Clear chat</span></p>
+    <p><span id="footer-version">VisePanda v5.0.6</span> · AI China Travel Planner · 🐼 · <span class="footer-clear" onclick="VP.clearChatHistory()" style="cursor:pointer;text-decoration:underline;opacity:.5">Clear chat</span></p>
   </footer>
 </div>
 

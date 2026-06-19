@@ -1,7 +1,7 @@
-# VisePanda (VP-Hermes-Web) v5.0.5 — Handoff Document
+# VisePanda (VP-Hermes-Web) v5.0.6 — Handoff Document
 
 > **Last Updated:** 2026-06-19
-> **Status:** ✅ Active — foundation contracts已落地，Editorial Atlas 主界面已深化，并插入完成手机端竖屏体验优化到 v5.0.5
+> **Status:** ✅ Active — foundation contracts已落地，Editorial Atlas 主界面已深化，并完成第二轮手机端细化到 v5.0.6
 > **Repo:** `https://github.com/JTCAO515/VP-Hermes-Web.git` (HTTPS, PAT auth)
 > **Live URL:** https://www.go2china.space (Vercel auto-deploy on push)
 > **Vercel Project:** `vise-panda-2` (custom domain `www.go2china.space`)
@@ -70,7 +70,7 @@ Target user: Non-Chinese tourists planning trips to China (English interface, Ch
 
 ## 3. Current State
 
-### ✅ Completed (v5.0.5)
+### ✅ Completed (v5.0.6)
 
 | Phase | Feature | Version |
 |-------|---------|:-------:|
@@ -94,6 +94,7 @@ Target user: Non-Chinese tourists planning trips to China (English interface, Ch
 | 🧭 Main-page Atlas Structure | Chat action rail / Trips recent+saved / Tools view / Admin hero | v5.0.3 |
 | 🏙 Editorial Browsing | Cities filter rail / editorial lead / Trips atlas note | v5.0.4 |
 | 📱 Portrait Mobile UX | Hero 压缩节奏 / Chat safe-area shell / 横滑 filter rail / 单手卡片浏览 | v5.0.5 |
+| 🤳 Mobile Detail Pass | Chat quick scroll / Trips thumb-first actions / Tools mobile gallery / Cities card caption | v5.0.6 |
 | 🚀 Deploy | Vercel WSGI auto-deploy from GitHub | v3.0.1 |
 
 ### 🟡 Known Quirks / Gotchas

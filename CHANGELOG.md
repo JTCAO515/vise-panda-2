@@ -1,5 +1,22 @@
 # Changelog
 
+## v5.0.6 — 2026-06-19
+
+### Added
+- Chat 新增 `chat-quick-scroll` 与 `chat-quick-scroll-btn`，支持更快回到最新消息
+- Trips 卡片新增 `trip-card-mobile-head` 与 `trip-card-mobile-actions`，强化拇指优先的操作区
+- Cities 新增 `cities-mobile-intro` 与 `city-card-caption`，提升手机端扫读节奏
+- Tools 新增 `tools-mobile-gallery`、`tools-mobile-gallery-copy` 与 `tool-card-kicker`
+- 前端结构测试新增对 `v5.0.6` 和移动端细化结构的校验
+
+### Changed
+- 手机端 Chat 输入区、快捷操作、Trips 卡片、Cities 浏览说明、Tools 画廊进行第二轮细化
+- 统一后端 `APP_VERSION`、前端壳层显示与文档版本到 `v5.0.6`
+
+### Regression
+- 执行 `python3 -m unittest discover -s tests -v`，后端 14 项测试通过
+- 执行 `node --test web/tests/*.test.js`，前端 18 项结构测试通过
+
 ## v5.0.5 — 2026-06-19
 
 ### Added

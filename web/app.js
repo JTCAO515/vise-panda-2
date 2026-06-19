@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-   VisePanda v5.0.5 — Frontend Application
+   VisePanda v5.0.6 — Frontend Application
    ═══════════════════════════════════════════════════════════ */
 
 const VP = (function(){
@@ -369,6 +369,9 @@ const VP = (function(){
     if (hasImg) {
       imgHtml = `<img class="city-bg-img" src="${info.image}" alt="${name}" loading="lazy" onerror="this.parentElement.classList.remove('has-img');this.remove()">`;
     }
+    const caption = info.vibe
+      ? `Best for ${String(info.vibe).toLowerCase()} days with a quick dossier preview.`
+      : 'Editorial browse card with a quick cue before opening the dossier.';
 
     card.innerHTML = imgHtml + `
       <div class="city-card-top">
@@ -379,6 +382,7 @@ const VP = (function(){
         <div class="city-sub">${info.name_cn || ''}</div>
         <div class="city-meta">${info.best_season || ''} · ${info.days || ''}</div>
         ${info.vibe ? `<div class="city-vibe">${info.vibe}</div>` : ''}
+        <div class="city-card-caption">${caption}</div>
         ${tags.length ? `<div class="city-tags">${tags.map(t => `<span class="city-tag">${t}</span>`).join('')}</div>` : ''}
       </div>
     `;
@@ -451,10 +455,12 @@ const VP = (function(){
 
     grid.innerHTML = '';
     const emojis = {packing:'🧳', pricing:'💰', visa:'🛂', phrases:'💬', emergency:'🆘'};
+    const kickers = {packing:'Ready kit', pricing:'Budget lens', visa:'Border prep', phrases:'Quick talk', emergency:'Need now'};
     Object.entries(data.tools).forEach(([name, desc]) => {
       const card = document.createElement('div');
       card.className = 'tool-card';
       card.innerHTML = `
+        <div class="tool-card-kicker">${kickers[name] || 'Quick utility'}</div>
         <div class="tool-card-icon">${emojis[name] || '🧰'}</div>
         <div class="tool-card-title">${name}</div>
         <div class="tool-card-desc">${desc}</div>
@@ -1188,6 +1194,12 @@ const VP = (function(){
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  function scrollChatToLatest() {
+    const container = document.getElementById('chat-messages');
+    if (!container) return;
+    container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+  }
+
   function deleteTrip(id) {
     const tok = getToken();
     if (tok) {
@@ -1234,16 +1246,19 @@ const VP = (function(){
         const snippet = t.content.replace(/<[^>]+>/g, '').slice(0, 120).replace(/\n/g, ' ');
         const cityEmoji = t.city ? getCityEmoji(t.city) : '🌏';
         return '<div class="trip-card">'
+          + '<div class="trip-card-mobile-head">'
           + '<div class="trip-card-top">'
           + '<span class="trip-city-icon">' + cityEmoji + '</span>'
           + '<div class="trip-card-info">'
           + '<div class="trip-card-title">' + escHtml(t.title) + '</div>'
           + '<div class="trip-card-meta">' + (t.city ? escHtml(t.city) + ' · ' : '') + t.days + ' days · ' + dateStr + '</div>'
           + '</div></div>'
-          + '<div class="trip-card-desc">' + escHtml(snippet) + '…</div>'
-          + '<div class="trip-card-actions">'
+          + '<div class="trip-card-mobile-actions">'
           + '<button class="trip-action-btn load" onclick="VP.loadTrip(\'' + t.id + '\')">📂 Load</button>'
           + '<button class="trip-action-btn share" onclick="VP.shareTrip(\'' + t.id + '\')">📋 Copy</button>'
+          + '</div></div>'
+          + '<div class="trip-card-desc">' + escHtml(snippet) + '…</div>'
+          + '<div class="trip-card-actions">'
           + '<button class="trip-action-btn delete" onclick="VP.deleteTrip(\'' + t.id + '\')">🗑️</button>'
           + '</div></div>';
       }).join('');
@@ -1822,7 +1837,7 @@ const VP = (function(){
 
     // Fetch client config to hydrate version and Google Sign-In settings
     fetch('/api/config').then(r => r.json()).then(config => {
-      const ver = config.version || '5.0.5';
+      const ver = config.version || '5.0.6';
       const badge = document.getElementById('version-badge');
       const footerVer = document.getElementById('footer-version');
       const gsi = document.getElementById('g_id_onload');
@@ -2499,6 +2514,7 @@ const VP = (function(){
     mapOpenChat,
     chatOverlayBack,
     init,
+    scrollChatToLatest,
     scrollToTop,
     auth,
   };
