@@ -6,7 +6,7 @@
 
 ### Issue tracker
 
-GitHub Issues on [JTCAO515/vise-panda-2](https://github.com/JTCAO515/vise-panda-2). External PRs are not a triage surface. See `docs/agents/issue-tracker.md`.
+GitHub Issues on [JTCAO515/VP-Hermes-Web](https://github.com/JTCAO515/VP-Hermes-Web). External PRs are not a triage surface. See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 

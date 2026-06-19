@@ -776,7 +776,7 @@ def app(environ, start_response):
     if path == "/api/health" and method == "GET":
         return _json(start_response, {
             "status": "alive",
-            "version": "3.1.0",
+            "version": "3.2.0",
             "build": "2026-06-15",
         })
 

@@ -1,6 +1,11 @@
 # Changelog
 
-## v3.1.0 (2026-06-19)
+## v3.2.0 — 2026-06-19
+- ✨ **Trip Persistence** — 登录用户自动同步行程到后端 API
+- 匿名用户继续使用 localStorage 降级
+- API 保存 + 本地缓存双写，即时反馈
+
+## v3.1.0 — 2026-06-19
 - **⚙️ Admin Panel** — New standalone admin page (`/admin`), user management with stats dashboard. Role-based access (admin/ops only). Users table, delete user, real-time stats.
 - **🔄 Admin Nav** — Admin link in user dropdown navigates to `/admin` in same tab instead of popup window.
 - **🔢 Version Bump** — v3.0.8 → v3.1.0

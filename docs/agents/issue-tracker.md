@@ -1,7 +1,7 @@
 # Issue Tracker
 
 - **Type:** GitHub Issues
-- **Repository:** JTCAO515/vise-panda-2
+- **Repository:** JTCAO515/VP-Hermes-Web
 - **External PRs as triage surface:** No
 - **CLI:** `gh` (GitHub CLI)
 

@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-   VisePanda v3.1.0 — Frontend Application
+   VisePanda v3.2.0 — Frontend Application
    ═══════════════════════════════════════════════════════════ */
 
 const VP = (function(){
@@ -939,23 +939,92 @@ const VP = (function(){
   // TRIP MANAGEMENT (Persistent Itineraries)
   // ═══════════════════════════════════════════════════════════
 
-  function getTrips() {
+  function getToken() {
+    return localStorage.getItem('vp_token') || '';
+  }
+
+  /** Load trips from API (logged-in) or localStorage (guest) */
+  async function loadTripsFromApi() {
+    const tok = getToken();
+    if (!tok) return null; // not logged in
+    try {
+      const resp = await fetch('/api/trips', {
+        headers: { 'Authorization': 'Bearer ' + tok }
+      });
+      if (!resp.ok) return null;
+      const data = await resp.json();
+      // API returns: {trips: {recent: [...], saved: [...]}}
+      const all = [];
+      if (data.trips) {
+        const src = data.trips.recent || data.trips.saved ? data.trips : { recent: data.trips };
+        const recent = (src.recent || []).map(t => ({
+          id: t.id,
+          city: t.city || '',
+          title: t.title || (t.city ? t.city + ' Trip' : 'Saved Trip'),
+          content: t.preview || '',
+          days: t.days || '?',
+          created: t.created_at || t.created || new Date().toISOString(),
+        }));
+        const saved = (src.saved || []).map(t => ({
+          id: t.id,
+          city: t.city || '',
+          title: t.title || (t.city ? t.city + ' Trip' : 'Saved Trip'),
+          content: t.preview || '',
+          days: t.days || '?',
+          created: t.created_at || t.created || new Date().toISOString(),
+        }));
+        all.push(...recent, ...saved);
+      }
+      return all;
+    } catch(e) {
+      return null;
+    }
+  }
+
+  /** Get local trips (always fallback) */
+  function getLocalTrips() {
     try {
       return JSON.parse(localStorage.getItem('vp_trips') || '[]');
     } catch(e) { return []; }
   }
 
-  function saveTrips(trips) {
+  function saveLocalTrips(trips) {
     try { localStorage.setItem('vp_trips', JSON.stringify(trips.slice(0, 20))); }
     catch(e) { /* quota */ }
   }
 
+  /** Get trips: API if logged in, localStorage fallback */
+  async function getTrips() {
+    const api = await loadTripsFromApi();
+    if (api !== null && api.length > 0) return api;
+    return getLocalTrips();
+  }
+
   function saveTrip(city, content) {
-    const trips = getTrips();
     const title = content.split('\n')[0].replace(/[#*]/g,'').trim().slice(0, 60) || (city ? city + ' Trip' : 'China Trip');
     const dayCount = (content.match(/\*\*Day \d+/g) || content.match(/Day \d+:/g) || []).length;
+    const tripId = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+
+    // API save if logged in
+    const tok = getToken();
+    if (tok) {
+      fetch('/api/trips', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok },
+        body: JSON.stringify({
+          title: title,
+          city: city || '',
+          days: String(dayCount || '?'),
+          preview: content.slice(0, 500),
+          is_saved: false,
+        })
+      }).catch(() => {}); // fire-and-forget API save
+    }
+
+    // Always save locally too (instant feedback)
+    const trips = getLocalTrips();
     const trip = {
-      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      id: tripId,
       city: city || '',
       title: title,
       content: content,
@@ -963,20 +1032,28 @@ const VP = (function(){
       created: new Date().toISOString(),
     };
     trips.unshift(trip);
-    saveTrips(trips);
+    saveLocalTrips(trips);
     return trip;
   }
 
   function deleteTrip(id) {
-    const trips = getTrips().filter(t => t.id !== id);
-    saveTrips(trips);
+    const tok = getToken();
+    if (tok) {
+      fetch('/api/trips/' + encodeURIComponent(id), {
+        method: 'DELETE',
+        headers: { 'Authorization': 'Bearer ' + tok }
+      }).catch(() => {});
+    }
+    // Remove from local too
+    const trips = getLocalTrips().filter(t => t.id !== id);
+    saveLocalTrips(trips);
     renderTrips();
   }
 
-  function renderTrips() {
+  async function renderTrips() {
     const grid = document.getElementById('trips-grid');
     if (!grid) return;
-    const trips = getTrips();
+    const trips = await getTrips();
 
     if (!trips.length) {
       grid.innerHTML = '<div class="trip-empty">No saved trips yet. Chat with VisePanda to plan a trip, then save it! 🌏</div>';
@@ -1004,8 +1081,8 @@ const VP = (function(){
     }).join('');
   }
 
-  function loadTrip(id) {
-    const trips = getTrips();
+  async function loadTrip(id) {
+    const trips = await getTrips();
     const trip = trips.find(t => t.id === id);
     if (!trip) return;
 
@@ -1039,8 +1116,8 @@ const VP = (function(){
     }
   }
 
-  function shareTrip(id) {
-    const trips = getTrips();
+  async function shareTrip(id) {
+    const trips = await getTrips();
     const trip = trips.find(t => t.id === id);
     if (!trip) return;
 
