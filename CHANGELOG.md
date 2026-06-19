@@ -1,5 +1,12 @@
 # Changelog
 
+## v4.0.2 — 2026-06-19
+
+### Added
+- B2: Trip Timeline 可视化 — `web/trip-timeline.js` + `web/trip-timeline.css`
+- B2: AI 行程回复自动渲染为垂直时间线卡片（按活动类型颜色编码）
+- B2: 一键复制行程（Timeline 上的 Copy 按钮）
+
 ## v4.0.1 — 2026-06-19
 
 ### Added

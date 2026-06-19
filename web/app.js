@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-   VisePanda v4.0.1 — Frontend Application
+   VisePanda v4.0.2 — Frontend Application
    ═══════════════════════════════════════════════════════════ */
 
 const VP = (function(){
@@ -881,6 +881,11 @@ const VP = (function(){
             msgs.scrollTop = msgs.scrollHeight;
           }
         }
+        // Inject visual timeline if content looks like a trip itinerary
+        const msgsEl = document.getElementById('chat-messages');
+        if (msgsEl && window.TripTimeline) {
+          TripTimeline.inject(combinedContent, msgsEl);
+        }
         updateSuggestions();
       } else if (!doneReceived) {
         addMessage('I had trouble processing that. Could you try rephrasing?', 'bot');
@@ -1159,6 +1164,10 @@ const VP = (function(){
     }).catch(() => {
       alert('Trip copied!\n\n' + text.slice(0, 200) + '...');
     });
+  }
+
+  function copyTimeline() {
+    if (window.TripTimeline) TripTimeline.copy();
   }
 
   function autoSaveTrip(city, content) {
@@ -2060,6 +2069,7 @@ const VP = (function(){
     loadTrip,
     shareTrip,
     deleteTrip,
+    copyTimeline,
     mapCloseDetail,
     mapOpenChat,
     chatOverlayBack,
