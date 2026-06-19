@@ -1,10 +1,10 @@
-"""中国各地美食知识库"""
+"""China food & cuisine knowledge base"""
 
 CUISINE_TYPES = {
-    "street": "街头小吃 — 便宜、地道、边走边吃",
-    "famous": "名菜/招牌菜 — 餐厅必点",
-    "restaurant": "餐厅美食 — 坐下来吃",
-    "snack": "零食/饮品 — 随手买的",
+    "street": "Street food (街头小吃) — cheap, authentic, eat on the go",
+    "famous": "Signature dish (名菜/招牌菜) — restaurant must-order",
+    "restaurant": "Restaurant dining (餐厅美食) — sit-down meal",
+    "snack": "Snacks & drinks (零食/饮品) — grab-and-go",
 }
 
 FOOD = {

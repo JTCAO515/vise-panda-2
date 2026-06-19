@@ -2,7 +2,7 @@
 
 PACKING = {
     "essentials": {
-        "title": "📄 必备证件 (Essential Documents)",
+        "title": "📄 Essential Documents (必备证件)",
         "items": [
             ("护照 (原件+复印件)", "Passport (original + photocopy)", True),
             ("签证 (打印版)", "Visa (printed copy)", True),
@@ -14,7 +14,7 @@ PACKING = {
         ]
     },
     "spring": {
-        "title": "🌸 春季 (3-5月)",
+        "title": "🌸 Spring (Mar–May) (春季3-5月)",
         "items": [
             ("薄外套/风衣", "Light jacket / trench coat", True),
             ("长袖T恤+牛仔裤", "Long-sleeve shirts + jeans", True),
@@ -25,7 +25,7 @@ PACKING = {
         ]
     },
     "summer": {
-        "title": "☀️ 夏季 (6-8月)",
+        "title": "☀️ Summer (Jun–Aug) (夏季6-8月)",
         "items": [
             ("短袖T恤 (多带几件)", "T-shirts (pack extra — you'll sweat through them)", True),
             ("薄长裤/短裤", "Light pants / shorts", True),
@@ -38,7 +38,7 @@ PACKING = {
         ]
     },
     "autumn": {
-        "title": "🍂 秋季 (9-11月)",
+        "title": "🍂 Autumn (Sep–Nov) (秋季9-11月)",
         "items": [
             ("薄毛衣/卫衣", "Light sweater / hoodie", True),
             ("夹克/冲锋衣", "Jacket / windbreaker", True),
@@ -49,7 +49,7 @@ PACKING = {
         ]
     },
     "winter": {
-        "title": "❄️ 冬季 (12-2月)",
+        "title": "❄️ Winter (Dec–Feb) (冬季12-2月)",
         "items": [
             ("羽绒服/厚大衣", "Down jacket / heavy coat", True),
             ("保暖内衣 (打底)", "Thermal underwear (base layer)", True),
@@ -62,7 +62,7 @@ PACKING = {
         ]
     },
     "beach": {
-        "title": "🏖️ 海边度假",
+        "title": "🏖️ Beach Vacation (海边度假)",
         "items": [
             ("泳衣/泳裤", "Swimsuit / trunks", True),
             ("沙滩拖鞋", "Flip-flops / sandals", True),
@@ -74,7 +74,7 @@ PACKING = {
         ]
     },
     "hiking": {
-        "title": "⛰️ 户外徒步/登山",
+        "title": "⛰️ Hiking / Mountain Trekking (户外徒步/登山)",
         "items": [
             ("登山鞋 (防滑防水)", "Hiking boots (waterproof, grippy)", True),
             ("冲锋衣/防风外套", "Waterproof jacket / shell", True),
@@ -87,7 +87,7 @@ PACKING = {
         ]
     },
     "business": {
-        "title": "💼 商务出行",
+        "title": "💼 Business Travel (商务出行)",
         "items": [
             ("正装/西装 (一套)", "Business suit (one set)", True),
             ("皮鞋", "Formal shoes", True),
@@ -99,7 +99,7 @@ PACKING = {
         ]
     },
     "tech": {
-        "title": "📱 电子产品",
+        "title": "📱 Tech & Electronics (电子产品)",
         "items": [
             ("手机+充电器+数据线", "Phone + charger + cable", True),
             ("移动电源/充电宝(≤20000mAh)", "Power bank (≤20000mAh — flight safe)", True),
@@ -111,7 +111,7 @@ PACKING = {
         ]
     },
     "health": {
-        "title": "💊 药品/健康",
+        "title": "💊 Medicine / Health (药品/健康)",
         "items": [
             ("常用药: 感冒药+止泻药+止痛药", "Basic meds: cold meds, anti-diarrhea, painkillers", True),
             ("创可贴+消毒棉片", "Band-aids + antiseptic wipes", True),
