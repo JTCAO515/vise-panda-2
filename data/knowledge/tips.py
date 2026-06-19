@@ -1,88 +1,88 @@
-"""中国旅行贴士知识库"""
+"""China travel tips knowledge base"""
 
 TIPS = {
-    "transportation": """## 交通
-- **高铁**：中国高铁系统全球第一，12306.cn 购票。提前15天放票，热门线路秒空
-- **飞机**：国内航线密集，提前3-4周订最划算。春秋航空等廉航注意行李额
-- **地铁**：所有大城市都有地铁，用支付宝/微信乘车码扫码进站
-- **打车**：滴滴出行 App，可绑国际信用卡。高峰期/雨天加价
-- **共享单车**：美团/哈罗/青桔，扫码即走
-- **长途巴士**：中小城市间靠大巴，携程/去哪儿可订""",
+    "transportation": """## Transport (交通)
+- 🚄 **High-speed rail (高铁)**: World's best HSR network. Book on 12306.cn. Tickets released 15 days ahead — popular routes sell out fast
+- ✈️ **Flights (飞机)**: Domestic routes are dense. Book 3–4 weeks ahead for best prices. Budget airlines like Spring Airlines (春秋航空) — watch baggage allowance
+- 🚇 **Metro (地铁)**: All major cities have metros. Use Alipay (支付宝) / WeChat (微信) QR code to enter stations
+- 🚕 **Taxi (打车)**: DiDi (滴滴出行) app — can link international credit card. Surge pricing during peak hours and rain
+- 🚲 **Bike sharing (共享单车)**: Meituan (美团) / Hellobike (哈罗) / Qingju (青桔) — scan and ride
+- 🚌 **Long-distance bus (长途巴士)**: Connects smaller cities. Book via Trip.com (携程) or Qunar (去哪儿)""",
 
-    "accommodation_budget": """## 经济住宿 (¥80-200/晚)
-- 青旅：50-80元/床位，适合独行背包客
-- 快捷酒店：如家/汉庭/7天，干净标准
-- 民宿（淡季）：很多城市有特色民宿""",
+    "accommodation_budget": """## Budget Accommodation (经济住宿) ¥80–200/night
+- **Hostels (青旅)**: ¥50–80/bed — great for solo backpackers
+- **Budget chain hotels**: Home Inn (如家), Hanting (汉庭), 7 Days Inn (7天) — clean and standard
+- **B&Bs (民宿) — off-season**: Many cities have charming local B&Bs""",
 
-    "accommodation_mid": """## 中档住宿 (¥200-500/晚)
-- 希尔顿欢朋/万怡/智选假日等国际连锁
-- 精品民宿：有特色的老房子改造
-- 公寓式酒店：带厨房洗衣机""",
+    "accommodation_mid": """## Mid-range Accommodation (中档住宿) ¥200–500/night
+- International chains: Hampton by Hilton (希尔顿欢朋), Courtyard by Marriott (万怡), Holiday Inn Express (智选假日)
+- Boutique B&Bs (精品民宿): Renovated heritage houses with character
+- Serviced apartments (公寓式酒店): With kitchen and washing machine""",
 
-    "accommodation_luxury": """## 高端住宿 (¥500-2000+/晚)
-- 五星酒店：四季/半岛/丽思卡尔顿
-- 设计酒店：安缦/璞麗/松赞系列
-- 特色度假村：丽江/大理/桂林/三亚很多""",
+    "accommodation_luxury": """## Luxury Accommodation (高端住宿) ¥500–2,000+/night
+- ⭐ Five-star hotels: Four Seasons (四季), The Peninsula (半岛), The Ritz-Carlton (丽思卡尔顿)
+- Design hotels: Aman (安缦), The PuLi (璞麗), Songtsam (松赞) series
+- Resort getaways: Plenty in Lijiang (丽江), Dali (大理), Guilin (桂林), Sanya (三亚)""",
 
-    "communication": """## 通讯与上网
-- **VPN/翻墙**：在中国大陆需要VPN才能访问Google/Instagram/Twitter/Facebook等
-- **SIM卡**：机场/营业厅可买临时卡，中国移动/联通/电信
-- **国际漫游**：建议提前买eSIM（Airalo/Holafly等）
-- **WiFi**：酒店/咖啡馆基本都有免费WiFi
-- **微信支付/支付宝**：没有这两个App几乎寸步难行，建议提前绑定银行卡""",
+    "communication": """## Connectivity & Internet (通讯与上网)
+- 🔒 **VPN (翻墙)**: Required in mainland China to access Google/Instagram/Twitter/Facebook
+- 📱 **SIM card (SIM卡)**: Buy temporary cards at airports or China Mobile (中国移动) / China Unicom (联通) / China Telecom (电信) stores
+- 🌐 **International roaming**: Buy eSIM in advance (Airalo / Holafly etc.)
+- 📶 **WiFi**: Free WiFi available in most hotels and cafés
+- 💳 **WeChat Pay / Alipay (微信支付/支付宝)**: Nearly impossible to function without these two apps — set them up and link a bank card before you arrive""",
 
-    "seasonal": """## 各季节旅行建议
+    "seasonal": """## Seasonal Travel Advice (各季节旅行建议)
 
-### 春季 (3-5月)
-- 最佳旅行季节！气温宜人，花开遍野
-- 华东：油菜花（婺源/罗平）
-- 北京：花粉季，鼻炎注意
-- 清明/五一假期人山人海，避开
+### 🌸 Spring (Mar–May)
+- Best season! Pleasant temperatures, flowers everywhere
+- East China: Rapeseed flowers in Wuyuan (婺源) / Luoping (罗平)
+- Beijing: Pollen season — allergy sufferers take note
+- ⚠️ Avoid Qingming Festival & May Day holiday — attractions get packed
 
-### 夏季 (6-8月)
-- 热！南方35-40°C，注意防暑
-- 避暑：丽江/大理/贵阳/哈尔滨/青海/西藏
-- 雨季：长江中下游梅雨季（6月中-7月中）
-- 暑假：景区人最多
+### ☀️ Summer (Jun–Aug)
+- Hot! Southern China 35–40°C — stay cool
+- Summer escapes: Lijiang (丽江) / Dali (大理) / Guiyang (贵阳) / Harbin (哈尔滨) / Qinghai (青海) / Tibet (西藏)
+- Rainy season: Plum-rain (梅雨季) in Yangtze River region — mid-Jun to mid-Jul
+- Summer break: busiest period for tourist attractions
 
-### 秋季 (9-11月)
-- 最佳季节！天高气爽，色彩斑斓
-- 赏秋：九寨沟/喀纳斯/南京栖霞山/北京香山
-- 十一国庆：全中国最拥挤的假期
-- 江南：桂花飘香
+### 🍂 Autumn (Sep–Nov)
+- Best season! Crisp air, vibrant colours
+- Fall foliage: Jiuzhaigou (九寨沟) / Kanas (喀纳斯) / Qixia Mountain in Nanjing (南京栖霞山) / Fragrant Hills in Beijing (北京香山)
+- ⚠️ October National Day Golden Week — the most crowded holiday in China
+- Jiangnan region: Osmanthus flowers in bloom
 
-### 冬季 (12-2月)
-- 北方冷！哈尔滨-30°C，穿暖
-- 避寒：三亚/西双版纳/北海
-- 冰雪：哈尔滨冰雪大世界/长白山滑雪
-- 春节：最大规模的春运，交通极度紧张
-- 北方室内有暖气，南方室内比室外冷""",
+### ❄️ Winter (Dec–Feb)
+- Northern China is COLD! Harbin hits -30°C — dress warmly
+- Warm escapes: Sanya (三亚) / Xishuangbanna (西双版纳) / Beihai (北海)
+- Snow & ice: Harbin Ice & Snow World (冰雪大世界) / Changbaishan (长白山) skiing
+- ⚠️ Chinese New Year (春节): The largest human migration on earth — transport is EXTREMELY tight
+- Northern buildings have indoor heating; southern buildings are colder indoors than outdoors""",
 
-    "money": """## 支付与货币
-- **移动支付为主**：微信支付和支付宝覆盖几乎所有场景
-- **现金**：随身带少量现金（¥500以内），偏远地区/老人摊贩仍然用现金
-- **国际信用卡**：大商场/高端酒店可刷Visa/Mastercard，但小店不一定
-- **汇率**：1 USD ≈ 7.2 CNY（2025年参考）
-- **换汇**：机场汇率差，建议市区银行换
-- **小费**：中国没有小费习惯，不用给""",
+    "money": """## Payment & Currency (支付与货币)
+- 📱 **Mobile-first**: WeChat Pay (微信支付) and Alipay (支付宝) cover nearly every scenario
+- 💵 **Cash**: Carry a small amount (¥500 or less). Remote areas and elderly street vendors still use cash
+- 💳 **International credit cards**: Accepted at big malls and luxury hotels, but not at small shops
+- 💱 **Exchange rate**: 1 USD ≈ 7.2 CNY (2025 reference)
+- 🏦 **Currency exchange**: Airport rates are poor — exchange at city banks instead
+- ❌ **Tipping**: Not customary in China — don't tip""",
 
-    "safety": """## 安全
-- 中国整体非常安全，深夜出行基本无问题
-- 注意：景区/火车站的小偷和骗局
-- **常见骗局**：茶托/算命/假的"警察"查证件/低价一日游
-- 紧急电话：110（报警）、120（救护）、119（火警）
-- 药品：带常用药（感冒/肠胃/过敏），国外处方药可能买不到
-- 保险：建议买旅行保险（医疗+取消+财物）""",
+    "safety": """## Safety (安全)
+- 🛡️ China is generally very safe — walking late at night is rarely an issue
+- ⚠️ Watch out for pickpockets and scams at tourist spots and train stations
+- 🎭 **Common scams**: Tea house traps / fortune tellers / fake "police" ID checks / cheap day tours
+- 🆘 **Emergency numbers**: 110 (Police), 120 (Ambulance), 119 (Fire)
+- 💊 **Medicine**: Bring common meds (cold/stomach/allergy) — some prescription meds from abroad aren't available locally
+- 📋 **Insurance**: Get travel insurance (medical + cancellation + belongings)""",
 
-    "etiquette": """## 礼仪与文化
-- **寺庙**：不要对佛像指指点点，拍照前看有无禁止标识
-- **排队**：中国人排队意识比以前好，但热门地方还是有插队
-- **餐桌礼仪**：不要用筷子竖插在饭碗里（像上香不吉利）
-- **送礼**：不要送钟表（送终谐音）
-- **面子文化**：中国人在公共场合很在意\"面子\"，避免当众让人尴尬
-- **拍照**：有些少数民族地区拍照要问，甚至收费""",
+    "etiquette": """## Etiquette & Culture (礼仪与文化)
+- 🏛️ **Temples**: Don't point at Buddha statues — check for no-photo signs before shooting
+- 🚶 **Queuing**: Chinese people have better queue etiquette now, but cutting still happens at popular spots
+- 🥢 **Table manners**: Never stick chopsticks upright in your rice bowl (resembles incense for the dead — bad luck)
+- 🎁 **Gift giving**: Avoid clocks/watches (homophone for "attending a funeral")
+- 😊 **Face culture (面子)**: Chinese people care deeply about "face" in public — avoid embarrassing anyone in front of others
+- 📸 **Photography**: Ask permission in some ethnic minority areas — some may charge""",
 
-    "language_basics": """## 基础中文
+    "language_basics": """## Basic Chinese (基础中文)
 - 你好 (nǐ hǎo) — Hello
 - 谢谢 (xiè xie) — Thank you
 - 多少钱 (duō shao qián) — How much
@@ -91,29 +91,29 @@ TIPS = {
 - 洗手间在哪 (xǐ shǒu jiān zài nǎ) — Where's the restroom
 - 推荐一下 (tuī jiàn yī xià) — Please recommend
 
-Tips: 下载翻译App（Google翻译/百度翻译），部分场景可离线使用""",
+💡 Tip: Download a translation app (Google Translate / Baidu Translate) — some work offline""",
 
-    "packing": """## 打包清单
-- 证件：护照/身份证（坐高铁必须）、签证、酒店预订单
-- 充电：转换插头（三孔扁头）、充电宝（≤20000mAh）
-- 衣物：根据季节，全年建议带一件外套
-- 药品：感冒药/肠胃药/创可贴/防蚊液
-- 洗漱：酒店通常提供一次性用品，但建议自带牙刷牙膏
-- 其他：保温杯（很多地方有热水）、纸巾（很多餐厅不提供）
-- 特殊情况：冬天去东北带暖宝宝/加厚袜/面罩""",
+    "packing": """## Packing Checklist (打包清单)
+- 📄 **Documents**: Passport/ID (required for HSR), visa, hotel booking confirmation
+- 🔌 **Charging**: Travel adaptor (3-pin flat), power bank (≤20,000mAh)
+- 👕 **Clothing**: Based on season — always pack a light jacket
+- 💊 **Medicine**: Cold meds / stomach meds / band-aids / mosquito repellent
+- 🧴 **Toiletries**: Hotels provide disposables, but bring your own toothbrush/toothpaste
+- 🧻 **Other**: Thermos (hot water available everywhere), tissues (many restaurants don't provide them)
+- ❄️ **Winter special**: Hand warmers / thick socks / face mask for Northeast China""",
 
-    "visa": """## 签证
-- 大部分国家去中国需要签证，但：
-- 144小时过境免签：53个国家公民可在指定城市免签停留6天
-- 海南免签：59个国家可免签停留30天
-- 港澳：香港/澳门通常独立签证政策
-- 建议：提前1-2个月申请签证，通过旅行社代办省心""",
+    "visa": """## Visa (签证)
+- Most nationalities need a visa for China, but:
+- 🔄 **144-hour transit visa-free**: 53 nationalities can stay 6 days visa-free in designated cities
+- 🌴 **Hainan visa-free**: 59 nationalities can stay 30 days visa-free
+- 🏙️ **HK/Macau**: Hong Kong and Macau have separate, usually more relaxed visa policies
+- 💡 **Advice**: Apply 1–2 months in advance — using a travel agency saves hassle""",
 }
 
 REGION_SEASONS = {
-    "north": {"cities": ["beijing", "xian", "harbin"], "best": "春秋", "avoid": "冬季极寒（哈尔滨除外）"},
-    "east": {"cities": ["shanghai", "hangzhou", "nanjing", "suzhou", "guangzhou", "shenzhen"], "best": "春秋", "avoid": "夏季酷暑+梅雨"},
-    "southwest": {"cities": ["chengdu", "chongqing", "yunnan", "guilin"], "best": "春秋", "avoid": "夏季湿热"},
-    "south": {"cities": ["sanya"], "best": "冬季（避寒）", "avoid": "夏季台风季"},
-    "northwest": {"cities": ["dunhuang", "tibet"], "best": "5-10月", "avoid": "冬季封山"},
+    "north": {"cities": ["beijing", "xian", "harbin"], "best": "Spring/Autumn (春秋)", "avoid": "Extreme winter cold — except Harbin (冬季极寒，哈尔滨除外)"},
+    "east": {"cities": ["shanghai", "hangzhou", "nanjing", "suzhou", "guangzhou", "shenzhen"], "best": "Spring/Autumn (春秋)", "avoid": "Scorching summer + plum rain (夏季酷暑+梅雨)"},
+    "southwest": {"cities": ["chengdu", "chongqing", "yunnan", "guilin"], "best": "Spring/Autumn (春秋)", "avoid": "Humid summer heat (夏季湿热)"},
+    "south": {"cities": ["sanya"], "best": "Winter — warm escape (冬季避寒)", "avoid": "Summer typhoon season (夏季台风季)"},
+    "northwest": {"cities": ["dunhuang", "tibet"], "best": "May–Oct (5-10月)", "avoid": "Winter road closures (冬季封山)"},
 }

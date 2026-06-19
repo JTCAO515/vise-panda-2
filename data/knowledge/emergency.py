@@ -10,130 +10,131 @@ EMERGENCY = {
     },
     "common_emergencies": {
         "lost_passport": {
-            "title": "护照丢失 (Lost Passport)",
+            "title": "Lost Passport (护照丢失)",
             "steps": [
-                "1. 立即去最近的派出所报案，拿到《护照遗失报案回执》",
-                "2. 去你国家的大使馆/领事馆申请旅行证 (Emergency Travel Document)",
-                "3. 去出入境管理局办理签证补办手续",
-                "4. 如果时间紧急，旅行证可以代替护照用于离境"
+                "1. Report to the nearest police station immediately — get a Police Report Receipt (护照遗失报案回执)",
+                "2. Go to your country's embassy/consulate to apply for an Emergency Travel Document (旅行证)",
+                "3. Visit the Exit-Entry Administration Bureau to process visa re-issuance",
+                "4. In urgent cases, the Emergency Travel Document can replace your passport for departure",
             ],
-            "tip": "建议随身带护照复印件或存在手机里，补办时有用"
+            "tip": "Keep a photocopy or photo of your passport on your phone — it helps with the re-issue process (建议随身带护照复印件或存在手机里)"
         },
         "medical_emergency": {
-            "title": "医疗急救 (Medical Emergency)",
+            "title": "Medical Emergency (医疗急救)",
             "steps": [
-                "1. 拨打120叫救护车 (免费急救电话)",
-                "2. 告诉接线员你的位置和症状（可以说简单英文）",
-                "3. 大的三甲医院都有国际部/涉外门诊",
-                "4. 带护照去急诊挂号，先治疗后付费",
-                "5. 联系你的旅行保险公司"
+                "1. Dial 120 for an ambulance (free emergency number)",
+                "2. Tell the operator your location and symptoms — simple English usually works",
+                "3. Major Grade-A tertiary hospitals (三甲医院) have international departments / foreign patient clinics",
+                "4. Take your passport to the ER — treatment first, payment later",
+                "5. Contact your travel insurance company",
             ],
-            "tip": "北京协和医院国际部、上海华山医院、广州中山一院都有英文服务"
+            "tip": "Beijing Union Hospital International (北京协和医院国际部), Shanghai Huashan Hospital (上海华山医院), and Guangzhou First Affiliated Hospital (广州中山一院) all offer English service"
         },
         "arrested": {
-            "title": "被拘留/被捕 (Arrested/Detained)",
+            "title": "Arrested / Detained (被拘留/被捕)",
             "steps": [
-                "1. 你有权联系你的大使馆 — 要求通知使馆",
-                "2. 不要签署你不明白的中文文件",
-                "3. 要求翻译 — 法律规定必须提供翻译",
-                "4. 联系你的旅行保险和法律援助"
+                "1. You have the right to contact your embassy — demand to notify them",
+                "2. Do NOT sign any Chinese document you don't understand",
+                "3. Request a translator — Chinese law requires one to be provided",
+                "4. Contact your travel insurance and legal aid",
             ],
-            "tip": "中国签证规定：所有外国人在中国必须遵守中国法律，不知道法律不是借口"
+            "tip": "China visa rules: all foreigners in China must abide by Chinese law — 'I didn't know' is not an excuse (不知道法律不是借口)"
         },
         "natural_disaster": {
-            "title": "自然灾害 (Natural Disaster)",
+            "title": "Natural Disaster (自然灾害)",
             "steps": [
-                "1. 听从当地政府和景区工作人员的指示",
-                "2. 关注中国地震台网或当地天气预警",
-                "3. 联系你的大使馆登记你所在位置",
-                "4. 保持手机电量，使用离线地图"
+                "1. Follow instructions from local authorities and attraction staff",
+                "2. Monitor China Earthquake Networks Center (中国地震台网) or local weather alerts",
+                "3. Contact your embassy to register your location",
+                "4. Keep your phone charged and use offline maps",
             ],
-            "tip": "日本/台湾游客来大陆最常遇到台风/地震，提前关注天气预报"
+            "tip": "Japanese/Taiwanese travellers most commonly encounter typhoons/earthquakes in mainland China — check forecasts before travelling (日本/台湾游客来大陆最常遇到台风/地震)"
         }
     },
     "embassies": {
         "us": {
-            "country": "美国 (United States)",
+            "country": "United States (美国)",
             "phone": "010-8531-3000",
             "emergency": "010-8531-4000 (after hours)",
-            "address": "北京朝阳区安家楼路55号",
+            "address": "No. 55 An Jia Lou Road, Chaoyang, Beijing (北京朝阳区安家楼路55号)",
             "website": "https://china.usembassy-china.org.cn",
-            "cities": ["北京", "上海", "广州", "成都", "沈阳", "武汉"]
+            "cities": ["Beijing (北京)", "Shanghai (上海)", "Guangzhou (广州)", "Chengdu (成都)", "Shenyang (沈阳)", "Wuhan (武汉)"]
         },
         "uk": {
-            "country": "英国 (United Kingdom)",
+            "country": "United Kingdom (英国)",
             "phone": "010-8529-6600",
             "emergency": "010-8529-6600 (24h)",
-            "address": "北京朝阳区建国门外光华路11号",
+            "address": "11 Guang Hua Lu, Jian Guo Men Wai, Chaoyang, Beijing (北京朝阳区建国门外光华路11号)",
             "website": "https://www.gov.uk/world/china",
-            "cities": ["北京", "上海", "广州", "重庆", "武汉"]
+            "cities": ["Beijing (北京)", "Shanghai (上海)", "Guangzhou (广州)", "Chongqing (重庆)", "Wuhan (武汉)"]
         },
         "au": {
-            "country": "澳大利亚 (Australia)",
+            "country": "Australia (澳大利亚)",
             "phone": "010-5140-4111",
             "emergency": "010-5140-4248",
-            "address": "北京朝阳区亮马河南路14号塔园外交办公楼",
+            "address": "Tayuan Diplomatic Office Building, Liangmahe Nan Lu, Chaoyang, Beijing (北京朝阳区亮马河南路14号塔园外交办公楼)",
             "website": "https://china.embassy.gov.au",
-            "cities": ["北京", "上海", "广州", "成都"]
+            "cities": ["Beijing (北京)", "Shanghai (上海)", "Guangzhou (广州)", "Chengdu (成都)"]
         },
         "ca": {
-            "country": "加拿大 (Canada)",
+            "country": "Canada (加拿大)",
             "phone": "010-5139-4000",
             "emergency": "010-5139-4000",
-            "address": "北京朝阳区亮马桥路10号",
+            "address": "10 Liangma Qiao Road, Chaoyang, Beijing (北京朝阳区亮马桥路10号)",
             "website": "https://www.international.gc.ca/china",
-            "cities": ["北京", "上海", "广州", "重庆"]
+            "cities": ["Beijing (北京)", "Shanghai (上海)", "Guangzhou (广州)", "Chongqing (重庆)"]
         },
         "sg": {
-            "country": "新加坡 (Singapore)",
+            "country": "Singapore (新加坡)",
             "phone": "010-6532-1115",
             "emergency": "010-6532-1115",
-            "address": "北京朝阳区亮马桥路42号",
+            "address": "42 Liangma Qiao Road, Chaoyang, Beijing (北京朝阳区亮马桥路42号)",
             "website": "https://www.mfa.gov.sg/beijing",
-            "cities": ["北京", "上海", "广州", "厦门", "成都"]
+            "cities": ["Beijing (北京)", "Shanghai (上海)", "Guangzhou (广州)", "Xiamen (厦门)", "Chengdu (成都)"]
         },
         "de": {
-            "country": "德国 (Germany)",
+            "country": "Germany (德国)",
             "phone": "010-8532-9000",
             "emergency": "010-8532-9000",
-            "address": "北京朝阳区亮马桥路52号",
+            "address": "52 Liangma Qiao Road, Chaoyang, Beijing (北京朝阳区亮马桥路52号)",
             "website": "https://china.diplo.de",
-            "cities": ["北京", "上海", "广州", "成都"]
+            "cities": ["Beijing (北京)", "Shanghai (上海)", "Guangzhou (广州)", "Chengdu (成都)"]
         },
         "fr": {
-            "country": "法国 (France)",
+            "country": "France (法国)",
             "phone": "010-8531-2000",
             "emergency": "010-8531-2000",
-            "address": "北京朝阳区亮马桥路47号",
+            "address": "47 Liangma Qiao Road, Chaoyang, Beijing (北京朝阳区亮马桥路47号)",
             "website": "https://cn.ambafrance.org",
-            "cities": ["北京", "上海", "广州", "成都"]
+            "cities": ["Beijing (北京)", "Shanghai (上海)", "Guangzhou (广州)", "Chengdu (成都)"]
         },
         "jp": {
-            "country": "日本 (Japan)",
+            "country": "Japan (日本)",
             "phone": "010-6532-2361",
             "emergency": "010-6532-2361",
-            "address": "北京朝阳区亮马桥路1号",
+            "address": "1 Liangma Qiao Road, Chaoyang, Beijing (北京朝阳区亮马桥路1号)",
             "website": "https://www.cn.emb-japan.go.jp",
-            "cities": ["北京", "上海", "广州", "青岛", "重庆", "沈阳"]
+            "cities": ["Beijing (北京)", "Shanghai (上海)", "Guangzhou (广州)", "Qingdao (青岛)", "Chongqing (重庆)", "Shenyang (沈阳)"]
         },
         "kr": {
-            "country": "韩国 (South Korea)",
+            "country": "South Korea (韩国)",
             "phone": "010-8531-0700",
             "emergency": "010-8531-0700",
-            "address": "北京朝阳区亮马桥路26号",
+            "address": "26 Liangma Qiao Road, Chaoyang, Beijing (北京朝阳区亮马桥路26号)",
             "website": "https://overseas.mofa.go.kr/cn-zh",
-            "cities": ["北京", "上海", "广州", "青岛", "成都", "西安"]
+            "cities": ["Beijing (北京)", "Shanghai (上海)", "Guangzhou (广州)", "Qingdao (青岛)", "Chengdu (成都)", "Xi'an (西安)"]
         },
     },
 }
 
-# Helper phrase: "Call 110" in Chinese for emergency cards
+
 def format_emergency_phone_numbers() -> str:
-    lines = ["## 紧急电话 (Emergency Numbers in China)", ""]
+    """Format emergency phone numbers for system prompt"""
+    lines = ["## Emergency Numbers in China (紧急电话)", ""]
     for key, info in EMERGENCY["phone"].items():
         lines.append(f"- {info['number']}: {info['description']}")
     lines.append("")
-    lines.append("所有电话都免费拨打。接线员可能只说中文，但会说'speak English please'通常能找到英文接线员。")
+    lines.append("All numbers are free to call. Operators may speak only Chinese, but saying 'Speak English please' usually connects you to an English-speaking operator. (所有电话免费拨打，接线员可能只说中文)")
     return "\n".join(lines)
 
 
@@ -144,7 +145,7 @@ def get_embassy(country_code: str) -> dict | None:
 
 def format_embassy_summary() -> str:
     """Compact embassy list for system prompt"""
-    lines = ["## 主要国家驻华大使馆/领事馆"]
+    lines = ["## Major Embassies & Consulates in China (主要国家驻华大使馆/领事馆)"]
     for code, emb in EMERGENCY["embassies"].items():
         cities = "、".join(emb["cities"])
         lines.append(f"- {emb['country']}: {emb['phone']} ({cities})")

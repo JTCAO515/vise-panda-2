@@ -2,7 +2,7 @@
 
 PHRASE_CATEGORIES = {
     "taxi": {
-        "title_zh": "🚕 打车",
+        "title_zh": "🚕 Taxi / Ride-hailing (打车)",
         "title_en": "Taxi / Ride-hailing",
         "icon": "🚕",
         "phrases": [
@@ -17,7 +17,7 @@ PHRASE_CATEGORIES = {
         ]
     },
     "dining": {
-        "title_zh": "🍜 点餐",
+        "title_zh": "🍜 Ordering Food (点餐)",
         "title_en": "Ordering Food",
         "icon": "🍜",
         "phrases": [
@@ -32,7 +32,7 @@ PHRASE_CATEGORIES = {
         ]
     },
     "directions": {
-        "title_zh": "🗺️ 问路",
+        "title_zh": "🗺️ Asking Directions (问路)",
         "title_en": "Asking Directions",
         "icon": "🗺️",
         "phrases": [
@@ -47,7 +47,7 @@ PHRASE_CATEGORIES = {
         ]
     },
     "medical": {
-        "title_zh": "🏥 就医",
+        "title_zh": "🏥 Medical / Emergency (就医)",
         "title_en": "Medical / Emergency",
         "icon": "🏥",
         "phrases": [
@@ -62,7 +62,7 @@ PHRASE_CATEGORIES = {
         ]
     },
     "shopping": {
-        "title_zh": "🛍️ 购物",
+        "title_zh": "🛍️ Shopping (购物)",
         "title_en": "Shopping",
         "icon": "🛍️",
         "phrases": [
@@ -77,7 +77,7 @@ PHRASE_CATEGORIES = {
         ]
     },
     "hotel": {
-        "title_zh": "🏨 酒店",
+        "title_zh": "🏨 Hotel (酒店)",
         "title_en": "Hotel",
         "icon": "🏨",
         "phrases": [
@@ -92,7 +92,7 @@ PHRASE_CATEGORIES = {
         ]
     },
     "emergency": {
-        "title_zh": "🆘 紧急求助",
+        "title_zh": "🆘 Emergency Help (紧急求助)",
         "title_en": "Emergency Help",
         "icon": "🆘",
         "phrases": [
@@ -107,7 +107,7 @@ PHRASE_CATEGORIES = {
         ]
     },
     "transit": {
-        "title_zh": "🚇 公共交通",
+        "title_zh": "🚇 Public Transit (公共交通)",
         "title_en": "Public Transit",
         "icon": "🚇",
         "phrases": [
@@ -159,10 +159,10 @@ def get_category_list() -> list[dict]:
 def format_for_prompt() -> str:
     """Compact format for LLM system prompt"""
     lines = [
-        "## 语言急救卡 (Language Emergency Cards)",
-        "你可以为外国游客生成以下场景的中英文对照卡片：",
+        "## Language Emergency Cards (语言急救卡)",
+        "You can generate Chinese-English phrase cards for foreign travelers in these scenarios:",
     ]
     for k, v in PHRASE_CATEGORIES.items():
-        lines.append(f"- {v['icon']} **{k}**: {v['title_zh']} / {v['title_en']} ({len(v['phrases'])}句)")
+        lines.append(f"- {v['icon']} **{k}**: {v['title_en']} / {v['title_zh']} ({len(v['phrases'])} phrases)")
     lines.append("\n用户请求时，用格式化卡片展示中文+拼音+英文对照，方便截图保存。")
     return "\n".join(lines)
