@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-   VisePanda v3.2.0 — Frontend Application
+   VisePanda v4.0.1 — Frontend Application
    ═══════════════════════════════════════════════════════════ */
 
 const VP = (function(){
