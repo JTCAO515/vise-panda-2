@@ -1,5 +1,20 @@
 # Changelog
 
+## v5.0.2 — 2026-06-19
+
+### Added
+- 新增 `tests/test_config_contract.py`，覆盖 `/api/health` 与 `/api/config` 的版本一致性及 `google_client_id` 行为
+- 新增 `web/tests/auth-state.test.js`，覆盖 Tools 视图接入与导航结构存在性
+- 正式接入 `Tools` 视图与导航入口，新增 `view-tools` 与 `tools-grid`
+
+### Changed
+- 版本号统一升级为 `v5.0.2`，同步到后端接口、前端展示和核心文档
+- 前端通过 `/api/config` 动态注入 `google_client_id` 和版本信息
+
+### Fixed
+- 修复 `/api/config` 缺少 `google_client_id` 的问题
+- 修复 Tools 相关代码存在但页面未接入的结构脱节问题
+
 ## v5.0.1 — 2026-06-19
 
 ### Added

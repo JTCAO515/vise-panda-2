@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-   VisePanda v5.0.1 — Frontend Application
+   VisePanda v5.0.2 — Frontend Application
    ═══════════════════════════════════════════════════════════ */
 
 const VP = (function(){
@@ -74,6 +74,7 @@ const VP = (function(){
     isStreaming: false,
     theme: document.documentElement.getAttribute('data-theme') || 'dark',
   };
+  const supportedViews = new Set(['home', 'chat', 'trips', 'cities', 'tools', 'map']);
 
   // ── DOM refs ──
   const $ = (s) => document.querySelector(s);
@@ -117,14 +118,16 @@ const VP = (function(){
 
   // ── Navigation ──
   function navigate(view) {
+    const target = document.getElementById(`view-${view}`);
+    if (!target || !supportedViews.has(view)) return;
+
     state.currentView = view;
     // Update both desktop and mobile nav buttons
     $$('.nav-btn, .bn-btn').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.view === view);
     });
     $$('.view').forEach(v => v.classList.remove('active'));
-    const target = document.getElementById(`view-${view}`);
-    if (target) target.classList.add('active');
+    target.classList.add('active');
 
     if (view === 'cities') loadCities();
     if (view === 'trips') renderTrips();
@@ -404,9 +407,9 @@ const VP = (function(){
       const card = document.createElement('div');
       card.className = 'tool-card';
       card.innerHTML = `
-        <div style="font-size:24px;margin-bottom:8px">${emojis[name] || '🧰'}</div>
-        <div style="font-size:14px;font-weight:600;margin-bottom:2px;text-transform:capitalize">${name}</div>
-        <div style="font-size:12px;color:var(--text-muted)">${desc}</div>
+        <div class="tool-card-icon">${emojis[name] || '🧰'}</div>
+        <div class="tool-card-title">${name}</div>
+        <div class="tool-card-desc">${desc}</div>
       `;
       // Visa tool opens the visa modal
       if (name === 'visa') {
@@ -1740,13 +1743,15 @@ const VP = (function(){
     const themeBtn = document.querySelector('.theme-toggle');
     if (themeBtn) themeBtn.textContent = state.theme === 'dark' ? '🌙' : '☀️';
 
-    // Fetch version from API and update badge + footer
-    fetch('/api/health').then(r => r.json()).then(d => {
-      const ver = d.version || '3.0.2';
+    // Fetch client config to hydrate version and Google Sign-In settings
+    fetch('/api/config').then(r => r.json()).then(config => {
+      const ver = config.version || '5.0.2';
       const badge = document.getElementById('version-badge');
       const footerVer = document.getElementById('footer-version');
+      const gsi = document.getElementById('g_id_onload');
       if (badge) badge.textContent = 'v' + ver;
       if (footerVer) footerVer.textContent = 'VisePanda v' + ver;
+      if (gsi) gsi.dataset.client_id = config.google_client_id || '';
     }).catch(() => {});
 
     // Scroll-to-top button visibility
@@ -1759,7 +1764,7 @@ const VP = (function(){
 
     // Hash-based nav
     const hash = window.location.hash.slice(1);
-    if (hash && ['home','chat','trips','cities','tools','map'].includes(hash)) {
+    if (hash && supportedViews.has(hash)) {
       navigate(hash);
     }
 

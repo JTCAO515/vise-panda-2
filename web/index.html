@@ -39,9 +39,10 @@
       <button class="nav-btn" data-view="map" onclick="VP.navigate('map')">🗺️ Map</button>
       <button class="nav-btn" data-view="trips" onclick="VP.navigate('trips')">📋 Trips</button>
       <button class="nav-btn" data-view="cities" onclick="VP.navigate('cities')">🏙 Cities</button>
+      <button class="nav-btn" data-view="tools" onclick="VP.navigate('tools')">🧰 Tools</button>
     </nav>
     <div class="header-right">
-      <span id="version-badge" class="version-badge">v5.0.1</span>
+      <span id="version-badge" class="version-badge">v5.0.2</span>
       <div id="auth-area" class="auth-area">
         <button id="auth-btn" class="auth-btn" onclick="VP.auth.showModal()" style="display:none">Sign In</button>
         <div id="user-menu" class="user-menu" style="display:none">
@@ -169,6 +170,15 @@
         </div>
       </div>
     </section>
+
+    <!-- ─── TOOLS ─── -->
+    <section id="view-tools" class="view">
+      <div class="section">
+        <h2 class="section-title">🧰 Travel Toolkit</h2>
+        <p class="section-sub">Visa, packing, pricing, phrases, and emergency references</p>
+        <div id="tools-grid" class="tools-grid"></div>
+      </div>
+    </section>
   </main>
 
   <!-- ═══ MODALS ═══ -->
@@ -185,7 +195,7 @@
     <button class="bn-btn" data-view="chat" onclick="VP.navigate('chat')"><span class="bn-icon">💬</span><span class="bn-label">Chat</span></button>
     <button class="bn-btn" data-view="map" onclick="VP.navigate('map')"><span class="bn-icon">🗺️</span><span class="bn-label">Map</span></button>
     <button class="bn-btn" data-view="trips" onclick="VP.navigate('trips')"><span class="bn-icon">📋</span><span class="bn-label">Trips</span></button>
-    <button class="bn-btn" data-view="cities" onclick="VP.navigate('cities')"><span class="bn-icon">🏙</span><span class="bn-label">Cities</span></button>
+    <button class="bn-btn" data-view="tools" onclick="VP.navigate('tools')"><span class="bn-icon">🧰</span><span class="bn-label">Tools</span></button>
   </nav>
 
   <!-- ═══ CHAT OVERLAY (for mobile — opens as panel overlay) ═══ -->
@@ -232,7 +242,7 @@
           <button class="auth-submit" onclick="VP.auth.login()">Sign In</button>
           <div class="auth-divider"><span>or continue with</span></div>
           <div id="g_id_onload"
-               data-client_id="PENDING_GOOGLE_CLIENT_ID"
+               data-client_id=""
                data-context="signin"
                data-ux_mode="popup"
                data-login_uri=""
@@ -360,7 +370,7 @@
 
   <!-- ═══ FOOTER ═══ -->
   <footer id="footer">
-    <p><span id="footer-version">VisePanda v5.0.1</span> · AI China Travel Planner · 🐼 · <span class="footer-clear" onclick="VP.clearChatHistory()" style="cursor:pointer;text-decoration:underline;opacity:.5">Clear chat</span></p>
+    <p><span id="footer-version">VisePanda v5.0.2</span> · AI China Travel Planner · 🐼 · <span class="footer-clear" onclick="VP.clearChatHistory()" style="cursor:pointer;text-decoration:underline;opacity:.5">Clear chat</span></p>
   </footer>
 </div>
 
