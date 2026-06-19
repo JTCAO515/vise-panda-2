@@ -17,6 +17,8 @@ test('chat 历史查看器使用独立容器 id', () => {
 
 test('home page includes atlas sections', () => {
   assert.match(html, /id="hero-actions"/);
+  assert.match(html, /class="hero-metrics"/);
+  assert.match(html, /class="editorial-lead"/);
   assert.match(html, /id="trust-layer"/);
   assert.match(html, /id="editorial-city-rail"/);
   assert.match(html, /id="planner-entry"/);
@@ -27,8 +29,20 @@ test('chat 视图包含 atlas action rail', () => {
 });
 
 test('trips 视图包含 recent \/ saved 分组容器', () => {
+  assert.match(html, /class="trips-atlas-note"/);
   assert.match(html, /id="trips-recent"/);
   assert.match(html, /id="trips-saved"/);
+});
+
+test('cities 视图包含 editorial filter rail', () => {
+  assert.match(html, /id="cities-filter-rail"/);
+  assert.match(html, /data-filter="all"/);
+  assert.match(html, /data-filter="history"/);
+  assert.match(html, /data-filter="food"/);
+});
+
+test('visible version is updated to v5.0.4', () => {
+  assert.match(html, /v5\.0\.4/);
 });
 
 test('admin 页面包含 atlas 风格 hero 概览头', () => {

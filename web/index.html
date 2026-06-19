@@ -42,7 +42,7 @@
       <button class="nav-btn" data-view="tools" onclick="VP.navigate('tools')">🧰 Tools</button>
     </nav>
     <div class="header-right">
-      <span id="version-badge" class="version-badge">v5.0.3</span>
+      <span id="version-badge" class="version-badge">v5.0.4</span>
       <div id="auth-area" class="auth-area">
         <button id="auth-btn" class="auth-btn" onclick="VP.auth.showModal()" style="display:none">Sign In</button>
         <div id="user-menu" class="user-menu" style="display:none">
@@ -80,14 +80,41 @@
         <div class="hero-deco hero-deco-4">🎐</div>
         <div class="hero-deco hero-deco-5">🌸</div>
         <div class="hero-content">
-          <p class="hero-kicker">Editorial Atlas</p>
-          <div class="hero-panda">🐼</div>
-          <h1 class="hero-title">Your China Travel<br><span class="hero-accent">AI Companion</span></h1>
-          <p class="hero-sub">Plan your China trip like chatting with a local friend.<br>Get personalized itineraries, food guides &amp; insider tips.</p>
-          <div id="hero-actions" class="hero-actions">
-            <button class="hero-cta" onclick="VP.navigate('chat')">Start Planning →</button>
-            <button class="hero-secondary" onclick="VP.navigate('cities')">Explore Cities</button>
+          <div class="hero-copy">
+            <p class="editorial-lead">A new editorial layer for planning China with pace, place, and local context.</p>
+            <p class="hero-kicker">Editorial Atlas</p>
+            <div class="hero-panda">🐼</div>
+            <h1 class="hero-title">Your China Travel<br><span class="hero-accent">AI Companion</span></h1>
+            <p class="hero-sub">Plan your China trip like chatting with a local friend.<br>Get personalized itineraries, food guides &amp; insider tips.</p>
+            <div id="hero-actions" class="hero-actions">
+              <button class="hero-cta" onclick="VP.navigate('chat')">Start Planning →</button>
+              <button class="hero-secondary" onclick="VP.navigate('cities')">Explore Cities</button>
+            </div>
+            <div class="hero-metrics" aria-label="Atlas planning metrics">
+              <article class="hero-metric">
+                <span class="hero-metric-value">33</span>
+                <span class="hero-metric-label">city dossiers</span>
+              </article>
+              <article class="hero-metric">
+                <span class="hero-metric-value">24/7</span>
+                <span class="hero-metric-label">planner rhythm</span>
+              </article>
+              <article class="hero-metric">
+                <span class="hero-metric-value">1</span>
+                <span class="hero-metric-label">atlas across chat, maps, trips</span>
+              </article>
+            </div>
           </div>
+          <aside class="hero-note-card" aria-label="Atlas brief">
+            <p class="hero-note-label">Field note</p>
+            <h2 class="hero-note-title">Move from inspiration to itinerary without losing editorial clarity.</h2>
+            <p class="hero-note-body">Start with mood-setting city discovery, continue into planning chat, and keep every saved route framed like a travel desk spread.</p>
+            <div class="hero-note-list">
+              <span>Atlas-led home</span>
+              <span>Curated city browsing</span>
+              <span>Archive-minded trips</span>
+            </div>
+          </aside>
         </div>
       </div>
 
@@ -105,8 +132,13 @@
       </section>
 
       <section id="editorial-city-rail" class="section editorial-city-rail">
-        <h2 class="section-title">Explore Cities</h2>
-        <p class="section-sub">33 destinations across China, each with curated knowledge</p>
+        <div class="editorial-city-rail-head">
+          <div>
+            <p class="trust-kicker">Destinations index</p>
+            <h2 class="section-title">Explore Cities</h2>
+          </div>
+          <p class="editorial-rail-summary">33 destinations across China, each with curated knowledge and a sharper magazine-style first impression.</p>
+        </div>
         <div id="city-grid" class="city-grid">
           <div class="sk-card skeleton"><div class="sk-block"></div><div class="sk-block"></div><div class="sk-block"></div></div>
           <div class="sk-card skeleton"><div class="sk-block"></div><div class="sk-block"></div><div class="sk-block"></div></div>
@@ -156,8 +188,17 @@
     <!-- ─── TRIPS ─── -->
     <section id="view-trips" class="view">
       <div class="section trips-atlas">
-        <h2 class="section-title">📋 Saved Trips</h2>
-        <p class="section-sub">Your saved itineraries — click to reload or share</p>
+        <div class="trips-atlas-head">
+          <div>
+            <p class="trust-kicker">Trips desk</p>
+            <h2 class="section-title">📋 Saved Trips</h2>
+            <p class="section-sub">Your saved itineraries — click to reload or share</p>
+          </div>
+          <aside class="trips-atlas-note">
+            <p class="trips-atlas-note-label">Atlas note</p>
+            <p class="trips-atlas-note-copy">Recent plans stay ready for fast reloads, while the archive keeps older routes in a calmer library rhythm.</p>
+          </aside>
+        </div>
         <div class="trips-groups">
           <section class="trips-group-section">
             <div class="trips-group-title">Recent</div>
@@ -204,9 +245,26 @@
 
     <!-- ─── CITIES ─── -->
     <section id="view-cities" class="view">
-      <div class="section">
-        <h2 class="section-title">🏙 All Cities</h2>
-        <p class="section-sub">Browse our curated city knowledge base — click a city for details</p>
+      <div class="section cities-atlas">
+        <div class="cities-editorial-header">
+          <div>
+            <p class="trust-kicker">Atlas index</p>
+            <h2 class="section-title">🏙 All Cities</h2>
+            <p class="section-sub">Browse our curated city knowledge base — click a city for details</p>
+          </div>
+          <p class="editorial-lead">Scan destinations through a tighter editorial filter, then dive into each city dossier with the existing detail flow.</p>
+        </div>
+        <div id="cities-filter-rail" class="cities-filter-rail" aria-label="City filters">
+          <button class="cities-filter-chip active" type="button" data-filter="all" aria-pressed="true">All</button>
+          <button class="cities-filter-chip" type="button" data-filter="history" aria-pressed="false">History</button>
+          <button class="cities-filter-chip" type="button" data-filter="food" aria-pressed="false">Food</button>
+          <button class="cities-filter-chip" type="button" data-filter="nature" aria-pressed="false">Nature</button>
+          <button class="cities-filter-chip" type="button" data-filter="urban" aria-pressed="false">Urban</button>
+        </div>
+        <div class="cities-atlas-note">
+          <span class="cities-atlas-note-label">Browsing mode</span>
+          <p class="cities-atlas-note-copy">Filter cues are optional and keep the current city detail interactions unchanged.</p>
+        </div>
         <div id="cities-grid" class="city-grid">
           <div class="sk-card skeleton" style="height:200px"><div class="sk-block"></div><div class="sk-block"></div><div class="sk-block"></div></div>
           <div class="sk-card skeleton" style="height:200px"><div class="sk-block"></div><div class="sk-block"></div><div class="sk-block"></div></div>
@@ -414,7 +472,7 @@
 
   <!-- ═══ FOOTER ═══ -->
   <footer id="footer">
-    <p><span id="footer-version">VisePanda v5.0.3</span> · AI China Travel Planner · 🐼 · <span class="footer-clear" onclick="VP.clearChatHistory()" style="cursor:pointer;text-decoration:underline;opacity:.5">Clear chat</span></p>
+    <p><span id="footer-version">VisePanda v5.0.4</span> · AI China Travel Planner · 🐼 · <span class="footer-clear" onclick="VP.clearChatHistory()" style="cursor:pointer;text-decoration:underline;opacity:.5">Clear chat</span></p>
   </footer>
 </div>
 

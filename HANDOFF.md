@@ -1,7 +1,7 @@
-# VisePanda (VP-Hermes-Web) v5.0.3 — Handoff Document
+# VisePanda (VP-Hermes-Web) v5.0.4 — Handoff Document
 
 > **Last Updated:** 2026-06-19
-> **Status:** ✅ Active — foundation contracts已落地，Editorial Atlas 首页/主页面结构已推进到 v5.0.3
+> **Status:** ✅ Active — foundation contracts已落地，Editorial Atlas 首页/主页面结构已推进并深化到 v5.0.4
 > **Repo:** `https://github.com/JTCAO515/VP-Hermes-Web.git` (HTTPS, PAT auth)
 > **Live URL:** https://www.go2china.space (Vercel auto-deploy on push)
 > **Vercel Project:** `vise-panda-2` (custom domain `www.go2china.space`)
@@ -70,7 +70,7 @@ Target user: Non-Chinese tourists planning trips to China (English interface, Ch
 
 ## 3. Current State
 
-### ✅ Completed (v5.0.3)
+### ✅ Completed (v5.0.4)
 
 | Phase | Feature | Version |
 |-------|---------|:-------:|
@@ -90,8 +90,9 @@ Target user: Non-Chinese tourists planning trips to China (English interface, Ch
 | 🇬🇧 English-native | All UI/text in English, CN proper nouns parenthesised | v4.1.0 → v4.1.2 |
 | 🏛️ Admin | User list, chat logs, stats dashboard, user detail | v4.0.4 |
 | 🛂 Visa tools | Visa policy lookup, visa letter generation | v4.0.3 |
-| 🏠 Editorial Atlas Home | Hero / Trust Layer / City Rail / Planner Entry 结构 | v5.0.3 |
+| 🏠 Editorial Atlas Home | Hero / Trust Layer / City Rail / Planner Entry 结构 + hero metrics / editorial lead | v5.0.4 |
 | 🧭 Main-page Atlas Structure | Chat action rail / Trips recent+saved / Tools view / Admin hero | v5.0.3 |
+| 🏙 Editorial Browsing | Cities filter rail / editorial lead / Trips atlas note | v5.0.4 |
 | 🚀 Deploy | Vercel WSGI auto-deploy from GitHub | v3.0.1 |
 
 ### 🟡 Known Quirks / Gotchas

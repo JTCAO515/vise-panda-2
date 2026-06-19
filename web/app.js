@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-   VisePanda v5.0.3 — Frontend Application
+   VisePanda v5.0.4 — Frontend Application
    ═══════════════════════════════════════════════════════════ */
 
 const VP = (function(){
@@ -73,6 +73,7 @@ const VP = (function(){
     messages: [],
     isStreaming: false,
     theme: document.documentElement.getAttribute('data-theme') || 'dark',
+    cityFilter: 'all',
   };
   const supportedViews = new Set(['home', 'chat', 'trips', 'cities', 'tools', 'map']);
 
@@ -339,6 +340,18 @@ const VP = (function(){
     return tags.slice(0, 2);
   }
 
+  function getCityFilterKeys(name, info, tags) {
+    const keys = new Set();
+    const vibe = (info.vibe || '').toLowerCase();
+    const base = tags.join(' ').toLowerCase();
+    if (vibe.includes('history') || vibe.includes('ancient') || vibe.includes('culture') || base.includes('history')) keys.add('history');
+    if (vibe.includes('food') || vibe.includes('cuisine') || base.includes('foodie') || ['chengdu', 'guangzhou'].includes(name.toLowerCase())) keys.add('food');
+    if (vibe.includes('nature') || vibe.includes('mountain') || vibe.includes('scenery') || base.includes('nature')) keys.add('nature');
+    if (vibe.includes('modern') || vibe.includes('city') || vibe.includes('nightlife') || base.includes('urban')) keys.add('urban');
+    if (!keys.size) keys.add('all');
+    return Array.from(keys);
+  }
+
   // ── Create city card element ──
   function createCityCard(name, info) {
     const card = document.createElement('div');
@@ -349,6 +362,8 @@ const VP = (function(){
     const hasImg = info.image ? true : false;
     if (hasImg) card.classList.add('has-img');
     const tags = getCityTags(name, info);
+    const filterKeys = getCityFilterKeys(name, info, tags);
+    card.dataset.filters = filterKeys.join(' ');
 
     let imgHtml = '';
     if (hasImg) {
@@ -391,6 +406,36 @@ const VP = (function(){
     grid.innerHTML = '';
     Object.entries(data.cities).forEach(([name, info]) => {
       grid.appendChild(createCityCard(name, info));
+    });
+    applyCitiesFilter(state.cityFilter);
+  }
+
+  function applyCitiesFilter(filter) {
+    const grid = document.getElementById('cities-grid');
+    if (!grid) return;
+    const activeFilter = filter || 'all';
+    state.cityFilter = activeFilter;
+    grid.querySelectorAll('.city-card').forEach(card => {
+      const filters = (card.dataset.filters || '').split(/\s+/).filter(Boolean);
+      const isVisible = activeFilter === 'all' || filters.includes(activeFilter);
+      card.classList.toggle('is-filtered-out', !isVisible);
+      card.toggleAttribute('hidden', !isVisible);
+    });
+    document.querySelectorAll('#cities-filter-rail .cities-filter-chip').forEach(btn => {
+      const isActive = btn.dataset.filter === activeFilter;
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-pressed', String(isActive));
+    });
+  }
+
+  function setupCitiesFilterRail() {
+    const rail = document.getElementById('cities-filter-rail');
+    if (!rail || rail.dataset.bound === 'true') return;
+    rail.dataset.bound = 'true';
+    rail.addEventListener('click', event => {
+      const button = event.target.closest('.cities-filter-chip');
+      if (!button) return;
+      applyCitiesFilter(button.dataset.filter || 'all');
     });
   }
 
@@ -1774,7 +1819,7 @@ const VP = (function(){
 
     // Fetch client config to hydrate version and Google Sign-In settings
     fetch('/api/config').then(r => r.json()).then(config => {
-      const ver = config.version || '5.0.2';
+      const ver = config.version || '5.0.4';
       const badge = document.getElementById('version-badge');
       const footerVer = document.getElementById('footer-version');
       const gsi = document.getElementById('g_id_onload');
@@ -1803,6 +1848,8 @@ const VP = (function(){
 
     // Update suggestions based on conversation context
     updateSuggestions();
+    setupCitiesFilterRail();
+    applyCitiesFilter(state.cityFilter);
 
     // Chat input events
     const chatInput = document.getElementById('chat-input');

@@ -1,5 +1,21 @@
 # Changelog
 
+## v5.0.4 — 2026-06-19
+
+### Added
+- 首页新增 `hero-metrics` 与 `editorial-lead` 结构，强化 Editorial Atlas 的双栏叙事与指标信息层
+- Cities 新增 `cities-filter-rail`，支持 `all / history / food / nature / urban` 过滤导轨
+- Trips 新增 `trips-atlas-note`，为 recent / archive 结构提供更清晰的编辑式说明
+- 前端结构测试新增对 `hero-metrics`、`editorial-lead`、`cities-filter-rail`、`trips-atlas-note` 与 `v5.0.4` 可见版本的校验
+
+### Changed
+- 首页、Cities、Trips 完成一轮受控视觉深化，增强 Atlas 化排版、信息节奏与卡片层次
+- 统一后端 `APP_VERSION`、前端壳层显示与文档版本到 `v5.0.4`
+
+### Regression
+- 执行 `python3 -m unittest discover -s tests -v`，后端 14 项测试通过
+- 执行 `node --test web/tests/*.test.js`，前端 10 项结构测试通过
+
 ## v5.0.3 — 2026-06-19
 
 ### Changed
