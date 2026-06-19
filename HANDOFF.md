@@ -1,4 +1,4 @@
-# VisePanda (VP-Hermes-Web) v4.1.2 — Handoff Document
+# VisePanda (VP-Hermes-Web) v5.0.1 — Handoff Document
 
 > **Last Updated:** 2026-06-19
 > **Status:** ✅ Active — English-native translation completed, stable deployment
@@ -70,7 +70,7 @@ Target user: Non-Chinese tourists planning trips to China (English interface, Ch
 
 ## 3. Current State
 
-### ✅ Completed (v4.1.2)
+### ✅ Completed (v5.0.1)
 
 | Phase | Feature | Version |
 |-------|---------|:-------:|

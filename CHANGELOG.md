@@ -1,5 +1,23 @@
 # Changelog
 
+## v5.0.1 — 2026-06-19
+
+### Added
+- 后端与前端测试基座：新增 `tests/` 与 `web/tests/`，覆盖 auth/admin/trips/chat 关键契约与结构检查
+- 方案文档：新增 `docs/2026-06-19-editorial-atlas-spec.md`、`docs/2026-06-19-tdd-implementation-plan.md`、`docs/2026-06-19-iteration-roadmap-text.md`
+- 正式实施计划：新增 `docs/superpowers/plans/2026-06-19-vp-hermes-foundation-editorial-atlas.md`
+
+### Changed
+- 版本号统一为 `v5.0.1`，同步到后端 health/config、前端页头页脚与核心文档
+- trips 模型新增 `content`，创建与读取行程时支持完整正文与旧数据回退
+
+### Fixed
+- 修复 auth/admin 鉴权失败时返回空 body，统一输出稳定 JSON 错误
+- 修复注册 `display_name` 未持久化的问题，并让 `disabled` 用户无法登录
+- 修复 admin 页面 token key 与主站不一致的问题，统一为 `vp_token`
+- 修复聊天 `split` 流程中的 `typingId` 重赋值问题
+- 修复聊天历史查看器与主聊天区重复使用 `chat-messages` id 的问题
+
 ## v4.0.5 — 2026-06-19
 
 ### Added

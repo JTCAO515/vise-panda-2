@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-   VisePanda v4.0.5 — Frontend Application
+   VisePanda v5.0.1 — Frontend Application
    ═══════════════════════════════════════════════════════════ */
 
 const VP = (function(){
@@ -811,7 +811,7 @@ const VP = (function(){
     saveMessages();
 
     // Show typing + stop button
-    const typingId = addTyping();
+    let typingId = addTyping();
     state.isStreaming = true;
     toggleStopButton(true);
     abortController = new AbortController();
@@ -1042,7 +1042,8 @@ const VP = (function(){
           id: t.id,
           city: t.city || '',
           title: t.title || (t.city ? t.city + ' Trip' : 'Saved Trip'),
-          content: t.preview || '',
+          preview: t.preview || '',
+          content: t.content || t.preview || '',
           days: t.days || '?',
           created: t.created_at || t.created || new Date().toISOString(),
         }));
@@ -1050,7 +1051,8 @@ const VP = (function(){
           id: t.id,
           city: t.city || '',
           title: t.title || (t.city ? t.city + ' Trip' : 'Saved Trip'),
-          content: t.preview || '',
+          preview: t.preview || '',
+          content: t.content || t.preview || '',
           days: t.days || '?',
           created: t.created_at || t.created || new Date().toISOString(),
         }));
@@ -1096,7 +1098,8 @@ const VP = (function(){
           title: title,
           city: city || '',
           days: String(dayCount || '?'),
-          preview: content.slice(0, 500),
+          preview: content.slice(0, 220),
+          content: content,
           is_saved: false,
         })
       }).catch(() => {}); // fire-and-forget API save
@@ -2197,7 +2200,7 @@ const VP = (function(){
       // Fetch and display conversation messages in the modal
       var viewer = document.getElementById('chat-viewer');
       var list = document.getElementById('chats-list');
-      var msgsEl = document.getElementById('chat-messages');
+      var msgsEl = document.getElementById('chat-viewer-messages');
       var titleEl = document.getElementById('chat-viewer-title');
 
       msgsEl.innerHTML = '<div class="chat-loading">Loading...</div>';

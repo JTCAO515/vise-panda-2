@@ -101,7 +101,7 @@
   'use strict';
 
   const API = window.location.origin;
-  const token = localStorage.getItem('vp_auth_token');
+  const token = localStorage.getItem('vp_token');
   const userStr = localStorage.getItem('vp_user');
 
   // ── Auth gate ──
@@ -113,8 +113,8 @@
   let user;
   try { user = JSON.parse(userStr); } catch(e) { user = {}; }
 
-  if (user.role !== 'admin') {
-    document.getElementById('admin-app').innerHTML = '<div class="admin-section" style="padding:40px;text-align:center"><p style="color:var(--text-dim);font-size:15px;margin-bottom:12px">⛔ Admin access only</p><p style="font-size:13px;color:var(--text-dim)"><a href="/">Back to app →</a></p></div>';
+  if (!(user.role === 'admin' || user.role === 'ops')) {
+    document.getElementById('admin-app').innerHTML = '<div class="admin-section" style="padding:40px;text-align:center"><p style="color:var(--text-dim);font-size:15px;margin-bottom:12px">⛔ Ops/Admin access only</p><p style="font-size:13px;color:var(--text-dim)"><a href="/">Back to app →</a></p></div>';
     return;
   }
 

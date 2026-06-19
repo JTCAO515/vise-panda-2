@@ -30,6 +30,7 @@ DATA_DIR = THIS_DIR.parent / "data"
 # Vercel Serverless: /tmp is writable, everything else is read-only
 _DEFAULT_DB = str(Path("/tmp/users.db") if os.environ.get("VERCEL") else DATA_DIR / "users.db")
 DB_PATH = Path(os.environ.get("AUTH_DB_PATH", _DEFAULT_DB))
+_AUTH_ERROR_RESPONSE_KEY = "vp.auth_error_response"
 
 # ── Token lifetime ──
 TOKEN_DAYS = 7
@@ -50,7 +51,9 @@ GOOGLE_TOKENINFO_URL = "https://oauth2.googleapis.com/tokeninfo?id_token="
 
 def _get_db() -> sqlite3.Connection:
     """Get SQLite connection (autocommit mode)."""
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    global DB_PATH
+    DB_PATH = Path(os.environ.get("AUTH_DB_PATH", _DEFAULT_DB))
+    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(str(DB_PATH))
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA journal_mode=WAL")
@@ -78,6 +81,7 @@ def init_db():
             city        TEXT NOT NULL,
             days        TEXT NOT NULL DEFAULT '',
             preview     TEXT NOT NULL DEFAULT '',
+            content     TEXT NOT NULL DEFAULT '',
             is_saved    INTEGER NOT NULL DEFAULT 0,
             created_at  TEXT NOT NULL DEFAULT (datetime('now')),
             updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
@@ -127,6 +131,10 @@ def init_db():
     # Now safe to create the partial index
     try:
         conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google ON users(google_id) WHERE google_id IS NOT NULL")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        conn.execute("ALTER TABLE trips ADD COLUMN content TEXT NOT NULL DEFAULT ''")
     except sqlite3.OperationalError:
         pass
 
@@ -214,7 +222,7 @@ def _get_user_from_token(token: str) -> dict | None:
         return None
     conn = _get_db()
     row = conn.execute("""
-        SELECT u.id, u.email, u.role, u.created_at
+        SELECT u.id, u.email, u.display_name, u.role, u.status, u.created_at
         FROM sessions s
         JOIN users u ON u.id = s.user_id
         WHERE s.token = ? AND s.expires_at > datetime('now')
@@ -252,6 +260,7 @@ def handle_register(environ, start_response):
     data = _read_post(environ)
     email = (data.get("email", "") or "").strip().lower()
     password = data.get("password", "") or ""
+    display_name = (data.get("display_name", "") or "").strip()
 
     # Validate
     err = _validate_email(email)
@@ -276,8 +285,8 @@ def handle_register(environ, start_response):
     user_id = uuid.uuid4().hex
     password_hash, salt = _hash_password(password)
     conn.execute(
-        "INSERT INTO users (id, email, password_hash, salt, role) VALUES (?, ?, ?, ?, ?)",
-        (user_id, email, password_hash, salt, role),
+        "INSERT INTO users (id, email, password_hash, salt, display_name, role) VALUES (?, ?, ?, ?, ?, ?)",
+        (user_id, email, password_hash, salt, display_name, role),
     )
     conn.commit()
     conn.close()
@@ -286,6 +295,7 @@ def handle_register(environ, start_response):
         "user": {
             "id": user_id,
             "email": email,
+            "display_name": display_name,
             "role": role,
         },
         "message": "Account created successfully",
@@ -304,7 +314,7 @@ def handle_login(environ, start_response):
 
     conn = _get_db()
     row = conn.execute(
-        "SELECT id, email, password_hash, salt, role FROM users WHERE email = ?",
+        "SELECT id, email, password_hash, salt, display_name, role, status FROM users WHERE email = ?",
         (email,),
     ).fetchone()
 
@@ -313,6 +323,10 @@ def handle_login(environ, start_response):
         return _json_error(start_response, "Invalid email or password", "401 Unauthorized")
 
     user = dict(row)
+    if user["status"] != "active":
+        conn.close()
+        return _json_error(start_response, "Account is not active", "403 Forbidden")
+
     expected_hash, _ = _hash_password(password, user["salt"])
     if expected_hash != user["password_hash"]:
         conn.close()
@@ -332,6 +346,7 @@ def handle_login(environ, start_response):
         "user": {
             "id": user["id"],
             "email": user["email"],
+            "display_name": user["display_name"],
             "role": user["role"],
         },
     })
@@ -528,14 +543,16 @@ def handle_get_trips(environ, start_response):
     """GET /api/trips — list current user's trips (recents and saved)."""
     user = require_auth(environ, start_response)
     if user is None:
-        return []
+        return _take_auth_error(environ)
     conn = _get_db()
     recent = [dict(r) for r in conn.execute(
-        "SELECT id, title, city, days, preview, created_at FROM trips WHERE user_id = ? AND is_saved = 0 ORDER BY created_at DESC LIMIT 20",
+        "SELECT id, title, city, days, preview, COALESCE(NULLIF(content, ''), preview) AS content, created_at "
+        "FROM trips WHERE user_id = ? AND is_saved = 0 ORDER BY created_at DESC LIMIT 20",
         (user["id"],)
     ).fetchall()]
     saved = [dict(r) for r in conn.execute(
-        "SELECT id, title, city, days, preview, created_at FROM trips WHERE user_id = ? AND is_saved = 1 ORDER BY created_at DESC LIMIT 20",
+        "SELECT id, title, city, days, preview, COALESCE(NULLIF(content, ''), preview) AS content, created_at "
+        "FROM trips WHERE user_id = ? AND is_saved = 1 ORDER BY created_at DESC LIMIT 20",
         (user["id"],)
     ).fetchall()]
     conn.close()
@@ -546,12 +563,17 @@ def handle_create_trip(environ, start_response):
     """POST /api/trips — create a new trip."""
     user = require_auth(environ, start_response)
     if user is None:
-        return []
+        return _take_auth_error(environ)
     data = _read_post(environ)
     title = (data.get("title", "") or "").strip()
     city = (data.get("city", "") or "").strip()
     days = (data.get("days", "") or "").strip()
+    content = (data.get("content", "") or "").strip()
     preview = (data.get("preview", "") or "").strip()
+    if not content:
+        content = preview
+    if not preview:
+        preview = content[:220].strip()
     is_saved = 1 if data.get("is_saved", False) else 0
 
     if not title or not city:
@@ -560,13 +582,13 @@ def handle_create_trip(environ, start_response):
     trip_id = uuid.uuid4().hex
     conn = _get_db()
     conn.execute(
-        "INSERT INTO trips (id, user_id, title, city, days, preview, is_saved) VALUES (?, ?, ?, ?, ?, ?, ?)",
-        (trip_id, user["id"], title, city, days, preview, is_saved),
+        "INSERT INTO trips (id, user_id, title, city, days, preview, content, is_saved) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        (trip_id, user["id"], title, city, days, preview, content, is_saved),
     )
     conn.commit()
     conn.close()
     return _json(start_response, {
-        "trip": {"id": trip_id, "title": title, "city": city, "days": days, "preview": preview},
+        "trip": {"id": trip_id, "title": title, "city": city, "days": days, "preview": preview, "content": content},
         "message": "Trip created",
     }, "201 Created")
 
@@ -575,7 +597,7 @@ def handle_delete_trip(environ, start_response, trip_id: str):
     """DELETE /api/trips/:id — delete a trip (only owner or admin)."""
     user = require_auth(environ, start_response)
     if user is None:
-        return []
+        return _take_auth_error(environ)
 
     conn = _get_db()
     trip = conn.execute("SELECT id, user_id FROM trips WHERE id = ?", (trip_id,)).fetchone()
@@ -607,12 +629,23 @@ def _extract_token(environ) -> str | None:
     return None
 
 
+def _store_auth_error(environ, response) -> None:
+    environ[_AUTH_ERROR_RESPONSE_KEY] = response
+
+
+def _take_auth_error(environ):
+    return environ.pop(_AUTH_ERROR_RESPONSE_KEY, [])
+
+
 def require_auth(environ, start_response) -> dict | None:
     """Middleware: check auth. Returns user dict or None (error already sent)."""
     token = _extract_token(environ)
     user = _get_user_from_token(token)
     if user is None:
-        _json_error(start_response, "Authentication required", "401 Unauthorized")
+        _store_auth_error(
+            environ,
+            _json_error(start_response, "Authentication required", "401 Unauthorized"),
+        )
         return None
     return user
 
@@ -623,7 +656,10 @@ def require_admin(environ, start_response) -> dict | None:
     if user is None:
         return None
     if user["role"] != "admin":
-        _json_error(start_response, "Admin access required", "403 Forbidden")
+        _store_auth_error(
+            environ,
+            _json_error(start_response, "Admin access required", "403 Forbidden"),
+        )
         return None
     return user
 
@@ -635,7 +671,10 @@ def require_role(*allowed_roles) -> callable:
         if user is None:
             return None
         if user["role"] not in allowed_roles:
-            _json_error(start_response, "Access denied", "403 Forbidden")
+            _store_auth_error(
+                environ,
+                _json_error(start_response, "Access denied", "403 Forbidden"),
+            )
             return None
         return user
     return _check
@@ -1132,21 +1171,21 @@ def handle_auth_route(environ, start_response, path: str, method: str) -> list[b
         check = require_role("ops", "admin")
         user = check(environ, start_response)
         if user is None:
-            return []
+            return _take_auth_error(environ)
         return handle_admin_stats(start_response, user)
 
     if path == "/api/admin/users" and method == "GET":
         check = require_role("ops", "admin")
         user = check(environ, start_response)
         if user is None:
-            return []
+            return _take_auth_error(environ)
         return handle_admin_users(environ, start_response)
 
     if path.startswith("/api/admin/users/") and method == "DELETE":
         check = require_role("ops", "admin")
         user = check(environ, start_response)
         if user is None:
-            return []
+            return _take_auth_error(environ)
         user_id = path[len("/api/admin/users/"):]
         if not user_id or "/" in user_id:
             return _json_error(start_response, "Invalid user ID", "400 Bad Request")
@@ -1160,7 +1199,7 @@ def handle_auth_route(environ, start_response, path: str, method: str) -> list[b
             check = require_role("admin")
             user = check(environ, start_response)
             if user is None:
-                return []
+                return _take_auth_error(environ)
             return handle_admin_user_update(environ, start_response, user_id)
 
     # GET /api/admin/users/:id — ops/admin view single user detail (not /chat)
@@ -1170,7 +1209,7 @@ def handle_auth_route(environ, start_response, path: str, method: str) -> list[b
             check = require_role("ops", "admin")
             user = check(environ, start_response)
             if user is None:
-                return []
+                return _take_auth_error(environ)
             return handle_admin_user_detail(environ, start_response, user_id)
 
     # GET /api/admin/users/:id/chat — ops/admin view user conversations
@@ -1180,7 +1219,7 @@ def handle_auth_route(environ, start_response, path: str, method: str) -> list[b
             check = require_role("ops", "admin")
             user = check(environ, start_response)
             if user is None:
-                return []
+                return _take_auth_error(environ)
             return handle_admin_user_chat(environ, start_response, user_id)
 
     # GET /api/admin/chat/:id — ops/admin view conversation details
@@ -1190,7 +1229,7 @@ def handle_auth_route(environ, start_response, path: str, method: str) -> list[b
             check = require_role("ops", "admin")
             user = check(environ, start_response)
             if user is None:
-                return []
+                return _take_auth_error(environ)
             return handle_admin_chat_detail(environ, start_response, conv_id)
 
     # ── Trip routes ──
@@ -1207,4 +1246,3 @@ def handle_auth_route(environ, start_response, path: str, method: str) -> list[b
         return _json_error(start_response, "Trip ID required", "400 Bad Request")
 
     return None  # not matched
-

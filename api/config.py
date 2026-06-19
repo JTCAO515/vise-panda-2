@@ -4,6 +4,7 @@ import os
 
 from api.common import DATA_DIR, _json, _load_json
 from api.cities import _MAP_DATA
+from api.index import APP_VERSION
 
 
 def handle_map(start_response):
@@ -26,5 +27,5 @@ def handle_config(start_response):
         "amap_key": amap_key if use_amap else "",
         "amap_security_code": amap_security if use_amap else "",
         "use_amap": use_amap,
-        "version": "3.2.0",
+        "version": APP_VERSION,
     })
