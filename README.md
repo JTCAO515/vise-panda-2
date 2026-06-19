@@ -1,4 +1,4 @@
-# VisePanda · v3.0.8
+# VisePanda · v3.1.0
 
 > AI China Travel Platform — Panda Chinese Style · AI Chat Planning · 36-City Knowledge Base
 
@@ -8,7 +8,7 @@
 
 **Not a generic AI assistant — a China-specialized AI travel planner.**
 
-## Latest Version v3.0.7
+## Latest Version v3.1.0
 
 | Module | Status |
 |--------|--------|
@@ -22,6 +22,7 @@
 | 🇬🇧 English-Native System Prompt | ✅ v3.0.4 |
 | 🗺️ AMap (Gaode) Dual Engine | ✅ v3.0.4 |
 | 📱 Mobile App-Style UX (bottom nav, chat overlay, safe area) | ✅ v3.0.5 |
+| 👥 Admin Panel (User Management) | ✅ v3.1.0 |
 | 🔒 Security Hardening (input validation, XSS, UTF-8 safety) | ✅ v3.0.8 |
 | 🧩 Multi-Bubble Responses (split sections into separate bubbles) | ✅ v3.0.6 |
 | 🖼️ Rich Media Support (inline city images between bubbles) | ✅ v3.0.7 |

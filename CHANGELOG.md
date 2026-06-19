@@ -1,5 +1,10 @@
 # Changelog
 
+## v3.1.0 (2026-06-19)
+- **⚙️ Admin Panel** — New standalone admin page (`/admin`), user management with stats dashboard. Role-based access (admin/ops only). Users table, delete user, real-time stats.
+- **🔄 Admin Nav** — Admin link in user dropdown navigates to `/admin` in same tab instead of popup window.
+- **🔢 Version Bump** — v3.0.8 → v3.1.0
+
 ## v3.0.8 (2026-06-14)
 - **🔒 Security Hardening** — `_read_post` now caps request body at 100KB, wraps CONTENT_LENGTH parse in try/except, catches JSON decode errors
 - **🛡️ XSS Prevention** — Image bubble URLs and labels sanitized via `escHtml()`, URL whitelist (relative or https only)

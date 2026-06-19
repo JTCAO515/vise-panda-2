@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-   VisePanda v3.0.1 — Frontend Application
+   VisePanda v3.1.0 — Frontend Application
    ═══════════════════════════════════════════════════════════ */
 
 const VP = (function(){
@@ -1804,7 +1804,8 @@ const VP = (function(){
     },
 
     goToAdmin: function() {
-      window.open('/admin', '_blank');
+      document.getElementById('user-dropdown').classList.add('hidden');
+      window.location.href = '/admin';
     },
 
     // ═══ Settings ═══

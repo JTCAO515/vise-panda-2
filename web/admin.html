@@ -3,505 +3,220 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VisePanda Admin</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<title>VisePanda · Admin Panel</title>
+<link rel="stylesheet" href="/app.css">
 <style>
-:root{--bg:#0e0b14;--bg-card:#1a1428;--bg-hover:rgba(255,255,255,.04);--text:#ebebed;--text-dim:#8a8a9a;--text-muted:#5a5a6a;--border:rgba(255,255,255,.1);--accent:#c9a96e;--accent-soft:rgba(201,169,110,.12);--red:#bc3a2c;--red-soft:rgba(188,58,44,.12);--green:#4a9c6d;--radius:8px;--shadow:0 4px 20px rgba(0,0,0,.3)}
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
-a{color:var(--accent);text-decoration:none}
-.hidden{display:none!important}
+  :root { --header-h: 56px; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg0); color: var(--text); font-family: 'Inter','Noto Sans SC',system-ui,sans-serif; min-height: 100vh; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
 
-/* Layout */
-.app{display:flex;min-height:100vh}
-.sidebar{width:240px;background:var(--bg-card);border-right:1px solid var(--border);padding:24px 0;flex-shrink:0}
-.sidebar-brand{padding:0 20px;margin-bottom:32px;font-size:18px;font-weight:700}
-.sidebar-brand span{color:var(--accent)}
-.sidebar-nav{padding:0 12px}
-.sidebar-btn{display:flex;align-items:center;gap:10px;width:100%;padding:10px 14px;border:none;background:none;color:var(--text-dim);font-size:14px;cursor:pointer;border-radius:var(--radius);text-align:left}
-.sidebar-btn:hover{background:var(--bg-hover);color:var(--text)}
-.sidebar-btn.active{background:var(--accent-soft);color:var(--accent);font-weight:500}
-.main{flex:1;padding:32px;overflow-y:auto}
+  .admin-header { height: var(--header-h); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; background: var(--primary); border-bottom: 1px solid var(--line); }
+  .admin-brand { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 600; }
+  .admin-brand span { font-size: 20px; }
+  .admin-back { font-size: 13px; color: var(--text-dim); padding: 6px 12px; border: 1px solid var(--line); border-radius: 6px; }
 
-/* Header bar */
-.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:32px}
-.topbar h1{font-size:24px;font-weight:600}
-.topbar-right{display:flex;align-items:center;gap:12px}
-.badge{background:var(--accent-soft);color:var(--accent);padding:4px 10px;border-radius:20px;font-size:12px;font-weight:500}
-.logout-btn{background:none;border:1px solid var(--border);color:var(--text-dim);padding:6px 14px;border-radius:var(--radius);cursor:pointer;font-size:13px}
-.logout-btn:hover{color:var(--red);border-color:var(--red)}
+  .admin-container { max-width: 960px; margin: 0 auto; padding: 24px 16px; }
 
-/* Cards */
-.card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px}
-.card-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
-.stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px}
-.stat-card .num{font-size:28px;font-weight:700;margin-top:4px}
-.stat-card .label{font-size:13px;color:var(--text-dim)}
+  .admin-stats { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+  .stat-card { flex: 1; min-width: 140px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+  .stat-card .stat-value { font-size: 28px; font-weight: 700; color: var(--accent); }
+  .stat-card .stat-label { font-size: 12px; color: var(--text-dim); margin-top: 4px; text-transform: uppercase; letter-spacing: .5px; }
 
-/* Table */
-table{width:100%;border-collapse:collapse}
-th{text-align:left;padding:10px 12px;font-size:12px;color:var(--text-dim);font-weight:500;border-bottom:1px solid var(--border);white-space:nowrap}
-td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.04);font-size:13px}
-tr:hover{background:var(--bg-hover)}
-.role-badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:500}
-.role-badge.admin{background:var(--accent-soft);color:var(--accent)}
-.role-badge.ops{background:rgba(74,156,109,.15);color:var(--green)}
-.role-badge.user{background:rgba(125,211,252,.1);color:#7dd3fc}
-.status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
-.status-dot.active{background:var(--green)}
-.status-dot.disabled{background:var(--red)}
-.status-dot.pending{background:#f0ad4e}
+  .admin-section { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .admin-section h2 { padding: 16px 20px; font-size: 15px; font-weight: 600; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px; }
 
-/* Buttons */
-.btn-sm{padding:4px 10px;border-radius:var(--radius);border:none;cursor:pointer;font-size:12px}
-.btn-primary{background:var(--accent);color:#fff}
-.btn-danger{background:var(--red-soft);color:var(--red)}
-.btn-ghost{background:none;border:1px solid var(--border);color:var(--text-dim)}:hover.btn-ghost{color:var(--text)}
-.btn-ghost:hover{color:var(--text)}
-.btn-sm:disabled{opacity:.5;cursor:not-allowed}
+  .user-table { width: 100%; border-collapse: collapse; }
+  .user-table th { text-align: left; padding: 10px 16px; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--text-dim); background: var(--bg0); border-bottom: 1px solid var(--line); white-space: nowrap; }
+  .user-table td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  .user-table tr:last-child td { border-bottom: none; }
+  .user-table tr:hover { background: rgba(255,255,255,.02); }
 
-/* Search / Filter bar */
-.toolbar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
-.toolbar input{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;color:var(--text);font-size:13px;min-width:200px}
-.toolbar input:focus{border-color:var(--accent);outline:none}
-.toolbar select{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:8px;color:var(--text);font-size:13px}
+  .role-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+  .role-admin { background: rgba(125,211,252,.15); color: #7DD3FC; }
+  .role-user { background: rgba(201,169,110,.15); color: #C9A96E; }
+  .role-ops { background: rgba(188,58,44,.15); color: #BC3A2C; }
+  .role-guest { background: rgba(138,138,154,.15); color: #8A8A9A; }
 
-/* Pagination */
-.pagination{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px;font-size:13px;color:var(--text-dim)}
-.pagination button{background:none;border:1px solid var(--border);padding:4px 10px;border-radius:var(--radius);cursor:pointer;color:var(--text);font-size:12px}
-.pagination button:disabled{opacity:.4;cursor:not-allowed}
+  .status-active { color: #4ADE80; }
+  .status-suspended { color: #F87171; }
 
-/* Login form (within admin) */
-.login-container{display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:16px}
-.login-box{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:32px;width:360px;max-width:90%}
-.login-box h2{margin-bottom:4px}
-.login-box p{margin-bottom:20px;color:var(--text-dim);font-size:13px}
-.login-box input{width:100%;padding:10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--text);font-size:14px;margin-bottom:12px}
-.login-box input:focus{border-color:var(--accent);outline:none}
-.login-box button{width:100%;padding:10px;border:none;border-radius:var(--radius);background:var(--accent);color:#fff;font-size:14px;font-weight:600;cursor:pointer}
-.login-box button:hover{opacity:.9}
-.login-box .error{background:var(--red-soft);color:var(--red);padding:8px;border-radius:var(--radius);font-size:12px;margin-bottom:12px}
+  .btn-del { background: none; border: 1px solid rgba(248,113,113,.3); color: #F87171; padding: 4px 12px; border-radius: 5px; font-size: 12px; cursor: pointer; transition: all .2s; }
+  .btn-del:hover { background: rgba(248,113,113,.1); }
+  .btn-del:disabled { opacity: .4; cursor: not-allowed; }
 
-/* Detail panel */
-.detail-header{display:flex;align-items:center;gap:12px;margin-bottom:20px}
-.detail-header button{background:none;border:none;color:var(--accent);cursor:pointer;font-size:14px}
-.detail-field{margin-bottom:12px}
-.detail-field label{font-size:12px;color:var(--text-dim);display:block;margin-bottom:2px}
-.detail-field .value{font-size:14px}
-.detail-actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
-.detail-actions select{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:6px 10px;color:var(--text);font-size:13px}
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--primary); border: 1px solid var(--line); padding: 10px 20px; border-radius: 8px; font-size: 13px; z-index: 100; box-shadow: 0 4px 20px rgba(0,0,0,.4); transition: opacity .3s; }
+  .toast.hidden { opacity: 0; pointer-events: none; }
+  .toast.success { border-color: rgba(74,222,128,.4); }
+  .toast.error { border-color: rgba(248,113,113,.4); }
 
-/* Chat message view */
-.msg-viewer{max-height:400px;overflow-y:auto;padding:12px;background:var(--bg);border-radius:var(--radius)}
-.msg-item{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)}
-.msg-item:last-child{border:none}
-.msg-role{font-size:11px;color:var(--text-dim);margin-bottom:2px;font-weight:500}
-.msg-role.user{color:#7dd3fc}
-.msg-role.assistant{color:var(--accent)}
-.msg-content{font-size:13px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
-.msg-time{font-size:11px;color:var(--text-muted);margin-top:2px}
+  .loading { text-align: center; padding: 40px; color: var(--text-dim); font-size: 14px; }
+  .loading::after { content: '...'; animation: dots 1.5s steps(4, end) infinite; }
+  @keyframes dots { 0% { content: '.'; } 25% { content: '..'; } 50% { content: '...'; } 75% { content: ''; } }
 
-/* Clickable row */
-.clickable{cursor:pointer}
-.clickable:hover{background:var(--bg-hover)}
+  .empty-state { text-align: center; padding: 40px; color: var(--text-dim); font-size: 14px; }
 
-/* Loading */
-.loading{text-align:center;padding:40px;color:var(--text-dim)}
+  @media (max-width: 640px) {
+    .admin-container { padding: 16px 12px; }
+    .user-table th, .user-table td { padding: 8px 10px; font-size: 12px; }
+    .stat-card { min-width: 100px; }
+    .stat-card .stat-value { font-size: 22px; }
+  }
 </style>
 </head>
 <body>
 
-<!-- Admin Login -->
-<div id="login-view" class="login-container">
-  <div class="login-box">
-    <h2>VisePanda Admin</h2>
-    <p>Sign in with your admin account</p>
-    <div id="admin-error" class="error hidden"></div>
-    <input type="email" id="admin-login-email" placeholder="Email" autocomplete="email">
-    <input type="password" id="admin-login-password" placeholder="Password" autocomplete="current-password">
-    <button onclick="adminLogin()">Sign In</button>
-    <p style="margin-top:12px;font-size:12px;color:var(--text-dim);text-align:center">
-      Need admin access? <a href="/" target="_blank">Go to VisePanda</a>
-    </p>
-  </div>
-</div>
+<header class="admin-header">
+  <a href="/" class="admin-brand"><span>🐼</span> VisePanda Admin</a>
+  <a href="/" class="admin-back">← Back to App</a>
+</header>
 
-<!-- Main App -->
-<div id="app-view" class="app hidden">
-  <div class="sidebar">
-    <div class="sidebar-brand">🐼 <span>VisePanda</span> Admin</div>
-    <nav class="sidebar-nav">
-      <button class="sidebar-btn active" data-view="dashboard" onclick="switchView('dashboard')">📊 Dashboard</button>
-      <button class="sidebar-btn" data-view="users" onclick="switchView('users')">👥 Users</button>
-      <button class="sidebar-btn" data-view="chats" onclick="switchView('chats')">💬 Chat Logs</button>
-    </nav>
-    <div style="position:absolute;bottom:24px;left:0;right:0;padding:0 12px">
-      <button class="sidebar-btn" onclick="adminLogout()" style="color:var(--red)">🚪 Sign Out</button>
+<main class="admin-container" id="admin-app">
+  <div class="admin-stats" id="stats-row"></div>
+  <div class="admin-section">
+    <h2>👥 Users</h2>
+    <div id="users-loading" class="loading">Loading users</div>
+    <div id="users-empty" class="empty-state hidden">No users found</div>
+    <div id="users-table-wrap" class="hidden">
+      <table class="user-table">
+        <thead><tr>
+          <th>Email</th>
+          <th>Name</th>
+          <th>Role</th>
+          <th>Status</th>
+          <th>Created</th>
+          <th></th>
+        </tr></thead>
+        <tbody id="users-tbody"></tbody>
+      </table>
     </div>
   </div>
+</main>
 
-  <div class="main">
-    <div class="topbar">
-      <h1 id="page-title">Dashboard</h1>
-      <div class="topbar-right">
-        <span id="admin-email" class="badge">admin@...</span>
-      </div>
-    </div>
-
-    <!-- Dashboard -->
-    <div id="view-dashboard" class="view">
-      <div class="card-row" id="stats-row">
-        <div class="stat-card"><div class="label">Total Users</div><div class="num" id="stat-users">—</div></div>
-        <div class="stat-card"><div class="label">Active</div><div class="num" id="stat-active">—</div></div>
-        <div class="stat-card"><div class="label">Conversations</div><div class="num" id="stat-convs">—</div></div>
-        <div class="stat-card"><div class="label">Today Active</div><div class="num" id="stat-today">—</div></div>
-      </div>
-      <div class="card">
-        <h3 style="margin-bottom:12px;font-size:15px">Users by Role</h3>
-        <div id="role-breakdown">Loading...</div>
-      </div>
-    </div>
-
-    <!-- Users -->
-    <div id="view-users" class="view hidden">
-      <div class="toolbar">
-        <input type="text" id="user-search" placeholder="Search by email..." oninput="debounceSearch()">
-        <select id="role-filter" onchange="loadUsers()">
-          <option value="">All Roles</option>
-          <option value="admin">Admin</option>
-          <option value="ops">Ops</option>
-          <option value="user">User</option>
-        </select>
-        <select id="status-filter" onchange="loadUsers()">
-          <option value="">All Status</option>
-          <option value="active">Active</option>
-          <option value="disabled">Disabled</option>
-          <option value="pending">Pending</option>
-        </select>
-      </div>
-      <div class="card" style="padding:0;overflow-x:auto">
-        <table id="users-table">
-          <thead><tr>
-            <th>Email</th><th>Name</th><th>Role</th><th>Status</th><th>Created</th><th style="width:80px"></th>
-          </tr></thead>
-          <tbody id="users-body"><tr><td colspan="6" class="loading">Loading...</td></tr></tbody>
-        </table>
-      </div>
-      <div class="pagination" id="user-pagination"></div>
-    </div>
-
-    <!-- Chats -->
-    <div id="view-chats" class="view hidden">
-      <div class="toolbar">
-        <input type="text" id="chat-search" placeholder="Search messages or user email..." oninput="debounceChatSearch()">
-      </div>
-      <div class="card" style="padding:0;overflow-x:auto">
-        <table id="chats-table">
-          <thead><tr><th>User</th><th>Title</th><th>Messages</th><th>Created</th><th style="width:80px"></th></tr></thead>
-          <tbody id="chats-body"><tr><td colspan="5" class="loading">Loading...</td></tr></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- User Detail (shown instead of users list) -->
-    <div id="view-user-detail" class="view hidden">
-      <div class="detail-header">
-        <button onclick="switchView('users')">← Back to Users</button>
-      </div>
-      <div class="card" id="user-detail-card">
-        <div class="loading">Loading...</div>
-      </div>
-    </div>
-
-    <!-- Chat Detail (shown instead of chats list) -->
-    <div id="view-chat-detail" class="view hidden">
-      <div class="detail-header">
-        <button onclick="switchView('chats')">← Back to Chats</button>
-      </div>
-      <div class="card" id="chat-detail-card">
-        <div class="loading">Loading...</div>
-      </div>
-    </div>
-  </div>
-</div>
+<div id="toast" class="toast hidden"></div>
 
 <script>
-// ═══════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════
-var _token = localStorage.getItem('vp_admin_token') || localStorage.getItem('vp_token');
-var _user = null;
-var _searchTimer = null;
-var _userPage = 1;
+(function(){
+  'use strict';
 
-// ═══════════════════════════════════════════
-// HELPERS
-// ═══════════════════════════════════════════
-function api(path, opts) {
-  opts = opts || {};
-  var headers = {'Content-Type': 'application/json'};
-  if (_token) headers['Authorization'] = 'Bearer ' + _token;
-  return fetch(path, {headers: headers, method: opts.method || 'GET', body: opts.body || null})
-    .then(function(r){ return r.json().then(function(d){ d._status = r.status; return d; }); });
-}
+  const API = window.location.origin;
+  const token = localStorage.getItem('vp_auth_token');
+  const userStr = localStorage.getItem('vp_user');
 
-function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  // ── Auth gate ──
+  if (!token || !userStr) {
+    document.getElementById('admin-app').innerHTML = '<div class="admin-section" style="padding:40px;text-align:center"><p style="color:var(--text-dim);font-size:15px;margin-bottom:12px">🔒 Not signed in</p><p style="font-size:13px;color:var(--text-dim)"><a href="/">Back to app →</a></p></div>';
+    return;
+  }
 
-// ═══════════════════════════════════════════
-// AUTH
-// ═══════════════════════════════════════════
-function checkAuth() {
-  if (!_token) { showLogin(); return; }
-  api('/api/auth/me').then(function(d){
-    if (d._status >= 400 || !d.user) { showLogin(); return; }
-    _user = d.user;
-    if (_user.role !== 'admin' && _user.role !== 'ops') {
-      document.getElementById('app-view').innerHTML = '<div style="text-align:center;padding:60px;color:var(--red)"><h2>Access Denied</h2><p style="color:var(--text-dim);margin-top:8px">You need admin or ops role.</p><a href="/" style="display:inline-block;margin-top:16px">← Back to VisePanda</a></div>';
-      document.getElementById('app-view').classList.remove('hidden');
-      document.getElementById('login-view').classList.add('hidden');
-      return;
-    }
-    document.getElementById('admin-email').textContent = _user.email;
-    document.getElementById('login-view').classList.add('hidden');
-    document.getElementById('app-view').classList.remove('hidden');
-    loadDashboard();
-  });
-}
+  let user;
+  try { user = JSON.parse(userStr); } catch(e) { user = {}; }
 
-function showLogin() {
-  document.getElementById('login-view').classList.remove('hidden');
-  document.getElementById('app-view').classList.add('hidden');
-}
+  if (user.role !== 'admin') {
+    document.getElementById('admin-app').innerHTML = '<div class="admin-section" style="padding:40px;text-align:center"><p style="color:var(--text-dim);font-size:15px;margin-bottom:12px">⛔ Admin access only</p><p style="font-size:13px;color:var(--text-dim)"><a href="/">Back to app →</a></p></div>';
+    return;
+  }
 
-function adminLogin() {
-  var email = document.getElementById('admin-login-email').value.trim();
-  var pw = document.getElementById('admin-login-password').value;
-  var errEl = document.getElementById('admin-error');
-  errEl.classList.add('hidden');
-  if (!email || !pw) { errEl.textContent = 'Email and password required'; errEl.classList.remove('hidden'); return; }
-  api('/api/auth/login', {method:'POST', body:JSON.stringify({email:email, password:pw})}).then(function(d){
-    if (d._status >= 400) { errEl.textContent = d.error || 'Login failed'; errEl.classList.remove('hidden'); return; }
-    _token = d.token;
-    _user = d.user;
-    localStorage.setItem('vp_admin_token', _token);
-    if (_user.role !== 'admin' && _user.role !== 'ops') {
-      errEl.textContent = 'Access denied: admin or ops role required';
-      errEl.classList.remove('hidden');
-      return;
-    }
-    checkAuth();
-  });
-}
+  // ── Toast ──
+  function toast(msg, type) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.className = 'toast ' + (type || '') + ' hidden';
+    requestAnimationFrame(() => { el.classList.remove('hidden'); });
+    clearTimeout(el._timer);
+    el._timer = setTimeout(() => el.classList.add('hidden'), 3000);
+  }
 
-function adminLogout() {
-  _token = null; _user = null;
-  localStorage.removeItem('vp_admin_token');
-  localStorage.removeItem('vp_token');
-  location.reload();
-}
-
-// ═══════════════════════════════════════════
-// NAVIGATION
-// ═══════════════════════════════════════════
-var _currentView = 'dashboard';
-
-function switchView(name) {
-  _currentView = name;
-  document.querySelectorAll('.sidebar-btn[data-view]').forEach(function(b){ b.classList.toggle('active', b.getAttribute('data-view')===name); });
-  document.querySelectorAll('.main .view').forEach(function(v){ v.classList.add('hidden'); });
-  var titles = {dashboard:'Dashboard', users:'Users', chats:'Chat Logs'};
-  document.getElementById('page-title').textContent = titles[name] || 'Dashboard';
-  document.getElementById('view-' + name).classList.remove('hidden');
-  if (name === 'dashboard') loadDashboard();
-  if (name === 'users') loadUsers();
-  if (name === 'chats') loadChats();
-}
-
-// ═══════════════════════════════════════════
-// DASHBOARD
-// ═══════════════════════════════════════════
-function loadDashboard() {
-  api('/api/admin/stats').then(function(d){
-    if (d._status >= 400) { return; }
-    document.getElementById('stat-users').textContent = d.total_users || 0;
-    document.getElementById('stat-active').textContent = (d.users_by_status && d.users_by_status.active) || 0;
-    document.getElementById('stat-convs').textContent = d.total_conversations || 0;
-    document.getElementById('stat-today').textContent = d.today_active_users || 0;
-    var rb = document.getElementById('role-breakdown');
-    if (d.users_by_role) {
-      rb.innerHTML = Object.keys(d.users_by_role).map(function(r){ return '<span class="role-badge ' + r + '">' + r + ': ' + d.users_by_role[r] + '</span> '; }).join('');
-    }
-  });
-}
-
-// ═══════════════════════════════════════════
-// USERS
-// ═══════════════════════════════════════════
-function loadUsers() {
-  var search = encodeURIComponent(document.getElementById('user-search').value.trim());
-  var role = document.getElementById('role-filter').value;
-  var status = document.getElementById('status-filter').value;
-  var url = '/api/admin/users?page=' + _userPage + '&limit=50';
-  if (search) url += '&search=' + search;
-  if (role) url += '&role=' + role;
-  if (status) url += '&status=' + status;
-
-  api(url).then(function(d){
-    var tbody = document.getElementById('users-body');
-    if (d._status >= 400) { tbody.innerHTML = '<tr><td colspan="6" style="color:var(--red);padding:20px">Failed to load users</td></tr>'; return; }
-    var users = d.users || [];
-    if (users.length === 0) { tbody.innerHTML = '<tr><td colspan="6" class="loading">No users found</td></tr>'; return; }
-    tbody.innerHTML = users.map(function(u){
-      var name = u.display_name || '';
-      return '<tr class="clickable" onclick="showUserDetail(\'' + u.id + '\')">'
-        + '<td>' + esc(u.email) + '</td><td>' + esc(name) + '</td>'
-        + '<td><span class="role-badge ' + esc(u.role) + '">' + esc(u.role) + '</span></td>'
-        + '<td><span class="status-dot ' + esc(u.status || 'active') + '"></span>' + esc(u.status || 'active') + '</td>'
-        + '<td style="font-size:12px;color:var(--text-dim)">' + (u.created_at || '').split('T')[0] + '</td>'
-        + '<td><button class="btn-sm btn-primary" onclick="event.stopPropagation();showUserDetail(\'' + u.id + '\')">View</button></td>'
-        + '</tr>';
-    }).join('');
-
-    var pg = document.getElementById('user-pagination');
-    if (d.total > 50) {
-      var totalPages = Math.ceil(d.total / 50);
-      pg.innerHTML = '<button onclick="userPage(-1)"' + (_userPage<=1?' disabled':'') + '>←</button>'
-        + '<span>Page ' + _userPage + ' of ' + totalPages + '</span>'
-        + '<button onclick="userPage(1)"' + (_userPage>=totalPages?' disabled':'') + '>→</button>';
-    } else { pg.innerHTML = ''; }
-  });
-}
-
-function userPage(dir) { _userPage += dir; loadUsers(); }
-
-function showUserDetail(userId) {
-  api('/api/admin/users/' + userId).then(function(d){
-    if (d._status >= 400) { return; }
-    var u = d.user || {};
-    var card = document.getElementById('user-detail-card');
-    card.innerHTML = '<table><tr><th>Field</th><th>Value</th></tr>'
-      + '<tr><td>Email</td><td>' + esc(u.email) + '</td></tr>'
-      + '<tr><td>Display Name</td><td>' + esc(u.display_name || '—') + '</td></tr>'
-      + '<tr><td>Role</td><td><select id="edit-role" onchange="saveUserEdit(\'' + userId + '\')">'
-        + ['user','ops','admin'].map(function(r){ return '<option value="' + r + '"' + (u.role===r?' selected':'') + '>' + r + '</option>'; }).join('')
-        + '</select></td></tr>'
-      + '<tr><td>Status</td><td><select id="edit-status" onchange="saveUserEdit(\'' + userId + '\')">'
-        + ['active','disabled','pending'].map(function(s){ return '<option value="' + s + '"' + (u.status===s?' selected':'') + '>' + s + '</option>'; }).join('')
-        + '</select></td></tr>'
-      + '<tr><td>Created</td><td>' + (u.created_at || '—') + '</td></tr>'
-      + '<tr><td>Updated</td><td>' + (u.updated_at || '—') + '</td></tr>'
-      + '</table>'
-      + '<h3 style="margin:16px 0 8px;font-size:14px">💬 Conversations</h3>'
-      + '<div id="user-convs">Loading...</div>';
-
-    switchView('user-detail');
-    document.getElementById('page-title').textContent = u.email;
-
-    // Load conversations
-    api('/api/admin/users/' + userId + '/chat').then(function(cd){
-      var el = document.getElementById('user-convs');
-      var convs = cd.conversations || [];
-      if (convs.length === 0) { el.innerHTML = '<p style="color:var(--text-dim)">No conversations</p>'; return; }
-      el.innerHTML = convs.map(function(c){
-        return '<div class="clickable" style="padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:4px" onclick="showChatDetail(\'' + c.id + '\')">'
-          + '<div style="font-size:13px">' + esc(c.title || 'Chat') + '</div>'
-          + '<div style="font-size:11px;color:var(--text-dim);margin-top:2px">' + (c.message_count||0) + ' msgs · ' + (c.created_at||'').split('T')[0] + '</div>'
-          + '</div>';
-      }).join('');
+  // ── API helpers ──
+  async function api(url, opts) {
+    const res = await fetch(url, {
+      ...opts,
+      headers: { ...(opts?.headers||{}), 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
     });
-  });
-}
+    return res.json();
+  }
 
-function saveUserEdit(userId) {
-  var role = document.getElementById('edit-role').value;
-  var status = document.getElementById('edit-status').value;
-  api('/api/admin/users/' + userId, {method:'PATCH', body:JSON.stringify({role:role, status:status})}).then(function(d){
-    if (d._status < 400 && d.message) { /* saved */ }
-  });
-}
+  // ── Load users ──
+  async function loadUsers() {
+    const $loading = document.getElementById('users-loading');
+    const $empty = document.getElementById('users-empty');
+    const $wrap = document.getElementById('users-table-wrap');
+    const $tbody = document.getElementById('users-tbody');
+    const $stats = document.getElementById('stats-row');
 
-// ═══════════════════════════════════════════
-// CHATS
-// ═══════════════════════════════════════════
-function loadChats() {
-  var search = document.getElementById('chat-search').value.trim();
-  // Load all conversations (admin API)
-  api('/api/admin/users').then(function(ud){
-    var users = ud.users || [];
-    var allPromises = users.map(function(u){ return api('/api/admin/users/' + u.id + '/chat'); });
-    Promise.all(allPromises).then(function(results){
-      var allConvs = [];
-      results.forEach(function(r, i){
-        var convs = r.conversations || [];
-        convs.forEach(function(c){ c.user_email = (users[i] && users[i].email) || '?'; allConvs.push(c); });
-      });
-      // Sort by updated_at desc
-      allConvs.sort(function(a,b){ return (b.updated_at||'').localeCompare(a.updated_at||''); });
-      // Filter by search
-      if (search) {
-        var s = search.toLowerCase();
-        allConvs = allConvs.filter(function(c){ return (c.user_email||'').toLowerCase().indexOf(s) >= 0 || (c.title||'').toLowerCase().indexOf(s) >= 0; });
+    $loading.classList.remove('hidden');
+    $empty.classList.add('hidden');
+    $wrap.classList.add('hidden');
+
+    try {
+      const data = await api(API + '/api/admin/users');
+      $loading.classList.add('hidden');
+
+      const users = data.users || [];
+      if (users.length === 0) {
+        $empty.classList.remove('hidden');
+        return;
       }
-      var tbody = document.getElementById('chats-body');
-      if (allConvs.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="loading">No conversations found</td></tr>'; return; }
-      tbody.innerHTML = allConvs.slice(0, 100).map(function(c){
-        return '<tr class="clickable" onclick="showChatDetail(\'' + c.id + '\')">'
-          + '<td>' + esc(c.user_email) + '</td>'
-          + '<td>' + esc(c.title || 'Chat') + '</td>'
-          + '<td>' + (c.message_count || 0) + '</td>'
-          + '<td style="font-size:12px;color:var(--text-dim)">' + (c.created_at||'').split('T')[0] + '</td>'
-          + '<td><button class="btn-sm btn-ghost" onclick="event.stopPropagation();showChatDetail(\'' + c.id + '\')">View</button></td>'
-          + '</tr>';
+
+      // Stats
+      const total = users.length;
+      const admins = users.filter(u => u.role === 'admin').length;
+      const ops = users.filter(u => u.role === 'ops').length;
+      const active = users.filter(u => u.status === 'active').length;
+      $stats.innerHTML = `
+        <div class="stat-card"><div class="stat-value">${total}</div><div class="stat-label">Total Users</div></div>
+        <div class="stat-card"><div class="stat-value">${active}</div><div class="stat-label">Active</div></div>
+        <div class="stat-card"><div class="stat-value">${admins}</div><div class="stat-label">Admins</div></div>
+        <div class="stat-card"><div class="stat-value">${ops}</div><div class="stat-label">Operators</div></div>
+      `;
+
+      // Table rows
+      $wrap.classList.remove('hidden');
+      $tbody.innerHTML = users.map(u => {
+        const isSelf = u.id === user.id;
+        const created = u.created_at ? new Date(u.created_at + 'Z').toLocaleDateString() : '—';
+        return `<tr>
+          <td>${esc(u.email)}</td>
+          <td>${esc(u.display_name || '—')}</td>
+          <td><span class="role-badge role-${u.role || 'user'}">${u.role || 'user'}</span></td>
+          <td><span class="status-${u.status}">${u.status === 'active' ? '●' : '●'} ${u.status}</span></td>
+          <td style="color:var(--text-dim);font-size:12px">${created}</td>
+          <td>${isSelf ? '<span style="color:var(--text-dim);font-size:11px">you</span>' : `<button class="btn-del" onclick="deleteUser('${u.id}')">Delete</button>`}</td>
+        </tr>`;
       }).join('');
-    });
-  });
-}
+    } catch(e) {
+      $loading.classList.add('hidden');
+      $empty.classList.remove('hidden');
+      $empty.innerHTML = '❌ Failed to load users. <a href="">Reload</a>';
+      toast('Failed to load users', 'error');
+    }
+  }
 
-function showChatDetail(convId) {
-  api('/api/admin/chat/' + convId).then(function(d){
-    if (d._status >= 400) { return; }
-    var conv = d.conversation || {};
-    var msgs = d.messages || [];
-    var card = document.getElementById('chat-detail-card');
-    card.innerHTML = '<div style="margin-bottom:12px">'
-      + '<strong>' + esc(conv.title || 'Chat') + '</strong>'
-      + '<span style="color:var(--text-dim);margin-left:12px;font-size:12px">' + esc(conv.user_email || '') + '</span>'
-      + '</div>'
-      + '<div class="msg-viewer">'
-      + msgs.map(function(m){
-        var roleClass = m.role === 'user' ? 'user' : 'assistant';
-        return '<div class="msg-item">'
-          + '<div class="msg-role ' + roleClass + '">' + esc(m.role) + '</div>'
-          + '<div class="msg-content">' + esc(m.content) + '</div>'
-          + '<div class="msg-time">' + (m.created_at || '') + '</div>'
-          + '</div>';
-      }).join('')
-      + '</div>'
-      + '<p style="margin-top:8px;font-size:12px;color:var(--text-dim)">' + msgs.length + ' messages</p>';
+  // ── Delete user ──
+  window.deleteUser = async function(userId) {
+    if (!confirm('Delete this user? This cannot be undone.')) return;
+    try {
+      const data = await api(API + '/api/admin/users/' + userId, { method: 'DELETE' });
+      if (data.success) {
+        toast('User deleted', 'success');
+        loadUsers();
+      } else {
+        toast(data.error || 'Failed to delete', 'error');
+      }
+    } catch(e) {
+      toast('Failed to delete user', 'error');
+    }
+  };
 
-    switchView('chat-detail');
-    document.getElementById('page-title').textContent = conv.title || 'Chat';
-  });
-}
+  function esc(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
 
-// ═══════════════════════════════════════════
-// SEARCH DEBOUNCE
-// ═══════════════════════════════════════════
-function debounceSearch() {
-  clearTimeout(_searchTimer);
-  _searchTimer = setTimeout(function(){ _userPage = 1; loadUsers(); }, 300);
-}
-function debounceChatSearch() {
-  clearTimeout(_searchTimer);
-  _searchTimer = setTimeout(function(){ loadChats(); }, 300);
-}
-
-// ═══════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════
-checkAuth();
+  // ── Init ──
+  loadUsers();
+})();
 </script>
 </body>
 </html>
