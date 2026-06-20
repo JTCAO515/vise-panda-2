@@ -100,9 +100,15 @@ test('tools 视图包含可展开的 detail overlay 结构', () => {
   assert.match(css, /\.tool-detail-panel\b/);
 });
 
-test('visible version is updated to v5.0.8', () => {
-  assert.match(html, /v5\.0\.8/);
-  assert.match(appJs, /5\.0\.8/);
+test('visible version is updated to v5.0.9', () => {
+  assert.match(html, /v5\.0\.9/);
+  assert.match(appJs, /5\.0\.9/);
+});
+
+test('sign in and primary nav remain in the main shell', () => {
+  assert.match(html, /id="auth-btn"/);
+  assert.match(html, /class="nav-btn active"/);
+  assert.match(html, /id="bottom-nav"/);
 });
 
 test('admin 页面包含 atlas 风格 hero 概览头', () => {
