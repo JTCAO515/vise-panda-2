@@ -1,7 +1,7 @@
-# VisePanda (VP-Hermes-Web) v5.0.8 — Handoff Document
+# VisePanda (VP-Hermes-Web) v5.0.9 — Handoff Document
 
-> **Last Updated:** 2026-06-19
-> **Status:** ✅ Active — foundation contracts are in place, the Editorial Atlas interface has been refined, mobile UX has been tightened, and the English-native website pass is now extended through the toolkit layer in v5.0.8
+> **Last Updated:** 2026-06-20
+> **Status:** ✅ Active — foundation contracts are in place, the Editorial Atlas interface has been refined, the Production Stability Pass has landed, and the current release is aligned at v5.0.9
 > **Repo:** `https://github.com/JTCAO515/VP-Hermes-Web.git` (HTTPS, PAT auth)
 > **Live URL:** https://www.go2china.space (Vercel auto-deploy on push)
 > **Vercel Project:** `vise-panda-2` (custom domain `www.go2china.space`)
@@ -70,7 +70,7 @@ Target user: Non-Chinese tourists planning trips to China (English interface, Ch
 
 ## 3. Current State
 
-### ✅ Completed (v5.0.8)
+### ✅ Completed (v5.0.9)
 
 | Phase | Feature | Version |
 |-------|---------|:-------:|
@@ -97,6 +97,7 @@ Target user: Non-Chinese tourists planning trips to China (English interface, Ch
 | 🤳 Mobile Detail Pass | Chat quick scroll / Trips thumb-first actions / Tools mobile gallery / Cities card caption | v5.0.6 |
 | 🇬🇧 English-native Website | UI copy + city / food / hotel runtime data localized into natural English with `English（中文）` proper nouns | v5.0.7 |
 | 🧰 Toolkit Detail Sheets | Expandable English-first toolkit sheets + English-only compatibility i18n layer | v5.0.8 |
+| 🛡️ Production Stability Pass | Bootstrap hardening / image fallback / loading-state shell / mobile nav recovery | v5.0.9 |
 | 🚀 Deploy | Vercel WSGI auto-deploy from GitHub | v3.0.1 |
 
 ### 🟡 Known Quirks / Gotchas

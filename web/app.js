@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-   VisePanda v5.0.8 — Frontend Application
+   VisePanda v5.0.9 — Frontend Application
    ═══════════════════════════════════════════════════════════ */
 
 const VP = (function(){
@@ -132,14 +132,101 @@ const VP = (function(){
     target.classList.add('active');
 
     if (view === 'cities') loadCities();
-    if (view === 'trips') renderTrips();
+    if (view === 'trips') loadTrips();
     if (view === 'tools') loadTools();
     if (view === 'home') loadHomeCities();
     if (view === 'map') initMap();
     // Close chat overlay if open
     closeChatOverlay();
+    attachImageFallbacks(target);
 
     window.location.hash = view;
+  }
+
+  function safeInitStep(name, fn) {
+    try {
+      const result = fn();
+      if (result && typeof result.then === 'function') {
+        return result.catch((error) => {
+          console.error('[VP:init]', name, error);
+          showGlobalError(`Failed to initialize ${name}.`);
+        });
+      }
+      return result;
+    } catch (error) {
+      console.error('[VP:init]', name, error);
+      showGlobalError(`Failed to initialize ${name}.`);
+      return null;
+    }
+  }
+
+  function showGlobalLoading(message) {
+    const box = document.getElementById('global-loading-state');
+    if (!box) return;
+    const copy = box.querySelector('.global-loading-copy');
+    if (copy && message) copy.textContent = message;
+    box.classList.remove('hidden');
+  }
+
+  function hideGlobalLoading() {
+    const box = document.getElementById('global-loading-state');
+    if (box) box.classList.add('hidden');
+  }
+
+  function showGlobalError(message) {
+    hideGlobalLoading();
+    const box = document.getElementById('global-error-state');
+    if (!box) return;
+    const copy = box.querySelector('.global-error-copy');
+    if (copy && message) copy.textContent = message;
+    box.classList.remove('hidden');
+  }
+
+  function hideGlobalError() {
+    const box = document.getElementById('global-error-state');
+    if (!box) return;
+    box.classList.add('hidden');
+    const copy = box.querySelector('.global-error-copy');
+    if (copy) copy.textContent = 'Something stalled while loading this screen.';
+  }
+
+  function setViewState(view, state, message = '') {
+    const section = document.getElementById(`view-${view}`);
+    const loading = document.getElementById(`${view}-loading`);
+    const error = document.getElementById(`${view}-error`);
+
+    if (loading) loading.classList.toggle('hidden', state !== 'loading');
+    if (error) {
+      error.classList.toggle('hidden', state !== 'error');
+      if (state === 'error' && message) {
+        const text = error.querySelector('span');
+        if (text) text.textContent = message;
+      }
+    }
+    if (section) {
+      section.setAttribute('aria-busy', state === 'loading' ? 'true' : 'false');
+    }
+  }
+
+  function retryCurrentView() {
+    hideGlobalError();
+    navigate(state.currentView || 'home');
+  }
+
+  function attachImageFallbacks(root = document) {
+    root.querySelectorAll('img[data-img-fallback]').forEach((img) => {
+      if (img.dataset.fallbackBound === 'true') return;
+      img.dataset.fallbackBound = 'true';
+      img.addEventListener('error', () => {
+        const fallback = img.dataset.imgFallback;
+        if (fallback && img.getAttribute('src') !== fallback) {
+          img.src = fallback;
+          img.classList.add('img-fallback');
+          return;
+        }
+        img.closest('.image-shell')?.classList.add('image-shell-failed');
+      });
+    });
   }
 
   // ── Focus chat on a city (uses overlay on mobile) ──
@@ -236,6 +323,125 @@ const VP = (function(){
     state.theme = next;
     const btn = document.querySelector('.theme-toggle');
     if (btn) btn.textContent = next === 'dark' ? '🌙' : '☀️';
+  }
+
+  function initTheme() {
+    const themeBtn = document.querySelector('.theme-toggle');
+    if (themeBtn) themeBtn.textContent = state.theme === 'dark' ? '🌙' : '☀️';
+  }
+
+  function hydrateRuntimeConfig() {
+    return fetch('/api/config').then(r => r.json()).then(config => {
+      const ver = config.version || '5.0.9';
+      const badge = document.getElementById('version-badge');
+      const footerVer = document.getElementById('footer-version');
+      const gsi = document.getElementById('g_id_onload');
+      if (badge) badge.textContent = 'v' + ver;
+      if (footerVer) footerVer.textContent = 'VisePanda v' + ver;
+      if (gsi) gsi.dataset.client_id = config.google_client_id || '';
+    }).catch(() => {});
+  }
+
+  function initScrollToTop() {
+    const stBtn = document.getElementById('scroll-top-btn');
+    if (!stBtn || stBtn.dataset.bound === 'true') return;
+    stBtn.dataset.bound = 'true';
+    window.addEventListener('scroll', function() {
+      stBtn.classList.toggle('visible', window.scrollY > 400);
+    }, { passive: true });
+  }
+
+  function initHashNavigation() {
+    if (document.body.dataset.hashNavBound === 'true') return;
+    document.body.dataset.hashNavBound = 'true';
+    window.addEventListener('hashchange', () => {
+      const hash = (window.location.hash || '#home').replace('#', '');
+      if (supportedViews.has(hash) && hash !== state.currentView) {
+        navigate(hash);
+      }
+    });
+  }
+
+  function bindAuthTriggers() {
+    const authBtn = document.getElementById('auth-btn');
+    if (!authBtn || authBtn.dataset.bound === 'true') return;
+    authBtn.dataset.bound = 'true';
+    authBtn.removeAttribute('onclick');
+    authBtn.disabled = false;
+    if (!auth.isLoggedIn()) authBtn.style.display = 'block';
+    authBtn.addEventListener('click', (event) => {
+      event.preventDefault();
+      hideGlobalError();
+      auth.showModal();
+    });
+  }
+
+  function bindPrimaryNav() {
+    document.querySelectorAll('.nav-btn, .bn-btn').forEach((btn) => {
+      if (btn.dataset.bound === 'true') return;
+      btn.dataset.bound = 'true';
+      btn.removeAttribute('onclick');
+      btn.disabled = false;
+      btn.addEventListener('click', (event) => {
+        event.preventDefault();
+        hideGlobalError();
+        if (btn.dataset.view && supportedViews.has(btn.dataset.view)) {
+          navigate(btn.dataset.view);
+        }
+      });
+    });
+  }
+
+  function bindChatInputs() {
+    const chatInput = document.getElementById('chat-input');
+    if (chatInput && chatInput.dataset.bound !== 'true') {
+      chatInput.dataset.bound = 'true';
+      chatInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+      chatInput.addEventListener('input', () => {
+        toggleSendButton(chatInput.value.trim().length > 0);
+      });
+    }
+
+    const overlayInput = document.getElementById('chat-input-overlay');
+    if (overlayInput && overlayInput.dataset.bound !== 'true') {
+      overlayInput.dataset.bound = 'true';
+      overlayInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendOverlayMessage();
+        }
+      });
+      overlayInput.addEventListener('input', () => {
+        toggleSendOverlayBtn(overlayInput.value.trim().length > 0);
+      });
+    }
+
+    const overlaySend = document.getElementById('chat-send-overlay');
+    if (overlaySend && overlaySend.dataset.bound !== 'true') {
+      overlaySend.dataset.bound = 'true';
+      overlaySend.addEventListener('click', sendOverlayMessage);
+    }
+
+    const overlayStop = document.getElementById('chat-stop-overlay');
+    if (overlayStop && overlayStop.dataset.bound !== 'true') {
+      overlayStop.dataset.bound = 'true';
+      overlayStop.addEventListener('click', stopStreaming);
+    }
+  }
+
+  function initStartupState() {
+    const hasHistory = loadMessages();
+    if (hasHistory) restoreChatMessages();
+    updateSuggestions();
+    ensureCityCatalog().catch(() => {});
+    setupCitiesFilterRail();
+    applyCitiesFilter(state.cityFilter);
+    renderSuggestions();
   }
 
   // ── API helpers ──
@@ -341,9 +547,9 @@ const VP = (function(){
   }
 
   async function ensureCityCatalog() {
-    if (state.cityCatalog) return state.cityCatalog;
+    if (state.cityCatalog && Object.keys(state.cityCatalog).length) return state.cityCatalog;
     const data = await apiGet('/api/cities');
-    state.cityCatalog = data && data.cities ? data.cities : {};
+    state.cityCatalog = data && data.cities ? data.cities : null;
     return state.cityCatalog;
   }
 
@@ -398,7 +604,11 @@ const VP = (function(){
 
     let imgHtml = '';
     if (hasImg) {
-      imgHtml = `<img class="city-bg-img" src="${info.image}" alt="${name}" loading="lazy" onerror="this.parentElement.classList.remove('has-img');this.remove()">`;
+      imgHtml = `
+        <div class="image-shell" aria-hidden="true">
+          <img class="city-bg-img" src="${info.image}" alt="${name}" loading="lazy" decoding="async" data-img-fallback="/static/img/logo-panda.jpg">
+        </div>
+      `;
     }
     const caption = info.vibe
       ? `Best for ${String(info.vibe).toLowerCase()} days with a quick dossier preview.`
@@ -431,19 +641,30 @@ const VP = (function(){
     Object.entries(cities).slice(0, 8).forEach(([name, info]) => {
       grid.appendChild(createCityCard(name, info));
     });
+    attachImageFallbacks(grid);
   }
 
   // ── Load Cities (all) ──
   async function loadCities() {
     const grid = document.getElementById('cities-grid');
     if (!grid) return;
-    const cities = await ensureCityCatalog();
-    if (!cities) return;
-    grid.innerHTML = '';
-    Object.entries(cities).forEach(([name, info]) => {
-      grid.appendChild(createCityCard(name, info));
-    });
-    applyCitiesFilter(state.cityFilter);
+    setViewState('cities', 'loading');
+    try {
+      const cities = await ensureCityCatalog();
+      if (!cities || !Object.keys(cities).length) {
+        throw new Error('Cities unavailable');
+      }
+      grid.innerHTML = '';
+      Object.entries(cities).forEach(([name, info]) => {
+        grid.appendChild(createCityCard(name, info));
+      });
+      attachImageFallbacks(grid);
+      applyCitiesFilter(state.cityFilter);
+      setViewState('cities', 'ready');
+    } catch (error) {
+      console.error('[VP:cities]', error);
+      setViewState('cities', 'error', 'Could not load city data.');
+    }
   }
 
   function applyCitiesFilter(filter) {
@@ -683,34 +904,43 @@ const VP = (function(){
   async function loadTools() {
     const grid = document.getElementById('tools-grid');
     if (!grid) return;
-    const data = await apiGet('/api/tools');
-    if (!data || !data.tools) return;
+    setViewState('tools', 'loading');
+    try {
+      const data = await apiGet('/api/tools');
+      if (!data || !data.tools) {
+        throw new Error('Tools unavailable');
+      }
 
-    grid.innerHTML = '';
-    const emojis = {packing:'🧳', pricing:'💰', visa:'🛂', phrases:'💬', emergency:'🆘'};
-    const kickers = {packing:'Ready kit', pricing:'Budget lens', visa:'Border prep', phrases:'Quick talk', emergency:'Need now'};
-    Object.entries(data.tools).forEach(([name, desc]) => {
-      const card = document.createElement('div');
-      card.className = 'tool-card';
-      card.setAttribute('role', 'button');
-      card.tabIndex = 0;
-      card.innerHTML = `
-        <div class="tool-card-kicker">${kickers[name] || 'Quick utility'}</div>
-        <div class="tool-card-icon">${emojis[name] || '🧰'}</div>
-        <div class="tool-card-title">${humanizeCityKey(name)}</div>
-        <div class="tool-card-desc">${desc}</div>
-        <div class="tool-card-link">Open toolkit →</div>
-      `;
-      card.style.cursor = 'pointer';
-      card.addEventListener('click', () => openToolDetail(name));
-      card.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          openToolDetail(name);
-        }
+      grid.innerHTML = '';
+      const emojis = {packing:'🧳', pricing:'💰', visa:'🛂', phrases:'💬', emergency:'🆘'};
+      const kickers = {packing:'Ready kit', pricing:'Budget lens', visa:'Border prep', phrases:'Quick talk', emergency:'Need now'};
+      Object.entries(data.tools).forEach(([name, desc]) => {
+        const card = document.createElement('div');
+        card.className = 'tool-card';
+        card.setAttribute('role', 'button');
+        card.tabIndex = 0;
+        card.innerHTML = `
+          <div class="tool-card-kicker">${kickers[name] || 'Quick utility'}</div>
+          <div class="tool-card-icon">${emojis[name] || '🧰'}</div>
+          <div class="tool-card-title">${humanizeCityKey(name)}</div>
+          <div class="tool-card-desc">${desc}</div>
+          <div class="tool-card-link">Open toolkit →</div>
+        `;
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', () => openToolDetail(name));
+        card.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            openToolDetail(name);
+          }
+        });
+        grid.appendChild(card);
       });
-      grid.appendChild(card);
-    });
+      setViewState('tools', 'ready');
+    } catch (error) {
+      console.error('[VP:tools]', error);
+      setViewState('tools', 'error', 'Could not load toolkit data.');
+    }
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -1453,7 +1683,7 @@ const VP = (function(){
     const trips = getLocalTrips().filter(t => t.id !== id);
     saveLocalTrips(trips);
     showToast('🗑️ Trip deleted');
-    renderTrips();
+    loadTrips();
   }
 
   function saveCurrentTrip() {
@@ -1465,8 +1695,19 @@ const VP = (function(){
     const latestUser = [...state.messages].reverse().find(msg => msg.role === 'user' && msg.content);
     const city = latestUser?.content?.match(/(?:to|in)\s+([A-Za-z][A-Za-z\s-]{1,40})/i)?.[1]?.trim() || '';
     const trip = saveTrip(city, latestAssistant.content);
-    if (state.currentView === 'trips') renderTrips();
+    if (state.currentView === 'trips') loadTrips();
     return trip;
+  }
+
+  async function loadTrips() {
+    setViewState('trips', 'loading');
+    try {
+      await renderTrips();
+      setViewState('trips', 'ready');
+    } catch (error) {
+      console.error('[VP:trips]', error);
+      setViewState('trips', 'error', 'Could not load saved trips.');
+    }
   }
 
   async function renderTrips() {
@@ -2074,83 +2315,24 @@ const VP = (function(){
 
   // ── Init ──
   function init() {
-    // Theme toggle icon
-    const themeBtn = document.querySelector('.theme-toggle');
-    if (themeBtn) themeBtn.textContent = state.theme === 'dark' ? '🌙' : '☀️';
+    hideGlobalError();
+    showGlobalLoading('Loading VisePanda…');
 
-    // Fetch client config to hydrate version and Google Sign-In settings
-    fetch('/api/config').then(r => r.json()).then(config => {
-      const ver = config.version || '5.0.8';
-      const badge = document.getElementById('version-badge');
-      const footerVer = document.getElementById('footer-version');
-      const gsi = document.getElementById('g_id_onload');
-      if (badge) badge.textContent = 'v' + ver;
-      if (footerVer) footerVer.textContent = 'VisePanda v' + ver;
-      if (gsi) gsi.dataset.client_id = config.google_client_id || '';
-    }).catch(() => {});
+    safeInitStep('theme', initTheme);
+    safeInitStep('runtime config', hydrateRuntimeConfig);
+    safeInitStep('scroll helpers', initScrollToTop);
+    safeInitStep('auth triggers', bindAuthTriggers);
+    safeInitStep('primary nav', bindPrimaryNav);
+    safeInitStep('chat inputs', bindChatInputs);
+    safeInitStep('startup state', initStartupState);
+    safeInitStep('hash navigation', initHashNavigation);
+    safeInitStep('initial view', () => {
+      const hash = (window.location.hash || '#home').replace('#', '');
+      navigate(supportedViews.has(hash) ? hash : 'home');
+    });
+    attachImageFallbacks(document);
 
-    // Scroll-to-top button visibility
-    const stBtn = document.getElementById('scroll-top-btn');
-    if (stBtn) {
-      window.addEventListener('scroll', function() {
-        stBtn.classList.toggle('visible', window.scrollY > 400);
-      }, { passive: true });
-    }
-
-    // Hash-based nav
-    const hash = window.location.hash.slice(1);
-    if (hash && supportedViews.has(hash)) {
-      navigate(hash);
-    }
-
-    // Restore chat history
-    const hasHistory = loadMessages();
-    if (hasHistory) restoreChatMessages();
-
-    // Update suggestions based on conversation context
-    updateSuggestions();
-    ensureCityCatalog().catch(() => {});
-    setupCitiesFilterRail();
-    applyCitiesFilter(state.cityFilter);
-
-    // Chat input events
-    const chatInput = document.getElementById('chat-input');
-    if (chatInput) {
-      chatInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-          e.preventDefault();
-          sendMessage();
-        }
-      });
-      chatInput.addEventListener('input', () => {
-        toggleSendButton(chatInput.value.trim().length > 0);
-      });
-    }
-
-    // Chat overlay input events (mobile)
-    const overlayInput = document.getElementById('chat-input-overlay');
-    const overlaySend = document.getElementById('chat-send-overlay');
-    if (overlayInput) {
-      overlayInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-          e.preventDefault();
-          sendOverlayMessage();
-        }
-      });
-      overlayInput.addEventListener('input', () => {
-        toggleSendOverlayBtn(overlayInput.value.trim().length > 0);
-      });
-    }
-    if (overlaySend) {
-      overlaySend.addEventListener('click', sendOverlayMessage);
-    }
-    const overlayStop = document.getElementById('chat-stop-overlay');
-    if (overlayStop) {
-      overlayStop.addEventListener('click', stopStreaming);
-    }
-
-    // Render chat suggestions
-    renderSuggestions();
+    hideGlobalLoading();
   }
 
   // ════════════════════════════════════════════════════════════
@@ -2737,6 +2919,7 @@ const VP = (function(){
   // ── Expose public API ──
   return {
     navigate,
+    retryCurrentView,
     toggleTheme,
     focusChat,
     sendMessage,

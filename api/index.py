@@ -1,4 +1,4 @@
-"""VisePanda v5.0.8 — China Travel AI
+"""VisePanda v5.0.9 — China Travel AI
 WSGI entry point. Zero pip dependencies (stdlib only).
 Routes are delegated to submodules: cities, chat, tools, config, auth.
 """
@@ -12,7 +12,7 @@ from api.common import (
     _json, _json_error, _serve_static, STATIC_DIR, WEB_DIR,
 )
 
-APP_VERSION = "5.0.8"
+APP_VERSION = "5.0.9"
 
 
 # ════════════════════════════════════════════════════════════
@@ -28,7 +28,7 @@ def app(environ, start_response):
         return _json(start_response, {
             "status": "alive",
             "version": APP_VERSION,
-            "build": "2026-06-19",
+            "build": "2026-06-20",
         })
 
     # ── Chat SSE ──

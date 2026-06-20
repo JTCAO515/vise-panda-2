@@ -42,7 +42,7 @@
       <button class="nav-btn" data-view="tools" onclick="VP.navigate('tools')">🧰 Tools</button>
     </nav>
     <div class="header-right">
-      <span id="version-badge" class="version-badge">v5.0.8</span>
+      <span id="version-badge" class="version-badge">v5.0.9</span>
       <div id="auth-area" class="auth-area">
         <button id="auth-btn" class="auth-btn" onclick="VP.auth.showModal()" style="display:none">Sign In</button>
         <div id="user-menu" class="user-menu" style="display:none">
@@ -69,11 +69,26 @@
 
   <!-- ═══ VIEWS ═══ -->
   <main id="main">
+    <div id="global-loading-state" class="global-loading-state hidden" aria-live="polite">
+      <div class="global-loading-copy">Loading VisePanda…</div>
+    </div>
+    <div id="global-error-state" class="global-error-state hidden" role="alert">
+      <div class="global-error-copy">Something stalled while loading this screen.</div>
+    </div>
 
     <!-- ─── HOME ─── -->
     <section id="view-home" class="view active">
       <div class="hero">
-        <div class="hero-bg"></div>
+        <div class="hero-bg image-shell" aria-hidden="true">
+          <img
+            class="hero-bg-image"
+            src="/static/img/city-beijing.jpg"
+            alt=""
+            loading="eager"
+            decoding="async"
+            data-img-fallback="/static/img/logo-panda.jpg"
+          >
+        </div>
         <div class="hero-deco hero-deco-1">🎋</div>
         <div class="hero-deco hero-deco-2">🏮</div>
         <div class="hero-deco hero-deco-3">☁️</div>
@@ -190,6 +205,13 @@
 
     <!-- ─── TRIPS ─── -->
     <section id="view-trips" class="view">
+      <div class="view-state-shell">
+        <div id="trips-loading" class="view-loading hidden">Loading saved trips…</div>
+        <div id="trips-error" class="view-error hidden" role="alert">
+          <span>Could not load saved trips.</span>
+          <button type="button" class="view-state-retry-btn" onclick="VP.retryCurrentView()">Retry</button>
+        </div>
+      </div>
       <div class="section trips-atlas trips-atlas-mobile">
         <div class="trips-atlas-head">
           <div>
@@ -253,6 +275,13 @@
 
     <!-- ─── CITIES ─── -->
     <section id="view-cities" class="view">
+      <div class="view-state-shell">
+        <div id="cities-loading" class="view-loading hidden">Loading city dossiers…</div>
+        <div id="cities-error" class="view-error hidden" role="alert">
+          <span>Could not load city data.</span>
+          <button type="button" class="view-state-retry-btn" onclick="VP.retryCurrentView()">Retry</button>
+        </div>
+      </div>
       <div class="section cities-atlas">
         <div class="cities-editorial-header">
           <div>
@@ -287,6 +316,13 @@
 
     <!-- ─── TOOLS ─── -->
     <section id="view-tools" class="view">
+      <div class="view-state-shell">
+        <div id="tools-loading" class="view-loading hidden">Loading toolkit data…</div>
+        <div id="tools-error" class="view-error hidden" role="alert">
+          <span>Could not load toolkit data.</span>
+          <button type="button" class="view-state-retry-btn" onclick="VP.retryCurrentView()">Retry</button>
+        </div>
+      </div>
       <div class="section tools-section tools-section-mobile">
         <h2 class="section-title">🧰 Travel Toolkit</h2>
         <p class="section-sub">Open practical travel kits for packing, budgeting, visas, useful phrases, and emergencies.</p>
@@ -313,7 +349,7 @@
   </div>
 
   <!-- ═══ MOBILE BOTTOM NAV ═══ -->
-  <nav id="bottom-nav" class="bottom-nav">
+  <nav id="bottom-nav" class="bottom-nav" data-mobile-nav="primary" aria-label="Primary navigation">
     <button class="bn-btn active" data-view="home" onclick="VP.navigate('home')"><span class="bn-icon">🏠</span><span class="bn-label">Home</span></button>
     <button class="bn-btn" data-view="chat" onclick="VP.navigate('chat')"><span class="bn-icon">💬</span><span class="bn-label">Chat</span></button>
     <button class="bn-btn" data-view="map" onclick="VP.navigate('map')"><span class="bn-icon">🗺️</span><span class="bn-label">Map</span></button>
@@ -493,7 +529,7 @@
 
   <!-- ═══ FOOTER ═══ -->
   <footer id="footer">
-    <p><span id="footer-version">VisePanda v5.0.8</span> · AI China Travel Planner · 🐼 · <span class="footer-clear" onclick="VP.clearChatHistory()" style="cursor:pointer;text-decoration:underline;opacity:.5">Clear chat</span></p>
+    <p><span id="footer-version">VisePanda v5.0.9</span> · AI China Travel Planner · 🐼 · <span class="footer-clear" onclick="VP.clearChatHistory()" style="cursor:pointer;text-decoration:underline;opacity:.5">Clear chat</span></p>
   </footer>
 </div>
 

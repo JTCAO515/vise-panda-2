@@ -1,5 +1,20 @@
 # Changelog
 
+## v5.0.9 — 2026-06-20
+
+### Fixed
+- Repaired the production sign-in trigger and hardened the frontend bootstrap path
+- Added resilient image fallback handling for production-facing visuals
+- Added loading/error shells so key views no longer feel unresponsive
+- Restored mobile tab/navigation visibility on portrait layouts
+
+### Docs
+- Updated `README.md` and `HANDOFF.md` to record the Production Stability Pass release state
+- Synced `api/index.py`, `web/index.html`, `web/app.js`, and `web/app.css` to `v5.0.9`
+
+### Regression
+- Ran `python3 -m unittest discover -s tests -v` — 14 backend tests passed
+- Ran `node --test web/tests/*.test.js` — 28 frontend structure/stability tests passed
 ## v5.0.8 — 2026-06-19
 
 ### Added
