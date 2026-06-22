@@ -5,11 +5,12 @@
 > - **v2** — Trae Solo（单 Agent 模式）
 > - **v3** — Hermes Agent + DeepSeek V4 Flash
 > - **v4** — Trae Work + 字节混合编码模型（Work 多 Agent 模式）
-> - **v5+** — Hermes Agent + DeepSeek V4 Pro/Flash
+> - **v5.0** — Codex + OpenAI 官方模型
+> - **v5.1（规划中）** — GLM 5.2
 
 ## v5.0.9 — 2026-06-20
 
-> **Built with:** Hermes Agent + DeepSeek V4 Pro/Flash
+> **Built with:** Codex + OpenAI 官方模型
 
 ### Fixed
 - Repaired the production sign-in trigger and hardened the frontend bootstrap path
@@ -27,7 +28,7 @@
 
 ## v5.0.8 — 2026-06-19
 
-> **Built with:** Hermes Agent + DeepSeek V4 Pro/Flash
+> **Built with:** Codex + OpenAI 官方模型
 
 ### Added
 - Expandable English-first toolkit detail sheets for packing, pricing, visa, phrases, and emergency guidance
@@ -46,7 +47,7 @@
 
 ## v5.0.7 — 2026-06-19
 
-> **Built with:** Hermes Agent + DeepSeek V4 Pro/Flash
+> **Built with:** Codex + OpenAI 官方模型
 
 ### Added
 - 英文原生网站内容收口：城市、餐饮、住宿等运行时主数据改为自然英文表达
@@ -65,7 +66,7 @@
 
 ## v5.0.6 — 2026-06-19
 
-> **Built with:** Hermes Agent + DeepSeek V4 Pro/Flash
+> **Built with:** Codex + OpenAI 官方模型
 
 ### Added
 - Chat 新增 `chat-quick-scroll` 与 `chat-quick-scroll-btn`，支持更快回到最新消息
@@ -84,7 +85,7 @@
 
 ## v5.0.5 — 2026-06-19
 
-> **Built with:** Hermes Agent + DeepSeek V4 Pro/Flash
+> **Built with:** Codex + OpenAI 官方模型
 
 ### Added
 - 新增移动端竖屏结构钩子：`hero-content-portrait`、`hero-note-card-compact`、`planner-entry-card-compact`
@@ -105,7 +106,7 @@
 
 ## v5.0.4 — 2026-06-19
 
-> **Built with:** Hermes Agent + DeepSeek V4 Pro/Flash
+> **Built with:** Codex + OpenAI 官方模型
 
 ### Added
 - 首页新增 `hero-metrics` 与 `editorial-lead` 结构，强化 Editorial Atlas 的双栏叙事与指标信息层
@@ -123,7 +124,7 @@
 
 ## v5.0.3 — 2026-06-19
 
-> **Built with:** Hermes Agent + DeepSeek V4 Pro/Flash
+> **Built with:** Codex + OpenAI 官方模型
 
 ### Changed
 - 同步 `README.md`、`HANDOFF.md`、`CHANGELOG.md`，将当前实现状态更新为 foundation 契约测试基座 + `Editorial Atlas` 首页/主页面结构推进到 `v5.0.3`
@@ -140,7 +141,7 @@
 
 ## v5.0.2 — 2026-06-19
 
-> **Built with:** Hermes Agent + DeepSeek V4 Pro/Flash
+> **Built with:** Codex + OpenAI 官方模型
 
 ### Added
 - 新增 `tests/test_config_contract.py`，覆盖 `/api/health` 与 `/api/config` 的版本一致性及 `google_client_id` 行为
@@ -157,7 +158,7 @@
 
 ## v5.0.1 — 2026-06-19
 
-> **Built with:** Hermes Agent + DeepSeek V4 Pro/Flash
+> **Built with:** Codex + OpenAI 官方模型
 
 ### Added
 - 后端与前端测试基座：新增 `tests/` 与 `web/tests/`，覆盖 auth/admin/trips/chat 关键契约与结构检查
