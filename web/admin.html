@@ -1,227 +1,82 @@
-<!DOCTYPE html>
-<html lang="en" data-theme="dark">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VisePanda · Admin Panel</title>
-<link rel="stylesheet" href="/app.css">
-<style>
-  :root { --header-h: 56px; }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg-primary); color: var(--text-primary); font-family: 'Inter','Noto Sans SC',system-ui,sans-serif; min-height: 100vh; }
-  a { color: var(--accent-gold); text-decoration: none; }
-  a:hover { text-decoration: underline; }
-
-  .admin-header { height: var(--header-h); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; background: rgba(14,11,20,.7); border-bottom: 1px solid var(--border-default); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
-  .admin-brand { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 600; }
-  .admin-brand span { font-size: 20px; }
-  .admin-back { font-size: 13px; color: var(--text-dim); padding: 6px 12px; border: 1px solid var(--border-default); border-radius: 6px; }
-
-  .admin-container { max-width: 960px; margin: 0 auto; padding: 24px 16px; }
-
-  .admin-stats { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
-  .stat-card { flex: 1; min-width: 140px; background: var(--bg-surface); border: 1px solid var(--border-default); border-radius: 10px; padding: 16px; }
-  .stat-card .stat-value { font-size: 28px; font-weight: 700; color: var(--accent-gold); }
-  .stat-card .stat-label { font-size: 12px; color: var(--text-dim); margin-top: 4px; text-transform: uppercase; letter-spacing: .5px; }
-
-  .admin-section { background: var(--bg-surface); border: 1px solid var(--border-default); border-radius: 10px; overflow: hidden; }
-  .admin-section h2 { padding: 16px 20px; font-size: 15px; font-weight: 600; border-bottom: 1px solid var(--border-default); display: flex; align-items: center; gap: 8px; }
-
-  .user-table { width: 100%; border-collapse: collapse; }
-  .user-table th { text-align: left; padding: 10px 16px; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--text-dim); background: var(--bg-primary); border-bottom: 1px solid var(--border-default); white-space: nowrap; }
-  .user-table td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--border-default); vertical-align: middle; }
-  .user-table tr:last-child td { border-bottom: none; }
-  .user-table tr:hover { background: rgba(255,255,255,.02); }
-
-  .role-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
-  .role-admin { background: rgba(125,211,252,.15); color: #7DD3FC; }
-  .role-user { background: rgba(201,169,110,.15); color: #C9A96E; }
-  .role-ops { background: rgba(188,58,44,.15); color: #BC3A2C; }
-  .role-guest { background: rgba(138,138,154,.15); color: #8A8A9A; }
-
-  .status-active { color: #4ADE80; }
-  .status-suspended { color: #F87171; }
-
-  .btn-del { background: none; border: 1px solid rgba(248,113,113,.3); color: #F87171; padding: 4px 12px; border-radius: 5px; font-size: 12px; cursor: pointer; transition: all .2s; }
-  .btn-del:hover { background: rgba(248,113,113,.1); }
-  .btn-del:disabled { opacity: .4; cursor: not-allowed; }
-
-  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--bg-secondary); border: 1px solid var(--border-default); padding: 10px 20px; border-radius: 8px; font-size: 13px; z-index: 100; box-shadow: 0 4px 20px rgba(0,0,0,.4); transition: opacity .3s; }
-  .toast.hidden { opacity: 0; pointer-events: none; }
-  .toast.success { border-color: rgba(74,222,128,.4); }
-  .toast.error { border-color: rgba(248,113,113,.4); }
-
-  .loading { text-align: center; padding: 40px; color: var(--text-dim); font-size: 14px; }
-  .loading::after { content: '...'; animation: dots 1.5s steps(4, end) infinite; }
-  @keyframes dots { 0% { content: '.'; } 25% { content: '..'; } 50% { content: '...'; } 75% { content: ''; } }
-
-  .empty-state { text-align: center; padding: 40px; color: var(--text-dim); font-size: 14px; }
-
-  @media (max-width: 640px) {
-    .admin-container { padding: 16px 12px; }
-    .user-table th, .user-table td { padding: 8px 10px; font-size: 12px; }
-    .stat-card { min-width: 100px; }
-    .stat-card .stat-value { font-size: 22px; }
-  }
-</style>
-</head>
-<body>
-
-<header class="admin-header">
-  <a href="/" class="admin-brand"><span>🐼</span> VisePanda Admin</a>
-  <a href="/" class="admin-back">← Back to App</a>
-</header>
-
-<main class="admin-container" id="admin-app">
-  <section class="admin-hero">
-    <div class="admin-kicker">Operations Atlas</div>
-    <h1>Platform overview</h1>
-    <p>Monitor operators, active accounts, and the latest platform access patterns from a single editorial summary header.</p>
-  </section>
-  <div class="admin-stats" id="stats-row"></div>
-  <div class="admin-section">
-    <h2>👥 Users</h2>
-    <div id="users-loading" class="loading">Loading users</div>
-    <div id="users-empty" class="empty-state hidden">No users found</div>
-    <div id="users-table-wrap" class="hidden">
-      <table class="user-table">
-        <thead><tr>
-          <th>Email</th>
-          <th>Name</th>
-          <th>Role</th>
-          <th>Status</th>
-          <th>Created</th>
-          <th></th>
-        </tr></thead>
-        <tbody id="users-tbody"></tbody>
-      </table>
-    </div>
-  </div>
-</main>
-
-<div id="toast" class="toast hidden"></div>
-
-<script>
-(function(){
-  'use strict';
-
-  const API = window.location.origin;
-  const token = localStorage.getItem('vp_token');
-  const userStr = localStorage.getItem('vp_user');
-
-  // ── Auth gate ──
-  if (!token || !userStr) {
-    document.getElementById('admin-app').innerHTML = '<div class="admin-section" style="padding:40px;text-align:center"><p style="color:var(--text-dim);font-size:15px;margin-bottom:12px">🔒 Not signed in</p><p style="font-size:13px;color:var(--text-dim)"><a href="/">Back to app →</a></p></div>';
-    return;
-  }
-
-  let user;
-  try { user = JSON.parse(userStr); } catch(e) { user = {}; }
-
-  if (!(user.role === 'admin' || user.role === 'ops')) {
-    document.getElementById('admin-app').innerHTML = '<div class="admin-section" style="padding:40px;text-align:center"><p style="color:var(--text-dim);font-size:15px;margin-bottom:12px">⛔ Ops/Admin access only</p><p style="font-size:13px;color:var(--text-dim)"><a href="/">Back to app →</a></p></div>';
-    return;
-  }
-
-  // ── Toast ──
-  function toast(msg, type) {
-    const el = document.getElementById('toast');
-    el.textContent = msg;
-    el.className = 'toast ' + (type || '') + ' hidden';
-    requestAnimationFrame(() => { el.classList.remove('hidden'); });
-    clearTimeout(el._timer);
-    el._timer = setTimeout(() => el.classList.add('hidden'), 3000);
-  }
-
-  // ── API helpers ──
-  async function api(url, opts) {
-    const res = await fetch(url, {
-      ...opts,
-      headers: { ...(opts?.headers||{}), 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
-    });
-    return res.json();
-  }
-
-  // ── Load users ──
-  async function loadUsers() {
-    const $loading = document.getElementById('users-loading');
-    const $empty = document.getElementById('users-empty');
-    const $wrap = document.getElementById('users-table-wrap');
-    const $tbody = document.getElementById('users-tbody');
-    const $stats = document.getElementById('stats-row');
-
-    $loading.classList.remove('hidden');
-    $empty.classList.add('hidden');
-    $wrap.classList.add('hidden');
-
-    try {
-      const data = await api(API + '/api/admin/users');
-      $loading.classList.add('hidden');
-
-      const users = data.users || [];
-      if (users.length === 0) {
-        $empty.classList.remove('hidden');
-        return;
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>VisePanda Admin</title>
+    <link rel="stylesheet" href="/web/app.css?v=6.1.1beta">
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="/">
+        <img src="/static/img/logo-panda.jpg" alt="">
+        <span>VisePanda Admin</span>
+      </a>
+      <button class="secondary" id="loadUsers" type="button">Load users</button>
+    </header>
+    <main class="section">
+      <div class="section__head">
+        <p class="eyebrow">Operations</p>
+        <h1>Admin Console</h1>
+      </div>
+      <form class="planner" id="adminLogin">
+        <label>Email<input name="email" type="email" required></label>
+        <label>Password<input name="password" type="password" required></label>
+        <button class="primary" type="submit">Sign in</button>
+      </form>
+      <p class="muted" id="adminStatus"></p>
+      <div class="trip-list" id="userList"></div>
+    </main>
+    <script>
+      const adminState = { token: sessionStorage.getItem("vp_admin_token") || "" };
+      const status = document.querySelector("#adminStatus");
+      const list = document.querySelector("#userList");
+      async function adminApi(path, options = {}) {
+        const headers = { "Content-Type": "application/json", ...(options.headers || {}) };
+        if (adminState.token) headers.Authorization = `Bearer ${adminState.token}`;
+        const response = await fetch(path, { ...options, headers });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error?.message || "Request failed");
+        return data;
       }
-
-      // Stats
-      const total = users.length;
-      const admins = users.filter(u => u.role === 'admin').length;
-      const ops = users.filter(u => u.role === 'ops').length;
-      const active = users.filter(u => u.status === 'active').length;
-      $stats.innerHTML = `
-        <div class="stat-card"><div class="stat-value">${total}</div><div class="stat-label">Total Users</div></div>
-        <div class="stat-card"><div class="stat-value">${active}</div><div class="stat-label">Active</div></div>
-        <div class="stat-card"><div class="stat-value">${admins}</div><div class="stat-label">Admins</div></div>
-        <div class="stat-card"><div class="stat-value">${ops}</div><div class="stat-label">Operators</div></div>
-      `;
-
-      // Table rows
-      $wrap.classList.remove('hidden');
-      $tbody.innerHTML = users.map(u => {
-        const isSelf = u.id === user.id;
-        const created = u.created_at ? new Date(u.created_at + 'Z').toLocaleDateString() : '—';
-        return `<tr>
-          <td>${esc(u.email)}</td>
-          <td>${esc(u.display_name || '—')}</td>
-          <td><span class="role-badge role-${u.role || 'user'}">${u.role || 'user'}</span></td>
-          <td><span class="status-${u.status}">${u.status === 'active' ? '●' : '●'} ${u.status}</span></td>
-          <td style="color:var(--text-dim);font-size:12px">${created}</td>
-          <td>${isSelf ? '<span style="color:var(--text-dim);font-size:11px">you</span>' : `<button class="btn-del" onclick="deleteUser('${u.id}')">Delete</button>`}</td>
-        </tr>`;
-      }).join('');
-    } catch(e) {
-      $loading.classList.add('hidden');
-      $empty.classList.remove('hidden');
-      $empty.innerHTML = '❌ Failed to load users. <a href="">Reload</a>';
-      toast('Failed to load users', 'error');
-    }
-  }
-
-  // ── Delete user ──
-  window.deleteUser = async function(userId) {
-    if (!confirm('Delete this user? This cannot be undone.')) return;
-    try {
-      const data = await api(API + '/api/admin/users/' + userId, { method: 'DELETE' });
-      if (data.success) {
-        toast('User deleted', 'success');
-        loadUsers();
-      } else {
-        toast(data.error || 'Failed to delete', 'error');
+      function renderUsers(users) {
+        list.replaceChildren(...users.map((user) => {
+          const card = document.createElement("article");
+          card.className = "trip-card";
+          const title = document.createElement("h3");
+          title.textContent = user.email;
+          const meta = document.createElement("p");
+          meta.className = "meta";
+          meta.textContent = `${user.role} | ${user.name || "No name"}`;
+          const button = document.createElement("button");
+          button.className = "secondary";
+          button.type = "button";
+          button.textContent = "Delete";
+          button.addEventListener("click", async () => {
+            await adminApi(`/api/admin/users/${user.id}`, { method: "DELETE" });
+            await loadUsers();
+          });
+          card.append(title, meta, button);
+          return card;
+        }));
       }
-    } catch(e) {
-      toast('Failed to delete user', 'error');
-    }
-  };
-
-  function esc(s) {
-    if (!s) return '';
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-
-  // ── Init ──
-  loadUsers();
-})();
-</script>
-</body>
+      async function loadUsers() {
+        const data = await adminApi("/api/admin/users");
+        renderUsers(data.users || []);
+        status.textContent = "Users loaded.";
+      }
+      document.querySelector("#adminLogin").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const body = Object.fromEntries(new FormData(event.currentTarget).entries());
+        const data = await adminApi("/api/auth/login", { method: "POST", body: JSON.stringify(body) });
+        adminState.token = data.token;
+        sessionStorage.setItem("vp_admin_token", data.token);
+        status.textContent = "Signed in.";
+        await loadUsers();
+      });
+      document.querySelector("#loadUsers").addEventListener("click", () => loadUsers().catch((error) => {
+        status.textContent = error.message;
+      }));
+    </script>
+  </body>
 </html>
