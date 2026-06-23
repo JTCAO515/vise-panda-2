@@ -1,546 +1,301 @@
-<!DOCTYPE html>
-<html lang="en" data-theme="dark">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#0e0b14">
-<link rel="manifest" href="/manifest.json">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="apple-touch-icon" href="/icon-512.png">
-<link rel="icon" type="image/png" href="/icon-192.png">
-  <title>VisePanda — AI China Travel Planner</title>
-  <meta name="description" content="AI-powered China travel planning. Chat with VisePanda to get personalized itineraries, local food recommendations, and insider tips.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin>
-  <link rel="stylesheet" href="/app.css">
-  <link rel="stylesheet" href="/trip-timeline.css">
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-<!-- Theme init -->
-<script>
-(function(){var t=localStorage.getItem('vp_theme');if(!t){t=window.matchMedia('(prefers-color-scheme:light)').matches?'light':'dark'}document.documentElement.setAttribute('data-theme',t)})()
-</script>
-</head>
-<body>
-<div id="app">
-  <!-- ═══ HEADER ═══ -->
-  <header id="header">
-    <div class="header-left">
-      <a href="/" class="brand" onclick="return VP.navigate('home')">
-        <span class="brand-icon">🐼</span>
-        <span class="brand-text">VisePanda</span>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>VisePanda | China Travel Workspace</title>
+    <meta name="description" content="Plan China travel with city intelligence, visa guidance, readiness tools, and an AI trip assistant.">
+    <meta name="theme-color" content="#0f2633">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+    <link rel="manifest" href="/web/manifest.json">
+    <link rel="stylesheet" href="/web/app.css?v=20260623-v611-responsive-qa2">
+    <link rel="stylesheet" href="/web/visebits.css?v=1">
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="VisePanda home">
+        <img src="/static/img/logo-panda.jpg" alt="">
+        <span>VisePanda</span>
       </a>
-    </div>
-    <nav class="header-nav">
-      <button class="nav-btn active" data-view="home" onclick="VP.navigate('home')">🏠 Home</button>
-      <button class="nav-btn" data-view="chat" onclick="VP.navigate('chat')">💬 Chat</button>
-      <button class="nav-btn" data-view="map" onclick="VP.navigate('map')">🗺️ Map</button>
-      <button class="nav-btn" data-view="trips" onclick="VP.navigate('trips')">📋 Trips</button>
-      <button class="nav-btn" data-view="cities" onclick="VP.navigate('cities')">🏙 Cities</button>
-      <button class="nav-btn" data-view="tools" onclick="VP.navigate('tools')">🧰 Tools</button>
+      <div class="topbar__actions">
+        <button class="topbar-link" id="overviewButton" type="button" data-view="dashboard">Overview</button>
+        <button class="icon-button" id="authButton" title="Account" aria-label="Account">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1.7-4 4.4-6 8-6s6.3 2 8 6"></path></svg>
+        </button>
+      </div>
+    </header>
+    <nav class="nav" aria-label="Primary" role="tablist">
+      <button class="nav__item is-active" id="tab-chat" data-view="chat" role="tab" aria-selected="true" aria-controls="panel-chat">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z"></path></svg>
+        <span>Ask</span>
+      </button>
+      <button class="nav__item" id="tab-cities" data-view="cities" role="tab" aria-selected="false" aria-controls="panel-cities">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 22V8l7-4 9 4v14"></path><path d="M4 14h16"></path><path d="M8 22v-4h8v4"></path></svg>
+        <span>Cities</span>
+      </button>
+      <button class="nav__item" id="tab-tools" data-view="tools" role="tab" aria-selected="false" aria-controls="panel-tools">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 7 9 2 4 7"></path><path d="M9 2v13"></path><path d="M20 17l-5 5-5-5"></path><path d="M15 22V9"></path></svg>
+        <span>Tools</span>
+      </button>
+      <button class="nav__item" id="tab-trips" data-view="trips" role="tab" aria-selected="false" aria-controls="panel-trips">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-3-6 3Z"></path><path d="M9 8h6"></path><path d="M9 12h4"></path></svg>
+        <span>Trips</span>
+      </button>
     </nav>
-    <div class="header-right">
-      <span id="version-badge" class="version-badge">v5.0.9</span>
-      <div id="auth-area" class="auth-area">
-        <button id="auth-btn" class="auth-btn" onclick="VP.auth.showModal()" style="display:none">Sign In</button>
-        <div id="user-menu" class="user-menu" style="display:none">
-          <button class="user-avatar" onclick="VP.auth.toggleMenu()">
-            <span id="user-avatar-text">U</span>
+
+    <main>
+      <section class="vise-hero is-hidden" id="panel-dashboard" data-view-panel="dashboard" role="tabpanel" aria-labelledby="overviewButton" hidden>
+        <canvas id="vise-hero-canvas" class="vise-hero-canvas"></canvas>
+        <div class="vise-hero-content">
+          <div class="vise-badge">🐼 Your AI China Travel Companion</div>
+          <h1>VisePanda</h1>
+          <p class="lead">Plan China travel with city intelligence, visa guidance, AI trip planning, and everything you need — powered by Panda sense.</p>
+          <div class="vise-counter-grid">
+            <div class="vise-counter-item">
+              <div class="count" data-vise-countup="36" data-vise-duration="2000" data-vise-suffix="+"></div>
+              <div class="label">Cities Covered</div>
+            </div>
+            <div class="vise-counter-item">
+              <div class="count" data-vise-countup="100" data-vise-duration="2500" data-vise-suffix="+"></div>
+              <div class="label">Attractions</div>
+            </div>
+            <div class="vise-counter-item">
+              <div class="count" data-vise-countup="24" data-vise-duration="2000" data-vise-suffix="/7"></div>
+              <div class="label">AI Support</div>
+            </div>
+            <div class="vise-counter-item">
+              <div class="count" data-vise-countup="99" data-vise-duration="3000" data-vise-suffix="%"></div>
+              <div class="label">Visa Success</div>
+            </div>
+          </div>
+          <form class="planner" id="quickPlanner" style="max-width:500px;margin:2rem auto 0;">
+            <label>
+              Destination idea
+              <input name="destination" type="text" placeholder="Beijing, Chengdu, first-time China...">
+            </label>
+            <label>
+              Travel length
+              <select name="length">
+                <option value="3 days">3 days</option>
+                <option value="7 days" selected>7 days</option>
+                <option value="14 days">14 days</option>
+              </select>
+            </label>
+            <button class="primary" type="submit">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"></path><path d="m13 6 6 6-6 6"></path></svg>
+              Ask AI
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <section class="dashboard section is-hidden" data-view-panel="dashboard" hidden>
+        <div>
+          <div class="section__head">
+            <h2>Overview</h2>
+          </div>
+          <div class="city-strip" id="featuredCities"></div>
+        </div>
+        <aside class="readiness">
+          <h2>Readiness</h2>
+          <ul>
+            <li><span></span>Passport valid for six months</li>
+            <li><span></span>Visa or transit rule checked</li>
+            <li><span></span>Payment apps linked to card</li>
+            <li><span></span>Offline maps and translator ready</li>
+          </ul>
+        </aside>
+      </section>
+
+      <section class="workspace section chat-hero" id="panel-chat" data-view-panel="chat" role="tabpanel" aria-labelledby="tab-chat">
+        <div class="chat-shell">
+          <div class="chat-welcome" id="chatWelcome">
+            <div class="agent-mark">
+              <img src="/static/img/logo-panda.jpg" alt="">
+              <div>
+                <strong>VisePanda</strong>
+                <span>AI China Travel Agent</span>
+              </div>
+            </div>
+            <div class="welcome-copy">
+              <h1>Ask before you plan.</h1>
+              <p>Tell me your nationality, month, total days, budget band, and what matters most. I will turn that into a practical China route, checklist, or city decision.</p>
+            </div>
+            <div class="quick-chips" aria-label="Quick planning prompts">
+              <button type="button" data-mode="itinerary" data-depth="expert" data-prompt="Plan a first-time 7 day China route with simple rail transfers. Ask me only the missing questions first, then give a professional draft.">First trip</button>
+              <button type="button" data-mode="food" data-depth="standard" data-prompt="Compare Beijing, Shanghai, Chengdu, and Xi'an for a food-focused trip. Include dish fit, neighborhood base, pacing, and traveler tradeoffs.">Food route</button>
+              <button type="button" data-mode="entry" data-depth="expert" data-prompt="Create a visa, payment, app, and document readiness checklist for a US traveler visiting China.">Entry ready</button>
+              <button type="button" data-mode="budget" data-depth="expert" data-prompt="Build a realistic China travel budget model for a 7 day first-time trip, with low, mid, and comfortable bands.">Budget</button>
+              <button type="button" data-mode="transit" data-depth="standard" data-prompt="Compare high-speed rail versus domestic flights for a Beijing, Xi'an, Shanghai route. Include station transfers, booking friction, delays, and comfort.">Rail vs flight</button>
+              <button type="button" data-mode="city-fit" data-depth="standard" data-prompt="Compare Beijing, Shanghai, Chengdu, Xi'an, Guilin, and Zhangjiajie for a first-time traveler. Rank them by food, culture, logistics, and trip difficulty.">Compare cities</button>
+            </div>
+          </div>
+          <div class="chat-toolbar is-hidden" aria-label="Chat settings">
+            <label>
+              Mode
+              <select id="chatMode">
+                <option value="itinerary">Itinerary strategist</option>
+                <option value="entry">Entry and visa analyst</option>
+                <option value="budget">Budget analyst</option>
+                <option value="transit">Transit planner</option>
+                <option value="food">Food and culture guide</option>
+                <option value="safety">Safety and readiness checker</option>
+                <option value="city-fit">City fit comparator</option>
+                <option value="custom">General travel consultant</option>
+              </select>
+            </label>
+            <label>
+              Model route
+              <select id="chatProvider">
+                <option value="auto">Auto route</option>
+                <option value="local-guide">Local guide</option>
+              </select>
+            </label>
+            <label>
+              Depth
+              <select id="chatDepth">
+                <option value="standard">Standard</option>
+                <option value="quick">Quick</option>
+                <option value="expert">Expert</option>
+              </select>
+            </label>
+          </div>
+          <div class="chat-prompts is-hidden" aria-label="Professional question presets">
+            <section class="preset-group">
+              <h3>Route</h3>
+              <button type="button" data-mode="itinerary" data-depth="expert" data-prompt="Create a 10 day first-time China itinerary for a US traveler. Compare Beijing-Shanghai-Xi'an against Beijing-Chengdu-Shanghai, include rail logic, daily pacing, hotel areas, and what to skip.">10 day route audit</button>
+              <button type="button" data-mode="city-fit" data-depth="standard" data-prompt="Compare Beijing, Shanghai, Chengdu, Xi'an, and Guilin for a first-time traveler who likes food, history, and comfortable transport. Rank them and explain tradeoffs.">City fit ranking</button>
+            </section>
+            <section class="preset-group">
+              <h3>Entry</h3>
+              <button type="button" data-mode="entry" data-depth="expert" data-prompt="Build a China entry readiness checklist for a US passport holder visiting for tourism. Include visa assumptions, transit questions, documents, payment setup, apps, and what must be verified before booking.">Entry checklist</button>
+              <button type="button" data-mode="safety" data-depth="standard" data-prompt="Create a pre-departure risk and backup plan for mainland China covering emergency numbers, medicine, translation, maps, payment failure, and hotel registration.">Backup plan</button>
+            </section>
+            <section class="preset-group">
+              <h3>Spend</h3>
+              <button type="button" data-mode="budget" data-depth="expert" data-prompt="Estimate a realistic 7 day China budget for two travelers across Beijing and Shanghai. Break down lodging, meals, attractions, metro, taxis, rail, and payment friction.">Budget model</button>
+              <button type="button" data-mode="transit" data-depth="standard" data-prompt="Compare high-speed rail versus domestic flights for Beijing to Xi'an to Shanghai. Include booking friction for foreigners, station or airport transfers, delays, and comfort.">Rail vs flight</button>
+            </section>
+            <section class="preset-group">
+              <h3>Local</h3>
+              <button type="button" data-mode="food" data-depth="standard" data-prompt="Plan a Chengdu food-focused day with dish names, neighborhoods, spice warnings, ordering tips, and a calmer alternative for travelers who do not handle heat well.">Food day</button>
+              <button type="button" data-mode="custom" data-depth="expert" data-prompt="Act as a China travel consultant. Interview me with the minimum questions needed to design a professional route, then explain how each answer will change the plan.">Consult me</button>
+            </section>
+          </div>
+          <p class="view-status chat-status" id="chatStatus" role="status" aria-live="polite">Ready. Start with a question or a quick prompt.</p>
+          <div class="chat-log" id="chatLog" aria-live="polite"></div>
+          <form class="chat-form" id="chatForm">
+            <textarea id="chatInput" rows="3" placeholder="Ask for a route, budget, visa checklist, or city comparison"></textarea>
+            <button class="primary" type="submit">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 2 11 13"></path><path d="m22 2-7 20-4-9-9-4Z"></path></svg>
+              Send
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <section class="workspace section is-hidden" id="panel-cities" data-view-panel="cities" role="tabpanel" aria-labelledby="tab-cities">
+        <div class="section__head row">
+          <div>
+            <p class="eyebrow">Destinations</p>
+            <h2>City Explorer</h2>
+          </div>
+          <input class="search" id="citySearch" type="search" placeholder="Search city, region, highlight" aria-label="Search cities">
+        </div>
+        <p class="view-status" id="cityStatus" role="status" aria-live="polite"></p>
+        <div class="city-grid" id="cityGrid"></div>
+      </section>
+
+      <section class="workspace section is-hidden" id="panel-tools" data-view-panel="tools" role="tabpanel" aria-labelledby="tab-tools">
+        <div class="section__head">
+          <p class="eyebrow">Before you go</p>
+          <h2>Travel Tools</h2>
+        </div>
+        <p class="view-status" id="toolStatus" role="status" aria-live="polite"></p>
+        <div class="tool-grid" id="toolGrid"></div>
+        <div class="tool-detail" id="toolDetail"></div>
+      </section>
+
+      <section class="workspace section is-hidden" id="panel-trips" data-view-panel="trips" role="tabpanel" aria-labelledby="tab-trips">
+        <div class="section__head row">
+          <div>
+            <p class="eyebrow">Saved plans</p>
+            <h2>Trips</h2>
+          </div>
+          <button class="secondary" id="refreshTrips" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 0 1-15.5 6.2"></path><path d="M3 12A9 9 0 0 1 18.5 5.8"></path><path d="M18 2v4h4"></path><path d="M6 22v-4H2"></path></svg>
+            Refresh
           </button>
-          <div id="user-dropdown" class="user-dropdown hidden">
-            <div class="dropdown-user-info">
-              <span id="dropdown-user-email">user@email.com</span>
-            </div>
-            <div class="dropdown-divider"></div>
-            <button onclick="VP.auth.showMyChats()">💬 My Chats</button>
-            <button onclick="VP.auth.showMyTrips()">📋 My Trips</button>
-            <button onclick="VP.auth.showSettings()">⚙️ Settings</button>
-            <button id="admin-link" onclick="VP.auth.goToAdmin()" style="display:none">⚙️ Admin Panel</button>
-            <div class="dropdown-divider"></div>
-            <button onclick="VP.auth.logout()" class="dropdown-danger">🚪 Sign Out</button>
-          </div>
         </div>
-      </div>
-      <button class="theme-toggle" onclick="VP.toggleTheme()" aria-label="Toggle theme">🌙</button>
-    </div>
-  </header>
-
-  <!-- ═══ VIEWS ═══ -->
-  <main id="main">
-    <div id="global-loading-state" class="global-loading-state hidden" aria-live="polite">
-      <div class="global-loading-copy">Loading VisePanda…</div>
-    </div>
-    <div id="global-error-state" class="global-error-state hidden" role="alert">
-      <div class="global-error-copy">Something stalled while loading this screen.</div>
-    </div>
-
-    <!-- ─── HOME ─── -->
-    <section id="view-home" class="view active">
-      <div class="hero">
-        <div class="hero-bg image-shell" aria-hidden="true">
-          <img
-            class="hero-bg-image"
-            src="/static/img/city-beijing.jpg"
-            alt=""
-            loading="eager"
-            decoding="async"
-            data-img-fallback="/static/img/logo-panda.jpg"
-          >
-        </div>
-        <div class="hero-deco hero-deco-1">🎋</div>
-        <div class="hero-deco hero-deco-2">🏮</div>
-        <div class="hero-deco hero-deco-3">☁️</div>
-        <div class="hero-deco hero-deco-4">🎐</div>
-        <div class="hero-deco hero-deco-5">🌸</div>
-        <div class="hero-content hero-content-portrait">
-          <div class="hero-copy">
-            <p class="editorial-lead">A new editorial layer for planning China with pace, place, and local context.</p>
-            <p class="hero-kicker">Editorial Atlas</p>
-            <div class="hero-panda">🐼</div>
-            <h1 class="hero-title">Your China Travel<br><span class="hero-accent">AI Companion</span></h1>
-            <p class="hero-sub">Plan your China trip like chatting with a local friend.<br>Get personalized itineraries, food guides &amp; insider tips.</p>
-            <div id="hero-actions" class="hero-actions">
-              <button class="hero-cta" onclick="VP.navigate('chat')">Start Planning →</button>
-              <button class="hero-secondary" onclick="VP.navigate('cities')">Explore Cities</button>
-            </div>
-            <div class="hero-metrics" aria-label="Atlas planning metrics">
-              <article class="hero-metric">
-                <span class="hero-metric-value">33</span>
-                <span class="hero-metric-label">city dossiers</span>
-              </article>
-              <article class="hero-metric">
-                <span class="hero-metric-value">24/7</span>
-                <span class="hero-metric-label">planner rhythm</span>
-              </article>
-              <article class="hero-metric">
-                <span class="hero-metric-value">1</span>
-                <span class="hero-metric-label">atlas across chat, maps, trips</span>
-              </article>
-            </div>
-          </div>
-          <aside class="hero-note-card hero-note-card-compact" aria-label="Atlas brief">
-            <p class="hero-note-label">Field note</p>
-            <h2 class="hero-note-title">Move from inspiration to itinerary without losing editorial clarity.</h2>
-            <p class="hero-note-body">Start with mood-setting city discovery, continue into planning chat, and keep every saved route framed like a travel desk spread.</p>
-            <div class="hero-note-list">
-              <span>Atlas-led home</span>
-              <span>Curated city browsing</span>
-              <span>Archive-minded trips</span>
-            </div>
-          </aside>
-        </div>
-      </div>
-
-      <section id="trust-layer" class="section trust-layer">
-        <div class="trust-layer-copy">
-          <p class="trust-kicker">Atlas signals</p>
-          <h2 class="section-title">Curated planning, grounded in local context</h2>
-          <p class="section-sub">Destination knowledge, itinerary logic, visa tools, and maps work together without changing your current navigation flow.</p>
-        </div>
-        <div class="trust-pillars" aria-label="Editorial Atlas highlights">
-          <span class="trust-pill">33 curated destinations</span>
-          <span class="trust-pill">Trip planning chat</span>
-          <span class="trust-pill">Map and toolkit ready</span>
-        </div>
+        <p class="view-status" id="tripStatus" role="status" aria-live="polite"></p>
+        <form class="trip-form" id="tripForm">
+          <input name="title" placeholder="Trip title" aria-label="Trip title" required>
+          <input name="destination" placeholder="Destination" aria-label="Destination">
+          <input name="startDate" type="date" aria-label="Start date">
+          <input name="endDate" type="date" aria-label="End date">
+          <button class="primary" type="submit">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"></path><path d="M17 21v-8H7v8"></path><path d="M7 3v5h8"></path></svg>
+            Save trip
+          </button>
+        </form>
+        <div class="trip-list" id="tripList"></div>
       </section>
+    </main>
 
-      <section id="editorial-city-rail" class="section editorial-city-rail">
-        <div class="editorial-city-rail-head">
-          <div>
-            <p class="trust-kicker">Destinations index</p>
-            <h2 class="section-title">Explore Cities</h2>
-          </div>
-          <p class="editorial-rail-summary">33 destinations across China, each with curated knowledge and a sharper magazine-style first impression.</p>
-        </div>
-        <div id="city-grid" class="city-grid">
-          <div class="sk-card skeleton"><div class="sk-block"></div><div class="sk-block"></div><div class="sk-block"></div></div>
-          <div class="sk-card skeleton"><div class="sk-block"></div><div class="sk-block"></div><div class="sk-block"></div></div>
-          <div class="sk-card skeleton"><div class="sk-block"></div><div class="sk-block"></div><div class="sk-block"></div></div>
-          <div class="sk-card skeleton"><div class="sk-block"></div><div class="sk-block"></div><div class="sk-block"></div></div>
-        </div>
-      </section>
+    <button class="mobile-ask-fab" id="mobileAskButton" type="button">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z"></path></svg>
+      Ask AI
+    </button>
 
-      <section id="planner-entry" class="section planner-entry">
-        <div class="planner-entry-card planner-entry-card-compact">
-          <div>
-            <p class="trust-kicker">Planner entry</p>
-            <h2 class="section-title">Start with chat, continue across cities, trips, and tools</h2>
-            <p class="section-sub">Use the current planner flow to turn inspiration into an itinerary without leaving the homepage context.</p>
-          </div>
-          <button class="hero-cta planner-entry-cta" onclick="VP.navigate('chat')">Open Planner</button>
+    <dialog class="auth-dialog" id="authDialog">
+      <div class="sheet-handle" aria-hidden="true"></div>
+      <form method="dialog" class="dialog-close">
+        <button class="icon-button" title="Close" aria-label="Close">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+        </button>
+      </form>
+      <div class="auth-layout">
+        <div>
+          <p class="eyebrow">Account</p>
+          <h2 id="authTitle">Sign in</h2>
+          <p class="muted" id="authStatus">Save trips across devices and manage your profile.</p>
         </div>
-      </section>
-    </section>
-
-    <!-- ─── CHAT ─── -->
-    <section id="view-chat" class="view">
-      <div class="chat-container chat-mobile-shell">
-        <div id="chat-messages" class="chat-messages">
-          <div class="msg msg-bot">
-            <div class="msg-avatar">🐼</div>
-            <div class="msg-body">
-              <div class="msg-sender">VisePanda</div>
-              <div class="msg-text">Hi! I'm your China travel assistant. Tell me what kind of trip you're planning — cities, duration, interests, budget... I'll create a personalized itinerary for you! 🌏</div>
-            </div>
-          </div>
-        </div>
-        <div class="chat-quick-scroll">
-          <div id="chat-suggestions" class="chat-suggestions"></div>
-          <aside id="chat-action-rail" class="chat-action-rail chat-action-rail-mobile" aria-label="Chat actions">
-            <button class="rail-btn" onclick="VP.saveCurrentTrip()">Save trip</button>
-            <button class="rail-btn" onclick="VP.navigate('map')">Open map</button>
-            <button class="rail-btn" onclick="VP.navigate('tools')">Visa &amp; tools</button>
-          </aside>
-          <button id="chat-quick-scroll" class="chat-quick-scroll-btn" type="button" onclick="VP.scrollChatToLatest()">Latest</button>
-        </div>
-        <div class="chat-input-bar chat-input-bar-safe">
-          <textarea id="chat-input" class="chat-input" rows="1" placeholder="Ask about China travel... (e.g. '3 days in Beijing')" oninput="VP.autoResize(this)"></textarea>
-          <button id="chat-send" class="chat-send" onclick="VP.sendMessage()" disabled>Send</button>
-          <button id="chat-stop" class="chat-stop" onclick="VP.stopStreaming()" style="display:none">⏹ Stop</button>
-        </div>
+        <form class="auth-form" id="authForm">
+          <input name="email" type="email" placeholder="Email" aria-label="Email" required>
+          <input name="password" type="password" placeholder="Password" aria-label="Password" minlength="8" required>
+          <button class="primary" type="submit">Continue</button>
+          <button class="link-button" type="button" id="toggleAuthMode">Create an account</button>
+          <a class="secondary google-login" id="googleLogin" href="/api/auth/google/start">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 12h7"></path><path d="M18 15.5A7 7 0 1 1 16.8 7"></path></svg>
+            Continue with Google
+          </a>
+        </form>
+        <form class="auth-form is-hidden" id="verifyForm">
+          <input name="email" type="email" placeholder="Email" aria-label="Email" required>
+          <input name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="6-digit code" aria-label="Verification code" required>
+          <button class="primary" type="submit">Verify email</button>
+          <button class="secondary" type="button" id="resendVerification">Resend code</button>
+          <button class="link-button" type="button" id="backToSignIn">Back to sign in</button>
+        </form>
+        <form class="profile-form is-hidden" id="profileForm">
+          <input name="name" placeholder="Display name" aria-label="Display name">
+          <input name="currentPassword" type="password" placeholder="Current password" aria-label="Current password">
+          <input name="newPassword" type="password" placeholder="New password" aria-label="New password">
+          <button class="primary" type="submit">Update profile</button>
+          <button class="secondary" type="button" id="logoutButton">Sign out</button>
+        </form>
       </div>
-    </section>
+    </dialog>
 
-    <!-- ─── TRIPS ─── -->
-    <section id="view-trips" class="view">
-      <div class="view-state-shell">
-        <div id="trips-loading" class="view-loading hidden">Loading saved trips…</div>
-        <div id="trips-error" class="view-error hidden" role="alert">
-          <span>Could not load saved trips.</span>
-          <button type="button" class="view-state-retry-btn" onclick="VP.retryCurrentView()">Retry</button>
-        </div>
-      </div>
-      <div class="section trips-atlas trips-atlas-mobile">
-        <div class="trips-atlas-head">
-          <div>
-            <p class="trust-kicker">Trips desk</p>
-            <h2 class="section-title">📋 Saved Trips</h2>
-            <p class="section-sub">Your saved itineraries — click to reload or share</p>
-          </div>
-          <aside class="trips-atlas-note">
-            <p class="trips-atlas-note-label">Atlas note</p>
-            <p class="trips-atlas-note-copy">Recent plans stay ready for fast reloads, while the archive keeps older routes in a calmer library rhythm.</p>
-          </aside>
-        </div>
-        <div class="trips-mobile-actions" aria-label="Trips quick actions">
-          <button class="trips-mobile-action-btn" type="button" onclick="VP.navigate('chat')">New trip</button>
-          <button class="trips-mobile-action-btn" type="button" onclick="VP.navigate('cities')">Browse cities</button>
-          <button class="trips-mobile-action-btn" type="button" onclick="VP.navigate('tools')">Open toolkit</button>
-        </div>
-        <div class="trips-groups">
-          <section class="trips-group-section">
-            <div class="trips-group-title">Recent</div>
-            <div id="trips-recent" class="trips-group trips-grid">
-              <div class="trip-empty">No recent trips yet. Chat with VisePanda to plan a trip! 🌏</div>
-            </div>
-          </section>
-          <section class="trips-group-section">
-            <div class="trips-group-title">Saved archive</div>
-            <div id="trips-saved" class="trips-group trips-grid">
-              <div class="trip-empty">Saved trips will appear here as your library grows.</div>
-            </div>
-          </section>
-        </div>
-      </div>
-    </section>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-    <!-- ─── MAP ─── -->
-    <section id="view-map" class="view">
-      <div class="map-container">
-        <div id="map-header">
-          <h2>🗺️ Explore China</h2>
-          <p class="map-subtitle">Click a city marker to explore — hover for preview</p>
-        </div>
-        <div id="map-wrapper">
-          <div id="map-canvas"></div>
-          <div id="map-legend">
-            <span class="legend-item"><span class="legend-dot popular"></span> Top Destinations</span>
-            <span class="legend-item"><span class="legend-dot regional"></span> Regional Hubs</span>
-            <span class="legend-item"><span class="legend-dot hidden-gem"></span> Hidden Gems</span>
-          </div>
-        </div>
-        <div id="map-city-detail" class="map-city-detail hidden">
-          <button class="map-detail-close" onclick="VP.mapCloseDetail()">✕</button>
-          <div class="map-detail-content">
-            <h3 id="map-detail-name"></h3>
-            <p id="map-detail-desc"></p>
-            <div id="map-detail-tags"></div>
-            <button class="btn-primary" onclick="VP.mapOpenChat()">💬 Plan a trip here</button>
-          </div>
-        </div>
-      </div>
-    </section>
+    <template id="messageTemplate">
+      <article class="message"><span class="message__author"></span><p class="message__body"></p></article>
+    </template>
 
-    <!-- ─── CITIES ─── -->
-    <section id="view-cities" class="view">
-      <div class="view-state-shell">
-        <div id="cities-loading" class="view-loading hidden">Loading city dossiers…</div>
-        <div id="cities-error" class="view-error hidden" role="alert">
-          <span>Could not load city data.</span>
-          <button type="button" class="view-state-retry-btn" onclick="VP.retryCurrentView()">Retry</button>
-        </div>
-      </div>
-      <div class="section cities-atlas">
-        <div class="cities-editorial-header">
-          <div>
-            <p class="trust-kicker">Atlas index</p>
-            <h2 class="section-title">🏙 All Cities</h2>
-            <p class="section-sub">Browse our curated city knowledge base — click a city for details</p>
-          </div>
-          <p class="editorial-lead">Scan destinations through a tighter editorial filter, then dive into each city dossier with the existing detail flow.</p>
-        </div>
-        <div id="cities-filter-rail" class="cities-filter-rail" aria-label="City filters" data-scrollable="true">
-          <button class="cities-filter-chip active" type="button" data-filter="all" aria-pressed="true">All</button>
-          <button class="cities-filter-chip" type="button" data-filter="history" aria-pressed="false">History</button>
-          <button class="cities-filter-chip" type="button" data-filter="food" aria-pressed="false">Food</button>
-          <button class="cities-filter-chip" type="button" data-filter="nature" aria-pressed="false">Nature</button>
-          <button class="cities-filter-chip" type="button" data-filter="urban" aria-pressed="false">Urban</button>
-        </div>
-        <div class="cities-mobile-intro">
-          <span class="cities-mobile-intro-label">Mobile rhythm</span>
-          <p class="cities-mobile-intro-copy">Each card now surfaces a short browse cue first, so one-handed scanning feels lighter before you open the full city dossier.</p>
-        </div>
-        <div class="cities-atlas-note">
-          <span class="cities-atlas-note-label">Browsing mode</span>
-          <p class="cities-atlas-note-copy">Filter cues are optional and keep the current city detail interactions unchanged.</p>
-        </div>
-        <div id="cities-grid" class="city-grid">
-          <div class="sk-card skeleton" style="height:200px"><div class="sk-block"></div><div class="sk-block"></div><div class="sk-block"></div></div>
-          <div class="sk-card skeleton" style="height:200px"><div class="sk-block"></div><div class="sk-block"></div><div class="sk-block"></div></div>
-          <div class="sk-card skeleton" style="height:200px"><div class="sk-block"></div><div class="sk-block"></div><div class="sk-block"></div></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ─── TOOLS ─── -->
-    <section id="view-tools" class="view">
-      <div class="view-state-shell">
-        <div id="tools-loading" class="view-loading hidden">Loading toolkit data…</div>
-        <div id="tools-error" class="view-error hidden" role="alert">
-          <span>Could not load toolkit data.</span>
-          <button type="button" class="view-state-retry-btn" onclick="VP.retryCurrentView()">Retry</button>
-        </div>
-      </div>
-      <div class="section tools-section tools-section-mobile">
-        <h2 class="section-title">🧰 Travel Toolkit</h2>
-        <p class="section-sub">Open practical travel kits for packing, budgeting, visas, useful phrases, and emergencies.</p>
-        <div class="tools-mobile-gallery">
-          <div class="tools-mobile-gallery-copy">
-            <span class="tools-mobile-gallery-label">Pocket utilities</span>
-            <p class="tools-mobile-gallery-note">A proper toolkit surface with expandable detail sheets, built for quick mobile browsing and deeper planning on desktop.</p>
-          </div>
-          <div id="tools-grid" class="tools-grid"></div>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <!-- ═══ MODALS ═══ -->
-  <div id="city-detail-overlay" class="modal-overlay" onclick="if(event.target===this)VP.closeCityDetail()">
-    <div id="city-detail-panel" class="modal-panel"></div>
-  </div>
-  <div id="trip-detail-overlay" class="modal-overlay" onclick="if(event.target===this)VP.closeTripDetail()">
-    <div id="trip-detail-panel" class="modal-panel"></div>
-  </div>
-  <div id="tool-detail-overlay" class="modal-overlay" onclick="if(event.target===this)VP.closeToolDetail()">
-    <div id="tool-detail-panel" class="modal-panel tool-detail-panel"></div>
-  </div>
-
-  <!-- ═══ MOBILE BOTTOM NAV ═══ -->
-  <nav id="bottom-nav" class="bottom-nav" data-mobile-nav="primary" aria-label="Primary navigation">
-    <button class="bn-btn active" data-view="home" onclick="VP.navigate('home')"><span class="bn-icon">🏠</span><span class="bn-label">Home</span></button>
-    <button class="bn-btn" data-view="chat" onclick="VP.navigate('chat')"><span class="bn-icon">💬</span><span class="bn-label">Chat</span></button>
-    <button class="bn-btn" data-view="map" onclick="VP.navigate('map')"><span class="bn-icon">🗺️</span><span class="bn-label">Map</span></button>
-    <button class="bn-btn" data-view="trips" onclick="VP.navigate('trips')"><span class="bn-icon">📋</span><span class="bn-label">Trips</span></button>
-    <button class="bn-btn" data-view="tools" onclick="VP.navigate('tools')"><span class="bn-icon">🧰</span><span class="bn-label">Tools</span></button>
-  </nav>
-
-  <!-- ═══ CHAT OVERLAY (for mobile — opens as panel overlay) ═══ -->
-  <div id="chat-overlay" class="chat-overlay hidden">
-    <div class="chat-overlay-header">
-      <button class="chat-overlay-back" onclick="VP.chatOverlayBack()">←</button>
-      <span class="chat-overlay-title">💬 VisePanda Chat</span>
-      <div style="flex:1"></div>
-    </div>
-    <div class="chat-overlay-body">
-      <div class="chat-container" style="height:100%;padding:0">
-        <div id="chat-messages-overlay" class="chat-messages"></div>
-        <div class="chat-suggestions" id="chat-suggestions-overlay"></div>
-        <div class="chat-input-bar">
-          <textarea id="chat-input-overlay" class="chat-input" rows="1" placeholder="Ask about China travel..." oninput="VP.autoResize(this)"></textarea>
-          <button id="chat-send-overlay" class="chat-send" disabled>Send</button>
-          <button id="chat-stop-overlay" class="chat-stop" style="display:none">⏹ Stop</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══ AUTH MODAL ═══ -->
-  <div id="auth-modal-overlay" class="modal-overlay auth-modal-overlay hidden" onclick="if(event.target===this)VP.auth.closeModal()">
-    <div id="auth-modal-panel" class="modal-panel auth-modal-panel">
-      <button class="auth-modal-close" onclick="VP.auth.closeModal()">✕</button>
-      <div id="auth-modal-body">
-        <!-- Login form -->
-        <div id="auth-login-form" class="auth-form">
-          <h2 class="auth-title">Sign In</h2>
-          <p class="auth-subtitle">Sign in to save your trips &amp; chat history</p>
-          <div class="auth-field">
-            <label>Email</label>
-            <input type="email" id="login-email" placeholder="your@email.com" autocomplete="email">
-          </div>
-          <div class="auth-field">
-            <label>Password</label>
-            <input type="password" id="login-password" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter')VP.auth.login()">
-          </div>
-          <div class="auth-field" style="text-align:right;margin-top:-8px">
-            <a href="#" onclick="VP.auth.showForgotPassword();return false" style="font-size:12px;color:var(--text-dim);text-decoration:none">Forgot password?</a>
-          </div>
-          <div id="auth-error" class="auth-error hidden"></div>
-          <button class="auth-submit" onclick="VP.auth.login()">Sign In</button>
-          <div class="auth-divider"><span>or continue with</span></div>
-          <div id="g_id_onload"
-               data-client_id=""
-               data-context="signin"
-               data-ux_mode="popup"
-               data-login_uri=""
-               data-callback="handleGoogleCredential"
-               data-auto_prompt="false">
-          </div>
-          <div class="g_id_signin"
-               data-type="standard"
-               data-shape="rectangular"
-               data-theme="outline"
-               data-text="signin_with"
-               data-size="large"
-               data-width="280"
-               data-logo_alignment="left">
-          </div>
-          <p class="auth-switch">Don't have an account? <a href="#" onclick="VP.auth.showRegister();return false">Create one</a></p>
-        </div>
-        <!-- Register form -->
-        <div id="auth-register-form" class="auth-form hidden">
-          <h2 class="auth-title">Create Account</h2>
-          <p class="auth-subtitle">Join VisePanda to save and manage your trips</p>
-          <div class="auth-field">
-            <label>Email</label>
-            <input type="email" id="reg-email" placeholder="your@email.com" autocomplete="email">
-          </div>
-          <div class="auth-field">
-            <label>Nickname (optional)</label>
-            <input type="text" id="reg-name" placeholder="Your nickname" autocomplete="name">
-          </div>
-          <div class="auth-field">
-            <label>Password</label>
-            <input type="password" id="reg-password" placeholder="At least 6 characters" autocomplete="new-password" onkeydown="if(event.key==='Enter')VP.auth.register()">
-          </div>
-          <div id="auth-reg-error" class="auth-error hidden"></div>
-          <button class="auth-submit" onclick="VP.auth.register()">Create Account</button>
-          <p class="auth-switch">Already have an account? <a href="#" onclick="VP.auth.showLogin();return false">Sign in</a></p>
-        </div>
-        <!-- Success state -->
-        <div id="auth-success" class="auth-form hidden">
-          <div class="auth-success-icon">✅</div>
-          <h2 class="auth-title" id="auth-success-title">Success!</h2>
-          <p id="auth-success-msg" class="auth-subtitle">You're now signed in.</p>
-          <button class="auth-submit" onclick="VP.auth.closeModal()">Continue</button>
-        </div>
-        <!-- Forgot password: email -->
-        <div id="auth-forgot-form" class="auth-form hidden">
-          <h2 class="auth-title">Reset Password</h2>
-          <p class="auth-subtitle">Enter your email to receive a reset code</p>
-          <div class="auth-field">
-            <label>Email</label>
-            <input type="email" id="forgot-email" placeholder="your@email.com" autocomplete="email" onkeydown="if(event.key==='Enter')VP.auth.sendResetCode()">
-          </div>
-          <div id="auth-forgot-error" class="auth-error hidden"></div>
-          <div id="auth-forgot-success" class="auth-success-info hidden"></div>
-          <button class="auth-submit" onclick="VP.auth.sendResetCode()">Send Reset Code</button>
-          <p class="auth-switch"><a href="#" onclick="VP.auth.showLogin();return false">← Back to Sign In</a></p>
-        </div>
-        <!-- Forgot password: enter code + new password -->
-        <div id="auth-reset-form" class="auth-form hidden">
-          <h2 class="auth-title">Set New Password</h2>
-          <p class="auth-subtitle">Enter the reset code and your new password</p>
-          <div class="auth-field">
-            <label>Reset Code</label>
-            <input type="text" id="reset-code" placeholder="Paste the reset code" autocomplete="off">
-          </div>
-          <div class="auth-field">
-            <label>New Password</label>
-            <input type="password" id="reset-password" placeholder="At least 4 characters" autocomplete="new-password" onkeydown="if(event.key==='Enter')VP.auth.completeReset()">
-          </div>
-          <div class="auth-field">
-            <label>Confirm Password</label>
-            <input type="password" id="reset-password-confirm" placeholder="Confirm new password" autocomplete="new-password">
-          </div>
-          <div id="auth-reset-error" class="auth-error hidden"></div>
-          <div id="auth-reset-success" class="auth-success-info hidden"></div>
-          <button class="auth-submit" onclick="VP.auth.completeReset()">Reset Password</button>
-          <p class="auth-switch"><a href="#" onclick="VP.auth.showForgotPassword();return false">← Request new code</a></p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══ MY CHATS MODAL ═══ -->
-  <div id="chats-modal-overlay" class="modal-overlay hidden" onclick="if(event.target===this)VP.auth.closeChatsModal()">
-    <div id="chats-modal-panel" class="modal-panel chats-modal-panel">
-      <button class="auth-modal-close" onclick="VP.auth.closeChatsModal()">✕</button>
-
-      <!-- Chat List -->
-      <div id="chats-list" class="chats-list">
-        <p class="chats-empty">Loading...</p>
-      </div>
-
-      <!-- Chat Viewer (hidden until a chat is selected) -->
-      <div id="chat-viewer" class="chat-viewer">
-        <div class="chat-viewer-back" onclick="VP.auth.backToChatList()">← Back</div>
-        <div id="chat-viewer-title" class="chat-viewer-title">Chat</div>
-        <div id="chat-viewer-messages" class="chat-messages"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══ SETTINGS MODAL ═══ -->
-  <div id="settings-modal-overlay" class="modal-overlay auth-modal-overlay hidden" onclick="if(event.target===this)VP.auth.closeSettings()">
-    <div class="modal-panel settings-modal-panel">
-      <button class="auth-modal-close" onclick="VP.auth.closeSettings()">✕</button>
-      <h2 class="auth-title">⚙️ Settings</h2>
-      <p class="auth-subtitle">Manage your account</p>
-      <div id="settings-error" class="auth-error hidden"></div>
-      <div id="settings-success" class="settings-success hidden"></div>
-      <div class="auth-field">
-        <label>Display Name</label>
-        <input type="text" id="settings-name" placeholder="Your name" autocomplete="name">
-      </div>
-      <div class="auth-field">
-        <label>New Password (leave blank to keep current)</label>
-        <input type="password" id="settings-password" placeholder="New password" autocomplete="new-password">
-      </div>
-      <div class="auth-field">
-        <label>Confirm Password</label>
-        <input type="password" id="settings-password-confirm" placeholder="Confirm new password" autocomplete="new-password">
-      </div>
-      <button class="auth-submit" onclick="VP.auth.saveSettings()">Save Changes</button>
-    </div>
-  </div>
-
-  <!-- ═══ FOOTER ═══ -->
-  <footer id="footer">
-    <p><span id="footer-version">VisePanda v5.0.9</span> · AI China Travel Planner · 🐼 · <span class="footer-clear" onclick="VP.clearChatHistory()" style="cursor:pointer;text-decoration:underline;opacity:.5">Clear chat</span></p>
-  </footer>
-</div>
-
-<!-- ═══ TOAST CONTAINER ═══ -->
-<div id="toast-container" class="toast-container"></div>
-
-<!-- ═══ SCROLL TO TOP ═══ -->
-<button id="scroll-top-btn" class="scroll-top-btn" onclick="VP.scrollToTop()" aria-label="Scroll to top">↑</button>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin></script>
-<script src="/trip-timeline.js"></script>
-<script src="/app.js"></script>
-</body>
+    <script src="/web/visebits.js?v=1" defer></script>
+    <script src="/web/app.js?v=20260623-v611-responsive-qa2" defer></script>
+  </body>
 </html>

@@ -1,280 +1,137 @@
 # Changelog
 
-> **DEV TOOLCHAIN 演进史：**
-> - **v0–v1** — Trae IDE + AI 功能（字节跳动 IDE，国内版 Cursor）
-> - **v2** — Trae Solo（单 Agent 模式）
-> - **v3** — Hermes Agent + DeepSeek V4 Flash
-> - **v4** — Trae Work + 字节混合编码模型（Work 多 Agent 模式）
-> - **v5.0** — Codex + OpenAI 官方模型
-> - **v5.1（规划中）** — GLM 5.2
+## v7.0.0 - 2026-06-23
 
-## v5.0.9 — 2026-06-20
+### Added
 
-> **Built with:** Codex + OpenAI 官方模型
+- **ViseBits animation library** — 5 React Bits component adaptations for VisePanda:
+  - 🌅 **Aurora Hero** — animated aurora/beams Canvas background for the landing page
+  - 🃏 **Tilted Card** — 3D perspective tilt on hover for city destination cards
+  - 🔦 **Spotlight Card** — radial gradient spotlight following cursor on cards
+  - 🔢 **Count Up** — scroll-triggered animated number counters (36 cities, 100+ attractions, 24/7 AI, 99% visa)
+  - 💥 **Splash Cursor** — color particle burst on click/touch
+- New `web/visebits.js` — all 5 components as vanilla JS (no React dependency)
+- New `web/visebits.css` — component styles
+- Hero section redesigned with animated count-up stats grid and aurora background
+
+### Removed
+
+- Old `.hero`, `.hero__media`, `.hero__content`, `.home-snapshot` CSS
+- Redundant h1 font-size override
+
+## v6.1.1 - 2026-06-23
 
 ### Fixed
-- Repaired the production sign-in trigger and hardened the frontend bootstrap path
-- Added resilient image fallback handling for production-facing visuals
-- Added loading/error shells so key views no longer feel unresponsive
-- Restored mobile tab/navigation visibility on portrait layouts
+
+- Fixed the guest Trips empty-state action so it returns to Ask instead of the removed dashboard nav target.
+- Expanded the AI chat shell on wide desktop screens and raised the usable message width.
+- Reworked mobile chat layout so the shell stays inside the viewport, the message log scrolls internally, and the tab bar hides while composing.
+- Compressed mobile chat settings into a two-column layout after the conversation starts.
+- Replaced the root `100vh` minimum height with `100dvh` for mobile browser chrome stability.
+
+### Verified
+
+- Rechecked the v2 optimization report against code and browser measurements before changing behavior.
+- Confirmed the desktop auth dialog was already centered and the bottom nav already had four tabs.
+
+## v6.1.0 - 2026-06-23
+
+### Changed
+
+- Shifted the default app entry from Plan to Ask so users land directly in the AI travel agent.
+- Reworked the mobile primary navigation to four core tabs: Ask, Cities, Tools, and Trips.
+- Moved Overview into the top bar as a secondary planning surface.
+- Added an AI-first chat welcome state with six high-value quick prompts and first-screen input access.
+- Made chat controls progressive: mode, provider, depth, and detailed presets appear after the user starts a conversation.
+- Updated the visual direction with a deep travel-agent chat stage, Great Wall texture, sky-blue surfaces, and orange send action.
+
+### Fixed
+
+- Added request timeouts for shared API calls and chat requests.
+- Hardened SSE parsing so malformed `data:` lines no longer crash the chat session.
+- Preserved chat Authorization headers for future authenticated chat flows.
+- Fixed quick planner duration handling.
+- Added city image fallback handling.
+- Added clearer session/config failure feedback.
+- Wrapped trip saving errors with visible toast feedback.
+
+### Regression
+
+- Updated backend version tests to `6.1.0`.
+- Updated frontend structure tests for AI-first navigation, progressive chat controls, cache busting, and streaming resilience.
+- Browser-verified desktop and mobile portrait rendering with the in-app browser.
+
+## v6.0.8 - 2026-06-22
+
+### Changed
+
+- Reworked the first screen into a mobile-first planning workspace with quicker prompts, a compact visual panel, and entry/route/local snapshot cards.
+- Strengthened the bottom navigation into clearer app-style tabs with selected state semantics and a more visible active indicator.
+- Added a thumb-friendly mobile Ask AI shortcut that jumps directly into the chat workflow.
+- Refined the visual system with a brighter sky travel palette, cleaner card rhythm, and improved mobile spacing.
 
 ### Docs
-- Updated `README.md` and `HANDOFF.md` to record the Production Stability Pass release state
-- Synced `api/index.py`, `web/index.html`, `web/app.js`, and `web/app.css` to `v5.0.9`
+
+- Rebuilt `HANDOFF.md`, `CONTEXT.md`, `PLAN.md`, `DESIGN.md`, and the active docs under `docs/` around the v6.0.8 project state.
+- Replaced outdated v3/v5 user-system and product-analysis documents with current account, roadmap, and mobile-first planning direction.
+- Added a clean documentation index and refreshed agent instructions for future Codex handoff work.
 
 ### Regression
-- Ran `python3 -m unittest discover -s tests -v` — 14 backend tests passed
-- Ran `node --test web/tests/*.test.js` — 28 frontend structure/stability tests passed
 
-## v5.0.8 — 2026-06-19
+- Updated frontend structure tests for tab semantics, mobile Ask access, and the new planning surface.
 
-> **Built with:** Codex + OpenAI 官方模型
-
-### Added
-- Expandable English-first toolkit detail sheets for packing, pricing, visa, phrases, and emergency guidance
-- An English-only compatibility version of `static/i18n.js` so the legacy path can no longer fall back to Chinese UI copy
-- Frontend structure checks for the new tool detail overlay and `v5.0.8`
+## v6.0.7 - 2026-06-22
 
 ### Changed
-- The tools page now opens real detail sheets instead of acting like a mostly static index
-- Visa and emergency toolkit content shown to users now reads in natural English
-- README/HANDOFF were updated to English-first project documentation
-- Unified backend `APP_VERSION`, visible frontend version, and release docs to `v5.0.8`
 
-### Regression
-- Ran `python3 -m unittest discover -s tests -v` — 14 backend tests passed
-- Ran `node --test web/tests/*.test.js` — 19 frontend structure tests passed
+- Modernized authentication with email/password registration that no longer asks for a name.
+- Added email verification and resend-verification support.
+- Added optional Resend delivery for verification messages.
+- Added optional Google OAuth start and callback flow.
+- Added auth feature configuration for the frontend.
 
-## v5.0.7 — 2026-06-19
-
-> **Built with:** Codex + OpenAI 官方模型
-
-### Added
-- 英文原生网站内容收口：城市、餐饮、住宿等运行时主数据改为自然英文表达
-- 特殊地名与中文专属词采用 `English（中文）` 的显示格式
-- 前端新增统一双语显示 helper，城市、地图点位、餐饮条目与比较视图改为更一致的英文主展示
-- 前端结构测试同步更新到 `v5.0.7`
+## v6.0.6 - 2026-06-22
 
 ### Changed
-- `/data/cities.json`、`/data/food.json`、`/data/hotels.json` 的用户可见文案改为英文原生
-- `/api/cities.py` 的 summary/compare 默认值改为英文口径
-- 统一后端 `APP_VERSION`、前端壳层显示与文档版本到 `v5.0.7`
 
-### Regression
-- 执行 `python3 -m unittest discover -s tests -v`，后端 14 项测试通过
-- 执行 `node --test web/tests/*.test.js`，前端 18 项结构测试通过
+- Configured chat defaults around DeepSeek V4 Flash.
+- Preserved deterministic local fallback behavior when external providers are unavailable.
 
-## v5.0.6 — 2026-06-19
-
-> **Built with:** Codex + OpenAI 官方模型
-
-### Added
-- Chat 新增 `chat-quick-scroll` 与 `chat-quick-scroll-btn`，支持更快回到最新消息
-- Trips 卡片新增 `trip-card-mobile-head` 与 `trip-card-mobile-actions`，强化拇指优先的操作区
-- Cities 新增 `cities-mobile-intro` 与 `city-card-caption`，提升手机端扫读节奏
-- Tools 新增 `tools-mobile-gallery`、`tools-mobile-gallery-copy` 与 `tool-card-kicker`
-- 前端结构测试新增对 `v5.0.6` 和移动端细化结构的校验
+## v6.0.5 - 2026-06-22
 
 ### Changed
-- 手机端 Chat 输入区、快捷操作、Trips 卡片、Cities 浏览说明、Tools 画廊进行第二轮细化
-- 统一后端 `APP_VERSION`、前端壳层显示与文档版本到 `v5.0.6`
 
-### Regression
-- 执行 `python3 -m unittest discover -s tests -v`，后端 14 项测试通过
-- 执行 `node --test web/tests/*.test.js`，前端 18 项结构测试通过
+- Upgraded Ask into a more professional consultation workflow.
+- Added richer planning modes, presets, model-provider routing, and more detailed prompt context.
 
-## v5.0.5 — 2026-06-19
-
-> **Built with:** Codex + OpenAI 官方模型
-
-### Added
-- 新增移动端竖屏结构钩子：`hero-content-portrait`、`hero-note-card-compact`、`planner-entry-card-compact`
-- 新增 Chat 安全区结构：`chat-mobile-shell`、`chat-action-rail-mobile`、`chat-input-bar-safe`
-- 新增竖屏优化相关声明：`data-scrollable="true"` 的 `cities-filter-rail`、`trips-atlas-mobile`、`tools-section-mobile`
-- 前端结构测试新增对 `v5.0.5` 与手机端结构钩子的校验
+## v6.0.4 - 2026-06-22
 
 ### Changed
-- 首页首屏压缩为更适合竖屏的单列节奏，CTA、metrics、note card 改为更稳定的手机布局
-- Chat 输入区、action rail 与底部导航完成 safe-area 避让优化
-- Cities filter rail 改为更适合拇指操作的横向滑动过滤条
-- Trips / Tools 完成更适合单手浏览的卡片与留白调整
-- 统一后端 `APP_VERSION`、前端壳层显示与文档版本到 `v5.0.5`
 
-### Regression
-- 执行 `python3 -m unittest discover -s tests -v`，后端 14 项测试通过
-- 执行 `node --test web/tests/*.test.js`，前端 14 项结构测试通过
+- Improved the overall visual system.
+- Continued the shift toward a brighter travel-product interface.
 
-## v5.0.4 — 2026-06-19
-
-> **Built with:** Codex + OpenAI 官方模型
-
-### Added
-- 首页新增 `hero-metrics` 与 `editorial-lead` 结构，强化 Editorial Atlas 的双栏叙事与指标信息层
-- Cities 新增 `cities-filter-rail`，支持 `all / history / food / nature / urban` 过滤导轨
-- Trips 新增 `trips-atlas-note`，为 recent / archive 结构提供更清晰的编辑式说明
-- 前端结构测试新增对 `hero-metrics`、`editorial-lead`、`cities-filter-rail`、`trips-atlas-note` 与 `v5.0.4` 可见版本的校验
+## v6.0.3 - 2026-06-22
 
 ### Changed
-- 首页、Cities、Trips 完成一轮受控视觉深化，增强 Atlas 化排版、信息节奏与卡片层次
-- 统一后端 `APP_VERSION`、前端壳层显示与文档版本到 `v5.0.4`
 
-### Regression
-- 执行 `python3 -m unittest discover -s tests -v`，后端 14 项测试通过
-- 执行 `node --test web/tests/*.test.js`，前端 10 项结构测试通过
+- Hardened mobile UX states.
+- Improved mobile interaction safety around core navigation and app surfaces.
 
-## v5.0.3 — 2026-06-19
-
-> **Built with:** Codex + OpenAI 官方模型
+## v6.0.2 - 2026-06-22
 
 ### Changed
-- 同步 `README.md`、`HANDOFF.md`、`CHANGELOG.md`，将当前实现状态更新为 foundation 契约测试基座 + `Editorial Atlas` 首页/主页面结构推进到 `v5.0.3`
-- 文档口径明确当前活跃持久化链路为 `api/auth.py` 中的 SQLite（auth / session / trips / chat history）
-- 文档补充 Atlas 结构落地点：`Home` 的 Hero / Trust Layer / City Rail / Planner Entry，`Chat` 的 action rail，`Trips` 的 recent/saved 分组，`Tools` 主导航接入，以及 `Admin` overview hero
 
-### Docs
-- README 改写为当前前端主结构与回归入口说明，避免继续沿用旧版模块清单
-- HANDOFF 收口为当前真实架构说明，并同步到统一后的 `v5.0.3` 版本口径
+- Polished the mobile portrait experience.
+- Focused on thumb-friendly navigation and tighter screen structure.
 
-### Regression
-- 按 Task 10 执行 `python3 -m unittest discover -s tests -v`，14 项后端契约测试通过
-- 按当前前端测试集执行 `node --test web/tests/*.test.js`，8 项前端结构测试通过
-
-## v5.0.2 — 2026-06-19
-
-> **Built with:** Codex + OpenAI 官方模型
-
-### Added
-- 新增 `tests/test_config_contract.py`，覆盖 `/api/health` 与 `/api/config` 的版本一致性及 `google_client_id` 行为
-- 新增 `web/tests/auth-state.test.js`，覆盖 Tools 视图接入与导航结构存在性
-- 正式接入 `Tools` 视图与导航入口，新增 `view-tools` 与 `tools-grid`
+## v6.0.1 - 2026-06-21
 
 ### Changed
-- 版本号统一升级为 `v5.0.2`，同步到后端接口、前端展示和核心文档
-- 前端通过 `/api/config` 动态注入 `google_client_id` 和版本信息
 
-### Fixed
-- 修复 `/api/config` 缺少 `google_client_id` 的问题
-- 修复 Tools 相关代码存在但页面未接入的结构脱节问题
+- Rewrote VisePanda from a clean foundation in the new `JTCAO515/VP-Codex-Web` repository.
+- Preserved the core product idea while avoiding direct reuse of old frontend code.
 
-## v5.0.1 — 2026-06-19
+## Historical Baseline
 
-> **Built with:** Codex + OpenAI 官方模型
-
-### Added
-- 后端与前端测试基座：新增 `tests/` 与 `web/tests/`，覆盖 auth/admin/trips/chat 关键契约与结构检查
-- 方案文档：新增 `docs/2026-06-19-editorial-atlas-spec.md`、`docs/2026-06-19-tdd-implementation-plan.md`、`docs/2026-06-19-iteration-roadmap-text.md`
-- 正式实施计划：新增 `docs/superpowers/plans/2026-06-19-vp-hermes-foundation-editorial-atlas.md`
-
-### Changed
-- 版本号统一为 `v5.0.1`，同步到后端 health/config、前端页头页脚与核心文档
-- trips 模型新增 `content`，创建与读取行程时支持完整正文与旧数据回退
-
-### Fixed
-- 修复 auth/admin 鉴权失败时返回空 body，统一输出稳定 JSON 错误
-- 修复注册 `display_name` 未持久化的问题，并让 `disabled` 用户无法登录
-- 修复 admin 页面 token key 与主站不一致的问题，统一为 `vp_token`
-- 修复聊天 `split` 流程中的 `typingId` 重赋值问题
-- 修复聊天历史查看器与主聊天区重复使用 `chat-messages` id 的问题
-
-## v4.1.2 — 2026-06-19
-
-> **Built with:** Trae Work + 字节混合编码模型
-
-### Added
-- 翻译剩余知识库描述：景点贴士、美食描述、菜系分类英文化
-- 翻译 Tips、Emergency、Transport、Phrases 知识库正文
-- 更新 `HANDOFF.md` 反映 v4.1.x 完整英语化状态
-
-### Changed
-- `data/knowledge/attractions.py`、`data/knowledge/food.py` 中文描述全部转为英文
-- `data/knowledge/tips.py`、`data/knowledge/emergency.py`、`data/knowledge/phrases.py`、`data/knowledge/transport.py` 文案英语化
-- 版本号统一升级为 `v4.1.2`，同步到 API 和前端
-
-## v4.1.1 — 2026-06-19
-
-> **Built with:** Trae Work + 字节混合编码模型
-
-### Added
-- 翻译知识库标题字段、`CUISINE_TYPES` 枚举、Python docstrings
-
-### Changed
-- `data/knowledge/food.py`、`data/knowledge/packing.py` 内部标识符与注释英文化
-
-### Fixed
-- 修复知识库内残留中文标识符导致的英文原生链路不完整
-
-## v4.1.0 — 2026-06-19
-
-> **Built with:** Trae Work + 字节混合编码模型
-
-### Added
-- 全站中文→英文翻译：除中文专属地名保留 `English（中文）` 格式外，所有运行时文案改为原生英文
-- `data/knowledge/cities.py` 城市知识库完整英文化（City → Attractions → Tips 全链路）
-- `data/tools/foreigner_guide.py`、`hotels.py`、`packing.py`、`pricing.py`、`travel_tools.py`、`visa_guide.py` 工具描述英文化
-- 系统 Prompt 内互动指引与探索建议改英文
-
-### Changed
-- 8 个知识库/工具文件、427 行中文文案→英文，418 行删除
-- 版本号从 v4.0.x → v4.1.0，标记 English-native 里程碑
-
-## v4.0.6 — 2026-06-19
-
-> **Built with:** Trae Work + 字节混合编码模型
-
-### Fixed
-- 修复登录后 Auth 按钮可见性问题（前端状态同步与 API 返回版本不匹配）
-- 修复 API 版本号与前端显示不一致（API 显示 v4.0.5，前端显示旧版本）
-
-### Changed
-- `api/index.py` 版本号同步至前端展示
-- `web/app.js` 登录/登出后按钮状态刷新逻辑加固
-
-## v4.0.5 — 2026-06-19
-
-> **Built with:** Trae Work + 字节混合编码模型
-
-### Added
-- B5: 签证材料包 MVP — `data/visa_policies.json`（美/英/澳/加/申根 5 国政策）
-- B5: `api/visa.py` — `GET /api/visa/info` 查要求 + `POST /api/visa/generate` 生成行程单
-- B5: 前端签证弹窗（工具箱🛂入口），选择国籍→查要求→生成标准行程单→复制
-- B5: 行程自动填充最新 trip，不支持国家显示警告
-
-## v4.0.4 — 2026-06-19
-
-> **Built with:** Trae Work + 字节混合编码模型
-
-### Added
-- B4: 熊猫导游表情系统 — SSE 流中根据关键词动态切换熊猫表情
-- B4: 10 种情绪（😋美食/💰价格/🕶️景点/📌提示/😊开心/🤔思考/😅抱歉/🏨酒店/🚄交通）
-- B4: 熊猫头像右下角弹出式情绪徽章 + CSS pop 动画
-- B4: 流结束后自动恢复默认表情（🐼）
-
-## v4.0.3 — 2026-06-19
-
-> **Built with:** Trae Work + 字节混合编码模型
-
-### Added
-- B3: 城市对比模式 — `GET /api/cities/compare?cities=a,b` 后端端点
-- B3: 前端对比弹窗渲染（Vibe / Best Season / Budget / Highlights 横向对比）
-- B3: Chat 中自动检测「对比北京和成都」「compare beijing chengdu」触发对比
-- B3: 缺字段显示 N/A，不崩不藏
-
-## v4.0.2 — 2026-06-19
-
-> **Built with:** Trae Work + 字节混合编码模型
-
-### Added
-- B2: Trip Timeline 可视化 — `web/trip-timeline.js` + `web/trip-timeline.css`
-- B2: AI 行程回复自动渲染为垂直时间线卡片（按活动类型颜色编码）
-- B2: 一键复制行程（Timeline 上的 Copy 按钮）
-
-## v4.0.1 — 2026-06-19
-
-> **Built with:** Trae Work + 字节混合编码模型
-
-### Added
-- B1a: Auth 系统加固 — `POST /api/auth/logout` 端点（后端删除 token）
-- B1a: 前端登出 → 调用后端 API 销毁 token + 清 localStorage + reload
-
-### Changed
-- 版本号从 v3.x → v4.0.1
+The project was copied from the `VP-Hermes-Web` v5.0.9 baseline before the v6 clean rewrite path began. Earlier v4 and v5 entries are historical archive material and should not be treated as the current product plan.
