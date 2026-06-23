@@ -213,11 +213,30 @@ When CSS or JS changes, update:
 Current frontend cache marker:
 
 ```text
-20260622-v608-mobile-ui3
+20260623-v611beta
 ```
 
 Current service worker cache:
 
 ```text
-visepanda-shell-v608-mobile-ui3
+visepanda-shell-v611beta
 ```
+
+---
+
+## UI/UX Wiki
+
+完整的设计系统文档位于 `docs/uiux/`：
+
+| 章节 | 文件 |
+|------|------|
+| 设计原则 | `docs/uiux/design-principles.md` |
+| 设计令牌 | `docs/uiux/design-tokens.md` |
+| 组件库 | `docs/uiux/components/README.md` |
+| 导航系统 | `docs/uiux/navigation.md` |
+| 交互模式 | `docs/uiux/interactions.md` |
+| 响应式规则 | `docs/uiux/responsive.md` |
+| 可访问性 | `docs/uiux/accessibility.md` |
+| 翻译 UI 规范 | `docs/uiux/translation-ui.md` |
+| ViseBits 动画 | `docs/uiux/visebits.md` |
+| 图片与资源 | `docs/uiux/assets.md` |
