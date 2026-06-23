@@ -1,210 +1,133 @@
-# VisePanda — 用户系统 + 管理后台 产品需求文档
+# User System PRD
 
-> **版本:** v3.1.0 | **日期:** 2026-06-18
-> **范围:** 用户登录系统 + 管理后台（Admin/Ops）+ 对话历史持久化
-> **前置:** v3.0.8（现有基础：邮箱注册登录、Trip CRUD、SSE Chat）
+Last updated: 2026-06-22
+Current version: v6.0.8
+Scope: public account system, email verification, Google login, sessions, trips, and admin visibility.
 
----
+## Product Goal
 
-## 一、需求概述
+VisePanda should let guests explore and ask travel questions immediately, then invite them to create an account when they want to save work, recover trips, or continue planning across sessions.
 
-### 1.1 一句话需求
+The account system must feel familiar and low-friction:
 
-> **用户在未登录状态下可以浏览城市、使用 Chat、看工具箱，但在保存行程时被引导登录；管理员和运营人员可以查看所有用户的信息和他们在 Chat 里的对话记录。**
+- Sign in with Google.
+- Sign up with email and password only.
+- Verify email with a code before the account is treated as trusted.
+- Keep travel planning usable for guests.
+- Keep saved trips and admin operations behind authentication.
 
-### 1.2 当前状态 vs 目标状态
+## User Roles
 
-| 维度 | 现状 (v3.0.8) | 目标 (v3.1.0) |
-|------|--------------|--------------|
-| 前端登录 UI | ❌ 无任何登录入口 | ✅ 登录/注册页面 + 账号菜单 |
-| 用户认证 | ✅ 后端 API 完整（注册/登录/验证/重置） | ✅ 前端接入，登录态持久化 |
-| 基础功能访问 | ✅ 完全开放 | ✅ 保持开放（不登录也能用 Chat/浏览） |
-| 行程保存 | ❌ 无前端功能（后端 API 已存在） | ✅ 保存行程需登录，未登录弹引导 |
-| Chat 持久化 | ❌ 对话不保存，刷新丢失 | ✅ 登录用户的对话自动保存 |
-| 管理后台 | ❌ 无 | ✅ Admin/Ops 查看用户+对话记录 |
-| 角色体系 | ✅ user / admin | ✅ 扩展为 user / ops / admin |
+| Role | Purpose | Access |
+| --- | --- | --- |
+| Guest | Evaluate the product before committing | Plan, Ask, Cities, Tools, local trip draft |
+| User | Save and return to travel plans | Guest access plus saved trips and profile |
+| Admin | Maintain user base | User access plus user management endpoints |
 
-### 1.3 用户故事
+Ops is not an active product role in v6.0.8. If operational review returns, add it deliberately instead of assuming old v3 documents are still valid.
 
-```
-作为一个新访客
-我希望直接开始聊天规划行程，不需要注册
-这样我可以零摩擦体验产品价值
+## Core Requirements
 
-——
+### Registration
 
-作为一个已经聊出满意行程的用户
-我希望把我的行程保存下来，随时回来看
-这样我不怕聊天记录丢失
+- The registration form asks only for email and password.
+- No name field is required.
+- The backend stores a password hash, email verification status, timestamps, and role.
+- A newly registered email/password account must verify email before normal sign-in is considered complete.
+- Duplicate emails return a clear error.
+- Weak or malformed inputs return clear errors without leaking internal details.
 
-——
+### Email Verification
 
-作为一个已登录用户
-我希望我的对话历史自动保留
-这样我可以继续之前的对话
+- Registration creates an email verification code.
+- `RESEND_API_KEY` and `EMAIL_FROM` enable real email delivery through Resend.
+- If Resend is not configured, local and test flows still work through controlled test exposure.
+- The user confirms the code through `/api/auth/verify-email`.
+- The user can request a fresh code through `/api/auth/resend-verification`.
+- Verification codes must expire and must not be treated as passwords.
 
-——
+### Google Login
 
-作为一个运营人员 (ops)
-我希望查看用户的对话记录，了解用户需求和使用模式
-这样我可以优化提示词和知识库
+- Google login starts at `/api/auth/google/start`.
+- The callback endpoint exchanges the code, reads the Google email, creates or updates the local user, and returns a normal VisePanda session.
+- Google accounts are considered email-verified after a successful Google identity response.
+- If Google credentials are missing, the API should fail gracefully and the UI should not present a broken primary path.
 
-——
+### Email And Password Login
 
-作为一个管理员 (admin)
-我希望管理用户账号，查看用户信息和对话历史
-这样我可以处理账号问题和监控产品使用情况
-```
+- Login requires email and password only.
+- The form should not ask for display name.
+- Unverified email/password users should be guided to verification or resend, not silently logged in as fully active.
+- Disabled or deleted users must not receive sessions.
 
----
+### Session
 
-## 二、角色与权限模型
+- The frontend stores the active token in `sessionStorage["vp_token"]`.
+- `/api/auth/me` returns the public user object for the current token.
+- Logout clears the server-side session and local token.
+- The public user shape must avoid password hashes, reset tokens, verification codes, and internal secrets.
 
-### 2.1 角色定义
+### Trips
 
-| 角色 | 访问范围 | 典型场景 |
-|------|---------|---------|
-| **guest**（未登录） | 首页 / 城市浏览 / Chat / 工具箱 | 零摩擦体验，看看值不值得用 |
-| **user**（已登录） | guest 全部 + 保存行程 + 查看自己对话历史 | 深度使用，资产沉淀 |
-| **ops**（运营） | user 全部 + 查看所有用户信息 + 查看所有对话记录 | 监控用户行为，优化体验 |
-| **admin**（管理员） | ops 全部 + 编辑用户信息/状态/角色 | 账号管理，系统配置 |
+- Guests can create a local draft experience.
+- Saving to the backend requires authentication.
+- A user can list and delete only their own trips.
+- Trip API responses should be stable enough for the frontend to render even when content is partial.
 
-### 2.2 权限矩阵
+### Admin
 
-| 能力 | guest | user | ops | admin |
-|------|:-----:|:----:|:---:|:-----:|
-| 浏览首页/城市/工具箱 | ✅ | ✅ | ✅ | ✅ |
-| AI Chat（对话） | ✅ | ✅ | ✅ | ✅ |
-| 查看自己对话历史 | ❌ | ✅ | ✅ | ✅ |
-| 保存行程 | ❌ → 弹引导 | ✅ | ✅ | ✅ |
-| 查看自己已保存行程 | ❌ | ✅ | ✅ | ✅ |
-| 查看所有用户列表 | ❌ | ❌ | ✅ | ✅ |
-| 查看用户对话记录 | ❌ | ❌ | ✅ | ✅ |
-| 编辑用户信息/角色/状态 | ❌ | ❌ | ❌ | ✅ |
+- Admin access requires a valid session and admin role.
+- Admin can list users and delete users.
+- Admin credentials are seeded only from environment variables.
+- Weak default admin passwords are ignored.
 
----
+## Current API Surface
 
-## 三、功能需求
+- `POST /api/auth/register`
+- `POST /api/auth/verify-email`
+- `POST /api/auth/resend-verification`
+- `GET /api/auth/google/start`
+- `GET /api/auth/google/callback`
+- `POST /api/auth/login`
+- `POST /api/auth/logout`
+- `GET /api/auth/me`
+- `POST /api/auth/update-profile`
+- `POST /api/auth/forgot-password`
+- `POST /api/auth/reset-password`
+- `GET /api/trips`
+- `POST /api/trips`
+- `DELETE /api/trips/:id`
+- `GET /api/admin/users`
+- `DELETE /api/admin/users/:id`
 
-### 3.1 登录注册页
+## Acceptance Criteria
 
-**页面位置：** `/login` 路由，或弹窗/侧边栏形式
+- A new user can register with email and password only.
+- A verification code can be generated, delivered or exposed in test mode, and confirmed.
+- A verified user can log in, refresh the page, remain signed in for the session, save trips, and log out.
+- Google OAuth can create a verified local account and session when configured.
+- A guest can still use Plan, Ask, Cities, and Tools without account friction.
+- Admin endpoints reject guests and normal users.
+- Tests cover register, verify, login, Google fallback behavior, session lookup, trips ownership, and admin gating.
 
-**注册流程：**
-1. 输入邮箱 + 密码 + 昵称（可选）
-2. 点击注册 → 后端创建账号（status=pending）
-3. 返回成功信息，提示"已发送验证邮件"
-4. ⚠️ MVP 阶段：不依赖真实邮件验证，注册后 status 直接设为 active
+## Non-Goals
 
-**登录流程：**
-1. 输入邮箱 + 密码
-2. 点击登录 → 后端验证 → 返回 token
-3. token 存入 localStorage → 页面刷新保持登录态
-4. 登录成功后跳回之前页面
+- Paid subscriptions.
+- User avatars.
+- Social login beyond Google.
+- Long-lived refresh-token rotation.
+- External hosted database migration.
+- Full admin analytics dashboard.
 
-**忘记密码：**
-- 输入邮箱 → 后端生成重置 token → MVP 阶段直接返回重置链接（不发邮件）
-- 实际过程中可以在 Chat 中展示重置链接
+## Risks
 
-### 3.2 登录态 UI 变化
+- SQLite on Vercel serverless storage is not durable across cold-start environments. It is acceptable for the current prototype, but production account durability requires Turso, Supabase, Neon, or another hosted database.
+- Email delivery depends on Resend configuration and DNS sender reputation.
+- OAuth redirect URIs must match the deployed domain exactly: `go2china.space`.
 
-| 控件 | 未登录 | 已登录 |
-|------|--------|--------|
-| 顶部导航 | — | 右侧显示用户头像/昵称缩写 + 下拉菜单 |
-| 下拉菜单 | — | 「我的行程」「我的对话」「退出登录」 |
-| "Save Trip" 按钮 | 弹出"请先登录" | 直接保存 |
-| Chat 输入区 | 提示"登录后可保存对话历史" | — |
+## Next Improvements
 
-### 3.3 Chat 对话持久化
-
-**存储策略：**
-- **未登录用户**：对话存在前端 localStorage（现有行为，不改）
-- **已登录用户**：对话自动保存到后端 SQLite
-  - 每条对话分配唯一 `conversation_id`（UUID）
-  - 每次发送消息 → 保存到 `chat_messages` 表
-  - 每次收到 AI 回复 → 逐条保存 message 记录
-  - 对话结构化：conversation → messages → role + content + timestamp
-
-**前端展示：**
-- 已登录用户打开 Chat → 默认加载最近一次未完成的对话
-- 或从「我的对话」页面选择历史对话
-- 对话标题 = 用户第一条消息前 50 字
-
-### 3.4 管理后台
-
-**布局：** 侧边栏 + 主内容区
-
-**侧边栏导航：**
-- 📊 Dashboard（数据概览）
-- 👥 用户管理（User List）
-- 💬 对话查询（Chat Logs）
-- ⚙️ 系统设置（可选）
-
-**📊 Dashboard：**
-- 总用户数（guest vs registered）
-- 今日/本周活跃用户
-- 总对话数/今日常话数
-- 趋势简表（近 7 天）
-
-**👥 用户管理：**
-- 用户列表表格：
-  | 邮箱 | 昵称 | 角色 | 状态 | 注册时间 | 最后登录 | 对话数 | 操作 |
-  |------|------|------|------|---------|---------|-------|------|
-- 搜索/筛选：按邮箱搜索，按角色/状态筛选
-- 点击用户 → 进入用户详情页
-
-**用户详情页：**
-- 信息区：邮箱、昵称、角色、状态、注册时间、最后登录时间
-- 操作区（仅 admin）：修改昵称、切换角色（user/ops/admin）、启用/禁用
-- 对话记录列表：该用户所有对话的时间线
-  - 点击某条对话 → 展开查看完整消息记录
-
-**💬 对话查询：**
-- 搜索框：按用户邮箱搜索对话
-- 或按时间范围筛选
-- 结果列表：用户邮箱 | 对话标题 | 消息数 | 创建时间
-- 点击展开 → 完整对话展示（用户消息 + AI 回复，时间戳）
-
-### 3.5 管理后台验证
-
-- 访问 `/admin` 路径 → 检查 token
-- 未登录 → 跳转到登录页
-- 角色不是 ops/admin → 返回 403
-- 所有管理 API 带有 `require_role(['admin', 'ops'])` 检查
-
----
-
-## 四、非功能需求
-
-### 4.1 安全
-
-- 密码：bcrypt 哈希，永远不存明文
-- Token：64 位 hex，过期时间 7 天
-- 管理 API：严格角色校验
-- 对话数据：用户只能看自己的，ops/admin 可以看所有
-
-### 4.2 体验
-
-- 登录/注册：3 步以内完成
-- 未登录访客 Chat：零延迟，不打断
-- 保存行程的登录引导：温和弹窗，不是硬拦
-- 移动端适配：管理后台需支持手机端查看
-
-### 4.3 数据
-
-- SQLite 存储：对话数据可能在 `/tmp/`（Vercel 上）或 `data/`（本地）
-- ⚠️ **Vercel 限制**：SQLite 文件在 Vercel Serverless 上每次冷启动重置
-  - MVP 接受此限制（对话仅在 session 内持久）
-  - 后续可升级为外部数据库（Turso/Supabase）
-- 对话数据量预估：每条消息 ~500 字节，100 用户 × 50 对话 × 20 消息 ≈ 50MB，SQLite 完全够
-
----
-
-## 五、明确不做的（本迭代）
-
-- ❌ 真实邮件发送（验证/重置密码用 mock）
-- ❌ 社交登录（Google/Apple）
-- ❌ 对话搜索/全文检索
-- ❌ 数据分析/用户行为追踪
-- ❌ 批量导入导出用户
-- ❌ 管理后台国际化
+- Add clear UI states for pending verification.
+- Add resend countdown and code expiry copy.
+- Add browser smoke tests for email registration and Google-start fallback.
+- Move account storage to a durable managed database before real user acquisition.

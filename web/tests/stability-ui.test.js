@@ -1,70 +1,111 @@
-const test = require('node:test');
-const assert = require('node:assert');
-const fs = require('node:fs');
-const path = require('node:path');
+const test = require("node:test");
+const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const path = require("node:path");
 
-const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
-const appJs = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
-const css = fs.readFileSync(path.join(__dirname, '..', 'app.css'), 'utf8');
+const root = path.resolve(__dirname, "..");
+const css = fs.readFileSync(path.join(root, "app.css"), "utf8");
+const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
 
-test('auth trigger exposes stable modal hooks', () => {
-  assert.match(html, /id="auth-btn"/);
-  assert.match(html, /id="auth-modal-overlay"/);
-  assert.match(appJs, /bindAuthTriggers/);
-  assert.match(appJs, /safeInitStep/);
+test("core layout uses stable responsive grids and bounded cards", () => {
+  assert.match(css, /grid-template-columns: repeat\(auto-fill, minmax\(240px, 1fr\)\)/);
+  assert.match(css, /min-height: 100dvh/);
+  assert.match(css, /border-radius: 8px/);
+  assert.doesNotMatch(css, /font-size:\s*[^;]*vw/);
 });
 
-test('view shell exposes loading and error containers', () => {
-  assert.match(html, /id="global-loading-state"/);
-  assert.match(html, /id="global-error-state"/);
-  assert.match(appJs, /showGlobalLoading/);
-  assert.match(appJs, /showGlobalError/);
+test("overview remains available but Ask is the first screen", () => {
+  assert.match(html, /id="quickPlanner"/);
+  assert.match(html, /data-view-panel="dashboard"/);
+  assert.match(html, /id="featuredCities"/);
+  assert.match(html, /id="overviewButton"/);
+  assert.match(html, /class="workspace section chat-hero"[^>]*id="panel-chat"/);
+  assert.match(appJs(), /setView\("chat"\)/);
 });
 
-test('slow views expose dedicated loading and error shells', () => {
-  assert.match(html, /id="cities-loading"/);
-  assert.match(html, /id="cities-error"/);
-  assert.match(html, /id="tools-loading"/);
-  assert.match(html, /id="tools-error"/);
-  assert.match(html, /id="trips-loading"/);
-  assert.match(html, /id="trips-error"/);
-  assert.match(html, /VP\.retryCurrentView\(\)/);
+test("mobile portrait interaction shell has thumb-friendly controls", () => {
+  assert.match(css, /\.nav\s*{[^}]*position: fixed/s);
+  assert.match(css, /bottom: calc\(8px \+ env\(safe-area-inset-bottom\)\)/);
+  assert.match(css, /grid-template-columns: repeat\(4, minmax\(0, 1fr\)\)/);
+  assert.match(css, /\.city-strip\s*{[^}]*scroll-snap-type: x mandatory/s);
+  assert.match(html, /data-prompt="Plan a first-time 7 day China route/);
 });
 
-test('view state helpers and retry flow are wired in app runtime', () => {
-  assert.match(appJs, /function setViewState\(view,\s*state,\s*message\s*=\s*''\)/);
-  assert.match(appJs, /function retryCurrentView\(\)/);
-  assert.match(appJs, /retryCurrentView,/);
-  assert.match(appJs, /if \(view === 'trips'\) loadTrips\(\);/);
+test("v6.1.1 exposes mobile status surfaces", () => {
+  assert.match(html, /id="cityStatus"/);
+  assert.match(html, /id="toolStatus"/);
+  assert.match(html, /id="tripStatus"/);
+  assert.match(html, /id="toast"/);
+  assert.match(css, /\.empty-state/);
+  assert.match(css, /\.skeleton-card/);
+  assert.match(css, /\.toast\.is-visible/);
+  assert.match(css, /\.sheet-handle/);
 });
 
-test('slow view loaders enter loading and error transitions', () => {
-  assert.match(appJs, /setViewState\('cities',\s*'loading'\)/);
-  assert.match(appJs, /setViewState\('cities',\s*'error',\s*'Could not load city data\.'\)/);
-  assert.match(appJs, /setViewState\('tools',\s*'loading'\)/);
-  assert.match(appJs, /setViewState\('tools',\s*'error',\s*'Could not load toolkit data\.'\)/);
-  assert.match(appJs, /setViewState\('trips',\s*'loading'\)/);
-  assert.match(appJs, /setViewState\('trips',\s*'error',\s*'Could not load saved trips\.'\)/);
+test("v6.1.1 uses shared visual system tokens", () => {
+  assert.match(css, /--surface:/);
+  assert.match(css, /--focus-ring:/);
+  assert.match(css, /--shadow-raised:/);
+  assert.match(css, /\.city-card__facts/);
+  assert.match(css, /\.trip-card__facts/);
+  assert.match(html, /20260623-v611-responsive-qa2/);
+  assert.match(css, /prefers-color-scheme: dark/);
 });
 
-test('view-level feedback styles exist', () => {
-  assert.match(css, /\.view-state-shell\b/);
-  assert.match(css, /\.view-loading\b/);
-  assert.match(css, /\.view-error\b/);
+test("v6.1.1 exposes professional chat controls progressively", () => {
+  assert.match(html, /id="chatMode"/);
+  assert.match(html, /id="chatProvider"/);
+  assert.match(html, /id="chatDepth"/);
+  assert.match(html, /data-mode="entry"/);
+  assert.match(html, /data-depth="expert"/);
+  assert.match(html, /class="chat-toolbar is-hidden"/);
+  assert.match(html, /id="chatWelcome"/);
+  assert.match(css, /\.chat-welcome/);
+  assert.match(css, /\.preset-group/);
 });
 
-test('image elements expose fallback hooks', () => {
-  assert.match(html, /data-img-fallback/);
-  assert.match(appJs, /attachImageFallbacks/);
-  assert.match(css, /\.img-fallback\b/);
+test("v6.1.1 exposes email verification and Google auth controls", () => {
+  assert.match(html, /id="googleLogin"/);
+  assert.match(html, /id="verifyForm"/);
+  assert.match(html, /id="resendVerification"/);
+  assert.doesNotMatch(html, /name="name" placeholder="Name"/);
+  assert.match(appJs(), /\/api\/auth\/verify-email/);
+  assert.match(appJs(), /\/api\/auth\/resend-verification/);
 });
 
-test('mobile nav uses explicit primary marker and safe-area visibility rules', () => {
-  assert.match(html, /id="bottom-nav"/);
-  assert.match(html, /data-mobile-nav="primary"/);
-  assert.match(css, /--bottom-nav-safe/);
-  assert.match(css, /@media\s*\(max-width:\s*640px\)/);
-  assert.match(css, /#main\s*\{\s*padding-bottom:\s*calc\(var\(--bottom-nav-safe\)\s*\+\s*8px\)/);
-  assert.match(css, /\.view\s*\{\s*padding-bottom:\s*calc\(var\(--bottom-nav-safe\)\s*\+\s*8px\)/);
-  assert.match(css, /\.bottom-nav\s*\{\s*display:\s*flex;\s*visibility:\s*visible;\s*opacity:\s*1;\s*z-index:\s*220;/);
+test("v6.1.1 makes mobile navigation behave like real app tabs", () => {
+  assert.match(html, /role="tablist"/);
+  assert.match(html, /id="tab-chat"[^>]*aria-selected="true"/);
+  assert.doesNotMatch(html, /id="tab-dashboard"/);
+  assert.match(html, /role="tabpanel" aria-labelledby="tab-chat"/);
+  assert.match(css, /\.nav__item\.is-active::after/);
+  assert.match(appJs(), /setAttribute\("aria-selected"/);
+  assert.match(appJs(), /toggleAttribute\("hidden"/);
 });
+
+test("v6.1.1 strengthens the AI-first mobile planning surface", () => {
+  assert.match(html, /class="home-snapshot"/);
+  assert.match(html, /class="quick-chips"/);
+  assert.match(css, /\.chat-hero/);
+  assert.match(css, /\.agent-mark/);
+  assert.match(html, /id="mobileAskButton"/);
+  assert.match(css, /\.mobile-ask-fab/);
+  assert.match(css, /bottom: calc\(92px \+ env\(safe-area-inset-bottom\)\)/);
+  assert.match(appJs(), /mobileAskButton/);
+});
+
+test("v6.1.1 fixes verified AI-first responsive regressions", () => {
+  assert.doesNotMatch(appJs(), /Use planner", \(\) => setView\("dashboard"\)/);
+  assert.match(appJs(), /Ask AI", \(\) => setView\("chat"\)/);
+  assert.match(appJs(), /is-chat-composing/);
+  assert.match(css, /@media \(min-width: 1440px\)/);
+  assert.match(css, /width: min\(1120px, calc\(100vw - 180px\)\)/);
+  assert.match(css, /body\[data-view="chat"\]\.is-chat-composing \.nav/);
+  assert.match(css, /\.chat-toolbar label:first-child/);
+  assert.match(css, /\.chat-toolbar\s*{[^}]*overflow-x: auto/s);
+  assert.match(appJs(), /window\.scrollTo\(\{ top: 0, behavior: "auto" \}\)/);
+});
+
+function appJs() {
+  return fs.readFileSync(path.join(root, "app.js"), "utf8");
+}

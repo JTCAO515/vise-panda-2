@@ -1,329 +1,116 @@
-# VisePanda — AI China Travel Platform · 产品拆解与迭代方向 v3.0.1
+# VisePanda Product Analysis
 
-> 分析框架：Product Strategy Canvas + 竞品分析 + Opportunity Solution Tree
-> 分析日期：2026-06-14
-> 版本：v3.0.1（全面重做）
+Last updated: 2026-06-22
+Current version: v6.0.8
+Domain: `go2china.space`
 
----
+## One-Line Product
 
-## 一、产品战略画布
+VisePanda is an English-language China travel workspace that combines AI trip planning, curated city knowledge, practical travel tools, saved trips, and lightweight account features.
 
-### 1. 愿景
+## Vision
 
-让每个想来中国旅行的外国人**像跟本地朋友聊天一样**，获得一份真正靠谱、贴合个人偏好的旅行计划。
+Make planning a China trip feel like asking a precise local travel expert who understands visa readiness, city fit, route logic, budget, language friction, and practical day-by-day tradeoffs.
 
-不是另一个"景点列表生成器"——那是搜索引擎就能做的事。VisePanda 的核心是**把 AI 对话 + 结构性知识库 + 本地人智慧**融合成一个产品：你告诉它你想怎么玩，它给你一份能直接用的行程，包括去哪、吃什么、怎么去、多少钱、有什么坑。
+VisePanda should not feel like a generic chatbot with a travel skin. The product promise is:
 
-**一句话：把中国本地导游的规划能力，打包成一个 AI 旅行助手，24 小时在线。**
+- structured China-specific planning;
+- fast mobile-first interaction;
+- professional travel questions before answers;
+- trustworthy city and tool context;
+- saved work when users are ready to commit.
 
-### 2. 目标市场
+## Primary Users
 
-| 细分人群 | 核心痛点 | 当前替代方案 |
-|----------|----------|-------------|
-| **在华旅行的英语外国人** | 不会中文、看不懂点评、不知道去哪吃/玩/住，对"网红景点"不信任 | 小红书英文版（碎片化）、TripAdvisor（过时）、携程英文版（体验差）、Lonely Planet（书，不实时） |
-| **计划去中国的高端自由行游客** | 中国太大，城市太多，不知道如何组合行程、时间分配、季节选择 | 找旅行社（贵、流水线）、小红书/穷游搜攻略（信息过载）、ChatGPT/Claude（泛泛而谈、无真实数据支撑） |
-| **在华外籍工作者/留学生** | 想去周边城市但"不知道怎么规划"，需要中国特色的深度体验 | 问中国朋友（人情成本高）、自己查（效率低且可能踩坑） |
-| **中国国内自由行年轻人** | 同样需要个性化行程规划，但不愿用旅行团标准化产品 | 小红书抄作业、飞猪/携程自由行套餐（模板化） |
+| Segment | Need | Product Fit |
+| --- | --- | --- |
+| First-time international visitors | Understand where to go, when to go, and how hard the trip will be | Plan workspace, Ask presets, visa/tool readiness |
+| High-intent independent travelers | Build a practical itinerary without agency friction | Professional chat, saved trips, city cards |
+| Foreign residents in China | Find weekend or short-break ideas | City discovery and quick Ask flows |
+| English-speaking planners helping others | Produce a shareable draft quickly | Structured answers and saved trip artifacts |
 
-**首发人群**：在华英语外国人 + 计划来中国的高端自由行客。
+## Positioning
 
-核心判断：**英语原生界面 + 熊猫中国风 + AI 聊天规划**这个组合在市场上是空白的。
+VisePanda sits between a general LLM and a travel booking platform.
 
-### 3. 成本定位
+General LLMs can answer broadly, but they do not automatically keep China-specific structure, saved trip state, and curated destination context together.
 
-| 维度 | v2.x（当前） | v3.0.1（目标） |
-|------|------------|--------------|
-| 架构 | FastAPI + SQLAlchemy + Supabase | Python WSGI stdlib only |
-| LLM | GLM-5.1（智谱 API） | DeepSeek V4 Flash |
-| 数据库 | Supabase Postgres（Management API） | 项目数据库（JSON/SQLite） |
-| 部署 | Vercel Serverless（FastAPI） | Vercel Serverless（WSGI） |
-| 前端 | 7个 JS 文件（FastAPI 服务端渲染） | 单页应用（纯静态 HTML+CSS+JS） |
-| 外部依赖 | `httpx`, `jose`, `SQLAlchemy`, `pydantic` 等 | **零 pip 依赖（stdlib only）** |
+Booking platforms are strong once a user knows what to buy, but weaker during the early question-heavy planning phase.
 
-**开发成本**：
-- v2.x 后端 2,388 行单文件 + 7 个 JS 文件 + 数据文件 → 维护成本高
-- v3.0.1 重构为 WC26 验证过的 WSGI 模式：`api/index.py`（路由+API） + `web/`（前端静态文件）
-- 零外部 pip 依赖 → 部署零故障，构建零延迟，冷启动 200ms
+VisePanda owns the planning middle:
 
-**用户成本**：完全免费。Vercel 免费额度足够支撑 MVP。
+1. understand traveler intent;
+2. ask the right follow-up questions;
+3. generate a usable route or decision;
+4. connect the answer to cities, tools, and saved trips.
 
-### 4. 价值主张
+## Current Product Surface
 
-| 维度 | 原有状态（自己查攻略） | 用了 VisePanda 之后 |
-|------|---------------------|------------------|
-| 目的地选择 | 翻小红书/穷游/Instagram → 信息过载，决策困难 | AI 对话了解偏好 → 推荐最匹配的城市和季节 |
-| 行程规划 | 手动整合景点/美食/交通 → 碎片化，容易遗漏 | 一键生成完整行程（Day-by-day + 景点 + 餐饮 + 交通 + 贴士） |
-| 本地知识 | 不知道哪家店是游客店、哪家是本地人吃的 | 知识库融合真实推荐（非商业榜单） |
-| 应对变化 | 踩坑了也不知道 | 内置避坑指南 + 本地人贴士（每个城市都有） |
-| 语言障碍 | 菜单看不懂、打车说不清 | 语言急救卡、场景中文卡片一键生成 |
+- Plan: first-screen planning workspace with destination entry, readiness cards, featured cities, and mobile Ask access.
+- Ask: streaming AI guide with consultation presets, professional context, provider routing, and local fallback.
+- Cities: curated China destination cards backed by local JSON data.
+- Tools: packing, pricing, phrase, emergency, and visa helper surfaces.
+- Trips: authenticated saved trips plus guest local draft behavior.
+- Account: email/password registration, email verification, Google OAuth hooks, profile, reset, and session lookup.
+- Admin: minimal user-management console for explicit admin users.
 
-### 5. 明确的取舍
+## Differentiators
 
-**不做（v3.0.1 MVP 阶段）：**
-- ❌ 不做用户系统 / 登录 / 注册 — 零门槛直接聊
-- ❌ 不做实时数据 API（天气/人流） — 用 LLM 知识 + 静态数据
-- ❌ 不做地图集成（Leaflet v2 地图） — 后续 Phase 2
-- ❌ 不做行程保存/分享 — 后续 Phase 2
-- ❌ 不做多语种 — English-only MVP，中文用户用中文问
-- ❌ 不做支付/商业化 — 纯工具
+- China-specific travel focus instead of generic global itinerary generation.
+- English-native interface for international users.
+- Mobile portrait as the primary interaction surface.
+- Lightweight architecture that deploys quickly on Vercel.
+- Curated JSON knowledge base plus AI responses.
+- Account system only appears where it protects user value, such as saving trips.
 
-**聚焦：**
-- ✅ AI 对话规划：LLM 深度集成 + 结构化知识库
-- ✅ 城市知识库：33 城景点/美食/酒店/交通/贴士/紧急
-- ✅ 旅行工具箱：打包清单、价格估算、签证指南、语言卡
-- ✅ 中国风 UI：🐼 熊猫 × 水墨 × 暗色/亮色双主题
+## Product Loop
 
-### 6. 关键指标
-
-| 指标 | 说明 | v3.0.1 目标 |
-|------|------|-----------|
-| **对话成功率** | 用户问旅行问题 → LLM 给出可用行程 | ≥ 85% |
-| **知识库命中率** | LLM 回答引用了城市知识库中的数据 | ≥ 90%（拒绝幻觉） |
-| **首屏加载时间** | 页面完全可交互 | < 3s（Vercel 冷启动） |
-| **流式响应速度** | 用户发消息 → 首 token 到达 | < 2s |
-| **Lighthouse 评分** | 性能 + 可访问性 | ≥ 85 |
-| **部署稳定性** | 零依赖带来的零部署故障 | 100% |
-
-### 7. 增长策略
-
-**Product-Led Growth + 内容驱动：**
-
-- **MVP 是工具**：用户直接访问 → 聊出行程 → 截图/复制带走，零摩擦
-- **传播路径**：用户把对话截图发 Twitter/小红书 → "这个 AI 帮我规划的行程好靠谱" → 别人来试
-- **差异化传播**：熊猫 Logo + 中国风 UI 本身是记忆点，容易被分享
-- **SEO 长尾**：每个城市页面天然 SEO 关键词（"Beijing 3-day itinerary AI" 等）
-
-### 8. 核心能力
-
-| 能力 | 来源 | 备注 |
-|------|------|------|
-| 城市知识库（33 城） | ✅ 现有资产复用 | 景点/美食/住宿/交通/天气/贴士 |
-| AI 聊天规划（LLM） | ✅ DeepSeek V4 Flash | 行程生成 + 对话式规划 |
-| 旅行工具箱 | ✅ 现有资产复用 | 打包/价格/签证/语言/紧急 |
-| 熊猫中国风 UI | ✅ v3.0.1 新建 | popular-web-designs 参考 |
-| 流式 SSE 聊天 | ✅ 重构实现 | WC26 式 WSGI + SSE |
-| 零依赖架构 | ✅ WC26 验证 | Python stdlib only |
-
-### 9. 护城河
-
-- **知识库 × LLM 融合**：不是纯 LLM 回答（泛泛而谈），也不是纯数据展示（没有个性），而是 **LLM 根据用户偏好自动检索知识库 + 生成结构化行程**。这层融合是当前竞品做不好的。
-- **33 城本地化知识资产**：不是抓的公开数据，是精选后的可信知识（景点值不值得去、什么季节去、哪家店是本地人吃的）。累积越多，壁垒越高。
-- **熊猫 × 中国风品牌识别**：不是通用旅游助手，是"那个熊猫中国旅行 AI"。品牌心智是差异化。
-- **零依赖架构**：部署门槛极低，迭代周期极短，运维成本接近于零。
-
----
-
-## 二、竞品分析
-
-| 维度 | VisePanda | ChatGPT/Claude | 携程/TripAdvisor | 小红书/穷游 | Lonely Planet |
-|------|-----------|---------------|-----------------|-----------|--------------|
-| **核心形态** | AI 对话规划 + 知识库 | 通用对话 | 交易平台 + 点评 | UGC 攻略社区 | 旅行书（静态） |
-| **行程生成** | ✅ 一键生成结构化行程 | ⚠️ 能写但泛泛 | ❌ 只有套餐 | ❌ 需要自己整理 | ❌ 固定路线 |
-| **本地知识深度** | ✅ 精选非商业推荐 | ⚠️ 无本地数据 | ✅ 但商业化严重 | ✅ 但碎片化 | ✅ 但过时 |
-| **实时个性化** | ✅ 对话式了解偏好 | ✅ 通用对话 | ❌ 标准化产品 | ❌ 自己搜 | ❌ 固定书 |
-| **中国风 UI** | ✅ 熊猫 × 水墨 | ❌ 无 | ❌ 电商 UI | ❌ 社区 UI | ❌ 出版风格 |
-| **离线可用** | ⚠️ Phase 2 | ❌ 需网络 | ⚠️ APP 部分 | ⚠️ APP 部分 | ✅ 书籍 |
-| **成本** | 免费 | 免费/付费 | 免费 | 免费 | 书价 |
-| **部署门槛** | 零依赖 Vercel | 不适用 | 不适用 | 不适用 | 不适用 |
-
-**差异化优势**：VisePanda 不是"另一个旅游网站"，而是**AI 旅行规划师**——用对话方式了解你，用知识库提供真实信息，用 LLM 生成完整行程。竞品要么是交易平台，要么是攻略社区，要么是通用 AI 但缺乏中国本地数据。
-
----
-
-## 三、v3.0 回顾与 v3.0.1 重构动因
-
-### v2.x 取得的价值（可保留的资产）
-
-| 资产 | 价值 | 复用方式 |
-|------|------|---------|
-| 33 城知识库（cities.py 含景点/美食/贴士） | ✅ 核心数据资产 | 直接迁移为 JSON 数据 |
-| 旅行工具箱（packing/pricing/visa/emergency/phrases） | ✅ 高价值工具 | 迁移为独立数据模块 |
-| 城市图片素材（23 张 JPG） | ✅ 视觉资产 | 保留到 static/img/ |
-| Panda SVG Logo | ✅ 品牌资产 | 保留/升级 |
-| DESIGN.md 设计系统 | ✅ 设计体系 | 作为参考，v3 重做 |
-| 迭代经验（124 次迭代的教训） | ✅ 无形成本 | 避免重复踩坑 |
-
-### v2.x 的问题（必须重构的理由）
-
-| 问题 | 根因 | 影响 |
-|------|------|------|
-| 后端 2,388 行单文件 | 架构决策积累 + 增量迭代无重构 | 维护成本高，改一行可能崩一片 |
-| FastAPI + httpx + jose + SQLAlchemy + pydantic 依赖链 | 初始选型偏差 | Vercel 冷启动 5-10s，部署易故障 |
-| 7 个 JS 文件 + 服务端渲染混合模式 | 前后端耦合过度 | 修改流程复杂，前后端不同步 |
-| Supabase Management API 做数据库 | 绕开直接 Postgres 连接（缺密码） | 延迟高、查询笨重 |
-| GLM-5.1 中文强但英文生态弱 | 型号选择 | 英文用户场景英文输出质量不够 |
-| 迭代之间可用性不稳 | 功能叠加过程中出现多次"对话不可用" | 用户信任损失 |
-
-### v3.0.1 重构原则
-
-1. **架构复用 WC26 验证模式**：Python WSGI + stdlib only + 静态前端
-2. **LLM 切换 DeepSeek V4 Flash**：更快、更便宜、英文更好、OpenAI 兼容
-3. **前端单页重构**：Single HTML + CSS + JS，用 `popular-web-designs` 指导设计
-4. **项目数据库**：JSON 文件持久化（替换 Supabase），Phase 2 再升级
-5. **保留知识资产**：33 城数据直接迁移，不重新造轮子
-6. **先骨架后内容**：先让架构跑起来，再填功能
-
----
-
-## 四、v3.0.1 迭代路线图（Phase 1，15 轮）
-
-### 路线图总览
-
-```
-Phase 1 (v3.0.1)      Phase 2               Phase 3              Phase 4
-  骨架搭建      →   体验打磨     →    深度增强     →    生态构建
-  6 轮 (1-6)        5 轮 (7-11)       4 轮 (12-15)       后续规划
-  能跑起来          好看+好用         有料+有趣          平台化
+```text
+Plan -> Ask -> structured answer -> saved Trip -> related Cities/Tools -> refined Ask
 ```
 
-### Phase 1：骨架搭建（Iter 1-6）
+The next iterations should tighten this loop rather than adding unrelated surfaces.
 
-**目标**：零依赖架构跑通，聊天 + 知识库 + 设计系统就位
+## Success Metrics
 
-| Iter | 模块 | 内容 | 复杂度 |
-|:----:|------|------|:------:|
-| **1** | 🏗️ WSGI 骨架 | `api/index.py`（路由 + 静态服务 + 健康检查）+ `web/index.html` 入口 + Vercel 部署 | ⭐ |
-| **2** | 🐼 前端骨架 | Panda × 中国风 Landing 页：熊猫 Logo + Hero + 33 城网格 + 暗色/亮色主题 | ⭐⭐⭐ |
-| **3** | 💬 聊天引擎 | SSE 流式聊天 + DeepSeek V4 Flash 集成 + System Prompt（旅行规划导向） | ⭐⭐ |
-| **4** | 📚 知识库导入 | 33 城数据迁移（cities/food/hotels/tips → JSON）+ LLM 检索集成 | ⭐⭐ |
-| **5** | 🧰 工具箱迁移 | packing/pricing/visa/emergency/phrases 迁移 + Prompt 集成 | ⭐⭐ |
-| **6** | 🎯 发版 v3.0.1 | 全量测试 + 部署验证 + 迭代总结 | ⭐ |
+| Metric | Signal |
+| --- | --- |
+| Ask completion | Users receive a useful answer without retrying many times |
+| Follow-up depth | Users answer professional clarification questions instead of bouncing |
+| Save rate | Users save an itinerary or draft after a useful Ask session |
+| Mobile engagement | Portrait users can navigate and submit without layout friction |
+| Verification completion | Email users finish account confirmation |
+| Fallback quality | Local fallback answers remain useful when external APIs are unavailable |
 
-### Phase 2：体验打磨（Iter 7-11）
+## Current Strengths
 
-**目标**：UI 精致化 + 响应式 + 动效 + 交互优化
+- Clear v6.0.8 mobile-first UI direction.
+- Professional chat presets and multi-provider architecture.
+- Practical account system foundation.
+- Simple deploy path and low dependency burden.
+- Focused travel-domain identity.
 
-| Iter | 模块 | 内容 | 复杂度 |
-|:----:|------|------|:------:|
-| **7** | 🎨 设计精修 | CSS 动画系统（卡片入场/消息滑入/骨架屏 v2）+ popular-web-designs 参考落地 | ⭐⭐⭐ |
-| **8** | 📱 响应式适配 | 移动端/平板/桌面三重断点 + 触屏优化 | ⭐⭐ |
-| **9** | 🔄 多轮对话 | 对话历史管理 + 上下文压缩 + 行程迭代（"太赶了"→ 局部修改） | ⭐⭐⭐ |
-| **10** | 🌓 亮色主题完善 | 亮色模式全组件适配 + 主题切换动画 | ⭐⭐ |
-| **11** | ⚡ 性能优化 | 懒加载 + 关键 CSS 内联 + 缓存策略 + Lighthouse ≥ 85 | ⭐⭐ |
+## Current Gaps
 
-### Phase 3：深度增强（Iter 12-15）
+- AI answers are not yet deeply converted into editable trip objects.
+- City and tool context are visible but not deeply woven into the Ask workflow.
+- Email and Google flows need real production QA with live provider credentials.
+- SQLite is not a durable production user database on serverless hosting.
+- Browser-level mobile smoke tests should be expanded before user acquisition.
 
-**目标**：功能深度 + 工具链完善
+## Near-Term Strategy
 
-| Iter | 模块 | 内容 | 复杂度 |
-|:----:|------|------|:------:|
-| **12** | 💾 行程持久化 | 项目数据库（JSON/SQLite）+ 历史对话保存 + 行程列表 | ⭐⭐ |
-| **13** | 🗺️ 地图视图 | Leaflet 暗色主题 + POI 标注 + 路线可视化 | ⭐⭐⭐ |
-| **14** | 🔗 行程分享 | 分享链接生成 + 只读分享页 + 行程对比输出（2-3方案） | ⭐⭐ |
-| **15** | 🌟 智能增强 | 价格估算引擎 + 行程合理性验证 + 特殊需求（素食/无障碍/老人） | ⭐⭐⭐ |
+1. Improve chat professionalism with richer trip-intake structure and better model routing.
+2. Turn high-quality Ask outputs into saveable trip drafts.
+3. Make Cities and Tools context callable inside planning flows.
+4. Harden registration, verification, and Google OAuth in production.
+5. Add real mobile browser smoke coverage and continue UI polish.
 
-### Phase 4：生态构建（后续规划）
+## Non-Goals For The Next Cycle
 
-- 社交分享（行程 → Twitter/小红书格式）
-- 更多城市知识库（50+ 城）
-- PWA 离线支持
-- 微信小程序 / Telegram Bot
-- 商业化探索
-
----
-
-## 五、技术架构 v3.0.1
-
-```
-┌──────────────────────────────────────────────────────────┐
-│                     Vercel Edge                          │
-│                                                          │
-│  ┌─────────────────┐      ┌─────────────────────────┐   │
-│  │  api/index.py    │      │  data/                   │   │
-│  │  (WSGI handler)  │      │  ├── cities.json         │   │
-│  │                  │      │  ├── food.json           │   │
-│  │  /api/chat       │──┐   │  ├── hotels.json         │   │
-│  │  /api/health     │  │   │  ├── tips.json           │   │
-│  │  /api/trips/*    │  │   │  ├── packing.json        │   │
-│  │  /* (static)     │  │   │  ├── pricing.json        │   │
-│  └─────────────────┘  │   │  ├── visa.json            │   │
-│                        │   │  ├── emergency.json      │   │
-│  ┌─────────────────┐  │   │  └── phrases.json         │   │
-│  │  web/             │  │   └─────────────────────────┘   │
-│  │  ├── index.html  │  │                                  │
-│  │  ├── app.css     │  │   ┌─────────────────────────┐   │
-│  │  └── app.js      │  │   │  external:               │   │
-│  └─────────────────┘  └──▶│  DeepSeek V4 Flash API  │   │
-│                           │  (OpenAI 兼容 SSE)        │   │
-│  ┌─────────────────┐      └─────────────────────────┘   │
-│  │  data/projects/  │                                    │
-│  │  └── trips.json  │  ← 项目数据库（JSON持久化）       │
-│  └─────────────────┘                                     │
-└──────────────────────────────────────────────────────────┘
-
-部署: vercel.json → @vercel/python
-核心原则: Python stdlib only（零 pip 依赖）
-LLM: DeepSeek V4 Flash（OpenAI 兼容 API）
-设计: popular-web-designs（54 套参考系统）
-```
-
----
-
-## 六、v3.0.1 MVP 交付清单
-
-| 类别 | 项 | 状态 |
-|------|-----|------|
-| 架构 | WSGI 骨架 + 路由 + 健康检查 | ⬜ 待建 |
-| 架构 | Vercel 部署（零依赖） | ⬜ 待建 |
-| 前端 | Panda × 中国风 Landing 页 | ⬜ 待建 |
-| 前端 | 暗色/亮色双主题 | ⬜ 待建 |
-| 前端 | 33 城目的地网格 | ⬜ 待建 |
-| 聊天 | SSE 流式聊天（DeepSeek V4 Flash） | ⬜ 待建 |
-| 聊天 | System Prompt（旅行规划 + 知识库检索） | ⬜ 待建 |
-| 数据 | 33 城知识库（景点/美食/贴士）JSON 化 | ⬜ 待迁移 |
-| 数据 | 旅行工具箱（打包/价格/签证/语言/紧急） | ⬜ 待迁移 |
-| 数据 | 项目数据库（行程/对话 JSON 持久化） | ⬜ Phase 2 |
-| 分享 | 行程分享链接 | ⬜ Phase 2 |
-
----
-
-## 七、机会-解决方案树
-
-```
-期望结果：用户能通过 AI 对话获得个性化、可执行的旅行计划
-│
-├─ 机会 ①：用户知道想去中国，但不知道去哪座城市
-│   ├─ 方案 A：Landing 页 33 城卡片 + 推荐标签（最佳季节/特色）
-│   ├─ 方案 B：AI 对话推荐（问偏好 → 推城市）
-│   └─ 实验：看用户是从卡片点进去，还是直接聊天
-│
-├─ 机会 ②：用户想要行程，但 LLM 给得太泛泛
-│   ├─ 方案 A：System Prompt 强制引用知识库
-│   ├─ 方案 B：结构化输出模板（Day × 时段 × 活动 × 餐饮 × 贴士）
-│   └─ 实验：看输出中是否包含具体店名/价格/交通方式
-│
-├─ 机会 ③：用户想调整行程但不想重新聊
-│   ├─ 方案 A：对话历史 + 局部修改（"第一天太赶了"）
-│   ├─ 方案 B：一次性给 2-3 个方案对比
-│   └─ 实验：Phase 2
-│
-└─ 机会 ④：用户想保存/分享行程
-    ├─ 方案 A：项目数据库持久化（Phase 2）
-    ├─ 方案 B：分享链接（Phase 2）
-    └─ 实验：Phase 2
-```
-
----
-
-## 八、与 WC26 的架构对比
-
-| 维度 | WC26 Edge Lab | VisePanda v3.0.1 |
-|------|--------------|-----------------|
-| **产品类型** | 世界杯量化预测平台 | AI 中国旅行规划平台 |
-| **核心引擎** | 双变量泊松模型 | DeepSeek V4 Flash LLM |
-| **核心数据** | 比赛/赔率静态 JSON | 33 城知识库 JSON |
-| **交互模式** | Tab 视图（6 个 Tab） | 对话 + Landing + 行程视图 |
-| **AI 集成** | 无（纯数学） | **核心**（LLM 驱动规划） |
-| **API 端点** | 7 个数据 API | 健康检查 + 聊天 SSE + 行程 CRUD |
-| **前端 Tab** | 🏟🔀🔮⚖📊📅 | 💬 聊天 + 🏙 城市 + 🧳 工具 + 📋 行程 |
-| **主题** | Linear 暗色（纯工程风） | **熊猫 × 水墨中国风** |
-| **依赖策略** | ✅ stdlib only | ✅ stdlib only |
-| **部署** | ✅ Vercel | ✅ Vercel |
-
-**核心差异点**：WC26 是"数据展示型"产品（模型算好 → 前端展示），VisePanda 是"对话交互型"产品（用户说 → AI 理解 → 生成结果）。架构复用 WC26 的部署模式，但前端交互和核心逻辑完全不同。
-
----
-
-*创建日期：2026-06-14*
-*当前版本：v2.x（Iter 124）→ v3.0.1（待建）*
-*当前执行阶段：Phase 1 — 骨架搭建*
+- Payments.
+- Booking engine integrations.
+- Multi-language UI.
+- Native mobile apps.
+- Large backend migration before product flow validation.
+- Broad admin analytics.

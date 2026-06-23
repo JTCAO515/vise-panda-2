@@ -1,16 +1,16 @@
 {
   "name": "VisePanda",
   "short_name": "VisePanda",
-  "description": "AI-powered China travel planning — personalized itineraries, local food, insider tips",
+  "description": "A China travel workspace for city planning, visa readiness, saved trips, and AI guidance.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#08070d",
-  "theme_color": "#0e0b14",
+  "background_color": "#f7faf9",
+  "theme_color": "#1f9ac7",
   "orientation": "any",
   "categories": ["travel", "utilities"],
   "icons": [
-    {"src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
-    {"src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
-    {"src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+    {"src": "/web/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "/web/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "/web/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
   ]
 }

@@ -1,31 +1,29 @@
-import os
-from unittest import mock
+import unittest
 
-from tests.test_support import WsgiTestCase
+from tests.test_support import request
 
 
-class ConfigContractTest(WsgiTestCase):
-    def setUp(self):
-        from api.index import app
+class ConfigContractTests(unittest.TestCase):
+    def test_health_and_config_are_public(self):
+        code, data, _ = request("GET", "/api/health")
+        self.assertEqual(code, 200)
+        self.assertTrue(data["ok"])
+        self.assertEqual(data["version"], "6.1.1")
 
-        self.app = app
+        code, config, _ = request("GET", "/api/config")
+        self.assertEqual(code, 200)
+        self.assertEqual(config["app"]["domain"], "go2china.space")
+        self.assertEqual(config["app"]["version"], "6.1.1")
+        self.assertTrue(config["features"]["chat"])
+        self.assertIn("local-guide", config["ai"]["routes"])
+        self.assertTrue(config["auth"]["emailVerification"])
 
-    def test_health_and_config_share_version(self):
-        health = self.call_app(self.app, self.make_environ("GET", "/api/health"))
-        config = self.call_app(self.app, self.make_environ("GET", "/api/config"))
+    def test_static_app_is_served(self):
+        code, body, headers = request("GET", "/")
+        self.assertEqual(code, 200)
+        self.assertIn("VisePanda", body)
+        self.assertIn("text/html", headers["Content-Type"])
 
-        self.assertEqual(health["json"]["version"], config["json"]["version"])
 
-    def test_config_returns_empty_google_client_id_when_unset(self):
-        with mock.patch.dict(os.environ, {}, clear=False):
-            os.environ.pop("GOOGLE_CLIENT_ID", None)
-            config = self.call_app(self.app, self.make_environ("GET", "/api/config"))
-
-        self.assertIn("google_client_id", config["json"])
-        self.assertEqual(config["json"]["google_client_id"], "")
-
-    def test_config_returns_google_client_id_when_set(self):
-        with mock.patch.dict(os.environ, {"GOOGLE_CLIENT_ID": "test-google-client-id"}, clear=False):
-            config = self.call_app(self.app, self.make_environ("GET", "/api/config"))
-
-        self.assertEqual(config["json"]["google_client_id"], "test-google-client-id")
+if __name__ == "__main__":
+    unittest.main()

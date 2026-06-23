@@ -1,140 +1,94 @@
-"""VisePanda — Visa Kit API handlers."""
+from http import HTTPStatus
 
-from api.common import (
-    DATA_DIR, _json, _json_error, _load_json,
-)
-from datetime import datetime
+from api.common import clean_list, clean_text, error_response, json_response, load_json, query_params, read_json
 
 
-# ════════════════════════════════════════════════════════════
-# VISA POLICIES API
-# ════════════════════════════════════════════════════════════
-
-def handle_visa_info(environ, start_response):
-    """GET /api/visa/info?nationality=us — return visa requirements for a nationality."""
-    from urllib.parse import parse_qs
-
-    qs = environ.get("QUERY_STRING", "")
-    params = parse_qs(qs)
-    nat = (params.get("nationality", [""])[0] or "").strip().lower()
-
-    if not nat:
-        return _json(start_response, {"error": "Provide ?nationality= code"}, "400 Bad Request")
-
-    policies = _load_json(DATA_DIR / "visa_policies.json") or {}
-
-    # Direct match
-    if nat in policies:
-        return _json(start_response, {"visa": policies[nat], "found": True})
-
-    # Partial match — search by country name or code
-    for key, val in policies.items():
-        code = val.get("country_code", "").lower()
-        name = val.get("country", "").lower()
-        nationality = val.get("nationality", "").lower()
-        if nat in code or nat in name or nat in nationality:
-            return _json(start_response, {"visa": val, "found": True})
-
-    return _json(start_response, {
-        "visa": None,
-        "found": False,
-        "message": "Visa info not available for this nationality. Please contact the nearest Chinese embassy or consulate for guidance.",
-    })
+def _policy(slug, raw):
+    return {
+        "id": slug,
+        "country": clean_text(raw.get("country")),
+        "nationality": clean_text(raw.get("nationality")),
+        "visaRequired": bool(raw.get("visa_required")),
+        "visaType": clean_text(raw.get("visa_type")),
+        "processingTime": clean_text(raw.get("processing_time")),
+        "validity": clean_text(raw.get("validity")),
+        "maxStay": clean_text(raw.get("max_stay")),
+        "fee": clean_text(raw.get("fee")),
+        "documentsRequired": clean_list(raw.get("documents_required")),
+        "specialNotes": clean_text(raw.get("special_notes")),
+        "countryCode": clean_text(raw.get("country_code")),
+    }
 
 
-def handle_visa_generate(environ, start_response):
-    """POST /api/visa/generate — generate a visa itinerary document."""
-    from api.auth import _get_user_from_token, _extract_token, ensure_init as auth_init
-    from api.common import _read_post
-
-    data = _read_post(environ)
-    nationality = (data.get("nationality", "") or "").strip().lower()
-    trip_title = (data.get("title", "") or "").strip()
-    trip_city = (data.get("city", "") or "").strip()
-    trip_days = (data.get("days", "") or "").strip()
-    trip_content = (data.get("content", "") or "").strip()
-
-    if not nationality:
-        return _json_error(start_response, "Nationality is required")
-
-    # Look up visa policy
-    policies = _load_json(DATA_DIR / "visa_policies.json") or {}
-    policy = None
-    for key, val in policies.items():
-        code = val.get("country_code", "").lower()
-        name = val.get("country", "").lower()
-        if nationality in key or nationality in code or nationality in name:
-            policy = val
-            break
-
-    # Build itinerary document
-    lines = []
-    lines.append("=" * 50)
-    lines.append("CHINA VISA APPLICATION — ITINERARY DOCUMENT")
-    lines.append("=" * 50)
-    lines.append("")
-
-    if policy:
-        lines.append(f"Nationality: {policy['nationality']}")
-        lines.append(f"Visa Type: {policy['visa_type']}")
-        lines.append(f"Visa Required: {'Yes' if policy['visa_required'] else 'No (visa-free)'}")
-        lines.append(f"Processing Time: {policy['processing_time']}")
-        lines.append(f"Fee: {policy['fee']}")
-        lines.append("")
-        lines.append("-" * 40)
-        lines.append("REQUIRED DOCUMENTS:")
-        for doc in policy["documents_required"]:
-            lines.append(f"  • {doc}")
-        lines.append("")
-        lines.append(f"NOTES: {policy['special_notes']}")
-        lines.append("-" * 40)
-    else:
-        lines.append("Visa policy not found for this nationality.")
-        lines.append("Please contact the nearest Chinese embassy for guidance.")
-        lines.append("")
-
-    lines.append("")
-    lines.append("=" * 50)
-    lines.append("TRAVEL ITINERARY")
-    lines.append("=" * 50)
-    lines.append("")
-
-    if trip_title:
-        lines.append(f"Trip: {trip_title}")
-    if trip_city:
-        lines.append(f"Destination: {trip_city}")
-    if trip_days:
-        lines.append(f"Duration: {trip_days} days")
-    lines.append(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
-    lines.append("")
-
-    if trip_content:
-        # Strip markdown for clean output
-        clean = trip_content
-        clean = clean.replace("**", "").replace("###", "").replace("---", "")
-        lines.append(clean)
-        lines.append("")
-
-    lines.append("-" * 40)
-    lines.append("This document is auto-generated for visa application purposes.")
-    lines.append("Please verify all information before submission.")
-    lines.append("=" * 50)
-
-    return _json(start_response, {
-        "document": "\n".join(lines),
-        "policy": policy,
-    })
+def policies():
+    raw = load_json("visa_policies.json")
+    return {slug: _policy(slug, item) for slug, item in raw.items()}
 
 
-def handle_visa_countries(start_response):
-    """GET /api/visa/countries — list all supported countries."""
-    policies = _load_json(DATA_DIR / "visa_policies.json") or {}
-    countries = []
-    for key, val in policies.items():
-        countries.append({
-            "code": key,
-            "country": val.get("country", key),
-            "nationality": val.get("nationality", ""),
-            "visa_required": val.get("visa_required", True),
-        })
-    return _json(start_response, {"countries": countries})
+def find_policy(nationality):
+    key = (nationality or "").strip().lower()
+    aliases = {
+        "usa": "us",
+        "united states": "us",
+        "american": "us",
+        "gb": "uk",
+        "united kingdom": "uk",
+        "british": "uk",
+        "australian": "australia",
+        "canadian": "canada",
+        "eu": "schengen",
+        "europe": "schengen",
+        "france": "schengen",
+        "germany": "schengen",
+        "italy": "schengen",
+        "spain": "schengen",
+    }
+    key = aliases.get(key, key)
+    return policies().get(key)
+
+
+def recommendation(policy, duration_days):
+    if not policy:
+        return "Check with the nearest Chinese embassy or consulate before booking."
+    if duration_days <= 6:
+        return "Consider 144-hour visa-free transit if your route includes a confirmed onward flight to a third country or region."
+    if not policy["visaRequired"] and duration_days <= 15:
+        return "Your profile may fit the current short-stay visa-free program, but verify official rules close to departure."
+    return f"Plan around the {policy['visaType']} and allow {policy['processingTime']} for processing."
+
+
+def dispatch(method, path_parts, environ, start_response):
+    if method == "GET" and len(path_parts) == 3 and path_parts[2] == "countries":
+        items = sorted(policies().values(), key=lambda item: item["country"])
+        return json_response(start_response, {"countries": items}, environ=environ)
+
+    if method == "GET" and len(path_parts) == 3 and path_parts[2] == "info":
+        nationality = query_params(environ).get("nationality")
+        policy = find_policy(nationality)
+        if not policy:
+            return error_response(start_response, HTTPStatus.NOT_FOUND, "policy_not_found", "Visa policy not found.", environ)
+        return json_response(start_response, {"policy": policy}, environ=environ)
+
+    if method == "POST" and len(path_parts) == 3 and path_parts[2] == "generate":
+        try:
+            body = read_json(environ)
+        except ValueError as exc:
+            return error_response(start_response, HTTPStatus.BAD_REQUEST, "bad_json", str(exc), environ)
+        duration = int(body.get("durationDays") or body.get("duration") or 7)
+        policy = find_policy(body.get("nationality"))
+        return json_response(
+            start_response,
+            {
+                "policy": policy,
+                "recommendation": recommendation(policy, duration),
+                "checklist": [
+                    "Verify the latest rule on an official consulate or immigration page.",
+                    "Keep passport validity above six months.",
+                    "Carry printed hotel and transport confirmations.",
+                    "Choose hotels licensed to host foreign travelers.",
+                ],
+            },
+            environ=environ,
+        )
+
+    return error_response(start_response, HTTPStatus.NOT_FOUND, "not_found", "Endpoint not found.", environ)

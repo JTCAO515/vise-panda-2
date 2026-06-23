@@ -1,164 +1,145 @@
-# VisePanda · 迭代路线图 v4.0
+# VisePanda Active Plan
 
-> 基于 brainstorming 产出 + grill-with-docs 压力测试后修正
-> 启动时间：2026-06-19
+Last updated: 2026-06-22
+Current version: v6.0.8
 
-## 总体策略
+## Current Objective
 
-```
-基础设施先行 → 体验升级 → 决策工具 → 差异化壁垒
-```
+Continue turning VisePanda into a professional China travel planning workspace. The next work should strengthen the product loop rather than rewrite the stack.
 
-每批独立可部署、可验证。B1a 必须最先完成（地基），其余可重排。
+The preferred loop is:
 
----
-
-## Batch 1 — 基础设施
-
-### B1a: Auth 系统加固
-
-**目标**: 确保 login/register/token refresh 稳定可靠，再往上建房
-
-**范围**:
-- 验证 auth.py 中 login 端点的异常路径（token 过期、refresh 失败、并发冲突）
-- 补充登出逻辑（token 销毁）
-- 前端：登录状态持久化（localStorage token 不丢）
-
-**交付物**:
-- Auth 端点 100% 可用（curl 脚本验证）
-- 登录态跨页面不丢失
-
-**估计工时**: 1 天
-**版本**: v3.3.0
-
----
-
-### B1b: 行程后端持久化
-
-**目标**: 登录用户行程跨设备保存、历史可回溯
-
-**范围**:
-- 后端：`POST/GET /api/trips` 写入/读取用户行程（Supabase Postgres 或 JSON 缓存）
-- 冷启动策略：先读 localStorage 展示，再静默同步后端数据
-- 前端：`VP.saveTrip()` 登录用户 → 写后端；未登录 → localStorage 降级
-
-**不做的**:
-- 行程分享（留给后续）
-- 行程编辑/删除（第一版只追加）
-
-**估计工时**: 2 天
-**版本**: v3.3.0
-**依赖**: B1a
-
----
-
-## Batch 2 — 体验升级
-
-### B2: 行程时间线可视化
-
-**目标**: AI 输出的行程从纯文字渲染为可视化时间线卡片
-
-**范围**:
-- 前端模块 `web/trip-timeline.js`：检测 AI 回复中的结构化行程（`Day N:` 模式）
-- 渲染为垂直时间线：左侧时间轴 + 右侧卡片（图标/时间/描述）
-- AI 输出格式规范：统一用 `### Day N: [标题]` markdown 格式包裹
-- 底部「导出行程」按钮（第一版导出为纯文本/复制，不依赖后端 API）
-
-**不做的**:
-- PDF 导出（等 B1b 完成后再接导出 API）
-- 拖拽重排天数
-- 离线保存（localStorage 已够）
-
-**估计工时**: 1.5 天
-**版本**: v3.4.0
-**依赖**: 无（纯前端，可独立上线）
-
----
-
-## Batch 3 — 决策工具
-
-### B3: 城市对比模式
-
-**目标**: 用户在 2-3 城市间犹豫时，一键横向对比
-
-**范围**:
-- 后端新增 `GET /api/cities/compare?cities=a,b,c` 聚合 36 知识库数据
-- 返回结构化对比：budget / best_season / attractions_top3 / food_highlights / weather / transport_hub
-- 前端渲染为对比表格，缺字段显示「暂无」
-- Chat 中检测「对比」「vs」关键词 → 触发自动对比
-
-**不做**:
-- 交互式多选/取消（第一版只做预设）
-- 图片对比
-
-**估计工时**: 1 天
-**版本**: v3.5.0
-**依赖**: 无（知识库已存在）
-
----
-
-## Batch 4 — 品牌化
-
-### B4: 熊猫导游表情系统
-
-**目标**: 聊天头像根据语气自动变化，建立品牌人设
-
-**范围**:
-- 情感映射表：`{推荐美食→😋, 分享价格→💰, 介绍景点→🕶️, 打招呼→🐼, 错误→😅, 思考→🤔}`
-- SSE 流中检测关键词 → 动态替换头像
-- CSS 过渡动画（0.3s ease）
-
-**估计工时**: 0.5 天
-**版本**: v3.5.1
-**依赖**: 无
-
----
-
-## Batch 5 — 差异化壁垒
-
-### B5: 签证材料包 MVP
-
-**目标**: 根据用户行程生成使馆要求的英文行程单模板
-
-**MVP 范围**:
-- 仅覆盖 4 国护照 + 申根：美国、英国、澳大利亚、加拿大
-- 其余国籍提示「建议联系使馆」
-- 生成标准英文行程单（含每日安排、住宿地址截图）
-- 可预览 + 导出（纯文本版）
-
-**不做的**:
-- 各国使馆政策实时同步
-- 酒店预订单验证
-- 多语言签证说明信
-
-**估计工时**: 1.5 天
-**版本**: v3.6.0
-**依赖**: B1b（导出需要持久化的行程数据）
-
----
-
-## 开发顺序
-
-```
-B1a ─→ B1b
-       │
-B2 ────┘ (并行：B2 不依赖 B1b，可同时开发)
-       │
-B3 ────┘
-       │
-B4 ────┘ (B4 仅前端，随时可插队)
-       │
-B5 ────┘ (依赖 B1b 的导出 API)
+```text
+Plan -> Ask -> structured answer -> saved Trip -> related Cities/Tools -> refined Ask
 ```
 
----
+## Current Baseline
 
-## 验证门禁
+Already shipped in the current repository:
 
-每个 Batch 交付前通过以下检查：
+- Clean static frontend foundation
+- Mobile-first Plan workspace
+- App-style bottom tabs
+- Streaming AI Ask workflow
+- Professional chat modes and presets
+- Email/password auth with email verification
+- Optional Google OAuth
+- Optional Resend email delivery
+- Guest and authenticated trip drafts
+- Searchable city cards
+- Travel tools
+- Minimal admin user management
+- Python and Node test coverage
 
-- [ ] API 端点 curl 验证返回正确状态码
-- [ ] 前端本地 `python3 -m http.server` 预览无报错
-- [ ] 无新增 pip 依赖（保持 stdlib only）
-- [ ] 旧功能未退化（回归检查：聊天、地图、主页）
-- [ ] 冷启动场景不会白屏或长时间无响应
+## Five-Round Iteration Plan
+
+### Round 1: Chat Professionalization
+
+Goal: make Ask feel like a professional travel consultant.
+
+Work:
+
+- Add better preset question groups.
+- Make each mode ask sharper follow-up questions.
+- Add response sections such as assumptions, key questions, itinerary, budget, risks, and next actions.
+- Improve provider routing by task type.
+- Add tests for mode/depth/provider contracts.
+
+Primary files:
+
+- `api/chat.py`
+- `web/index.html`
+- `web/app.js`
+- `web/app.css`
+- `tests/test_api_contract.py`
+- `web/tests/chat-stream.test.js`
+- `web/tests/stability-ui.test.js`
+
+### Round 2: Structured Trip Output
+
+Goal: convert useful AI answers into saved trip drafts.
+
+Work:
+
+- Detect structured itinerary sections.
+- Add "Save as trip" flow from Ask.
+- Store route summary, cities, dates, and notes.
+- Improve Trips card detail display.
+
+Primary files:
+
+- `api/auth.py`
+- `web/app.js`
+- `web/index.html`
+- `web/app.css`
+- `tests/test_trips_contract.py`
+
+### Round 3: Cities and Tools Integration
+
+Goal: make Cities and Tools influence planning instead of being separate content islands.
+
+Work:
+
+- Add "Ask about this city" from city cards.
+- Add "Add to readiness" or "Use in plan" from tool detail.
+- Pass selected city/tool context into Ask prompts.
+- Improve empty and loading states.
+
+Primary files:
+
+- `api/cities.py`
+- `api/tools.py`
+- `web/app.js`
+- `web/app.css`
+
+### Round 4: Production Auth and Email QA
+
+Goal: make the account system production-ready on `go2china.space`.
+
+Work:
+
+- Verify Google OAuth redirect URI on production.
+- Verify Resend sender and delivery.
+- Confirm production does not expose email codes or reset tokens.
+- Add browser smoke tests for register -> verify -> login.
+
+Primary files:
+
+- `api/auth.py`
+- `web/app.js`
+- `tests/test_auth_contract.py`
+
+### Round 5: Real Mobile Polish and E2E
+
+Goal: reduce mobile release risk.
+
+Work:
+
+- Add a real browser smoke test suite.
+- Test 390x844, 430x932, tablet, and desktop.
+- Verify no tab/input overlap.
+- Verify Ask, Cities, Tools, Trips, and auth bottom sheet.
+
+Primary files:
+
+- `web/tests/*`
+- possible future `e2e/` folder
+- `web/app.css`
+- `web/app.js`
+
+## Near-Term Rules
+
+- Keep changes scoped.
+- Keep the current stack unless there is a concrete reason to migrate.
+- Add tests when touching shared auth, chat, trips, or navigation behavior.
+- Update cache busting when changing frontend CSS or JS.
+- Update `README.md`, `HANDOFF.md`, `CHANGELOG.md`, and this plan when shipping a named version.
+
+## Do Not Prioritize Yet
+
+- Full frontend framework migration
+- Full database migration
+- Payment or subscription features
+- Large map/POI rebuild
+- Public admin dashboard polish
+- Heavy design-system extraction before core workflows settle

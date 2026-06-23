@@ -1,183 +1,223 @@
----
-version: alpha
-name: VisePanda
-description: AI China travel planner — deep Chinese ink-wash aesthetic meets modern dark UI.
-colors:
-  primary: "#0E0B14"
-  secondary: "#1A1428"
-  tertiary: "#0A0F17"
-  accent: "#7DD3FC"
-  accent2: "#BC3A2C"
-  gold: "#C9A96E"
-  bg0: "#05070B"
-  text: "#EBEBED"
-  muted: "#8A8A9A"
-  surface: "rgba(255,255,255,.025)"
-  line: "rgba(255,255,255,.07)"
-typography:
-  h1:
-    fontFamily: "'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', ui-sans-serif, system-ui, -apple-system"
-    fontSize: 2.25rem
-    fontWeight: 700
-    letterSpacing: "-0.02em"
-  h2:
-    fontFamily: "'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', ui-sans-serif, system-ui"
-    fontSize: 1.25rem
-    fontWeight: 650
-  body:
-    fontFamily: "'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', ui-sans-serif"
-    fontSize: 0.875rem
-    lineHeight: 1.5
-  sub:
-    fontFamily: "ui-sans-serif, system-ui"
-    fontSize: 0.75rem
-    letterSpacing: "0.08em"
-rounded:
-  sm: 6px
-  md: 8px
-  lg: 12px
-  xl: 16px
-  full: 999px
-spacing:
-  xs: 4px
-  sm: 8px
-  md: 12px
-  lg: 16px
-  xl: 24px
-components:
-  header:
-    backgroundColor: "rgba(10,8,16,.6)"
-    height: "56px"
-    padding: "0 16px"
-    backdropFilter: "blur(12px)"
-    borderBottom: "1px solid {colors.line}"
-  logo-seal:
-    backgroundColor: "linear-gradient(135deg, rgba(188,58,44,.08), rgba(188,58,44,.02))"
-    border: "1.5px solid {colors.accent2}"
-    rounded: "{rounded.sm}"
-    width: "28px"
-    height: "28px"
-    transform: "rotate(-2deg)"
-  btn-default:
-    backgroundColor: "rgba(255,255,255,.03)"
-    border: "1px solid {colors.line}"
-    rounded: "{rounded.md}"
-    padding: "7px 14px"
-    textColor: "{colors.text}"
-  btn-accent:
-    backgroundColor: "rgba(125,211,252,.12)"
-    border: "1px solid rgba(125,211,252,.35)"
-    rounded: "{rounded.md}"
-    padding: "7px 14px"
-    textColor: "{colors.text}"
-  btn-red:
-    backgroundColor: "rgba(188,58,44,.14)"
-    border: "1px solid rgba(188,58,44,.35)"
-    rounded: "{rounded.md}"
-    padding: "8px 24px"
-    textColor: "{colors.text}"
-  card:
-    backgroundColor: "linear-gradient(160deg, rgba(255,255,255,.025), rgba(255,255,255,.005))"
-    border: "1px solid {colors.line}"
-    rounded: "{rounded.lg}"
-    padding: "18px"
-  card-hover:
-    backgroundColor: "linear-gradient(160deg, rgba(255,255,255,.04), rgba(255,255,255,.01))"
-    boxShadow: "0 8px 30px rgba(0,0,0,.3)"
-    translateY: "-3px"
-  chat-bubble-user:
-    backgroundColor: "rgba(125,211,252,.10)"
-    border: "1px solid rgba(125,211,252,.18)"
-    rounded: "{rounded.xl}"
-    maxWidth: "88%"
-    padding: "10px 14px"
-  chat-bubble-bot:
-    backgroundColor: "rgba(255,255,255,.03)"
-    border: "1px solid {colors.line}"
-    rounded: "{rounded.xl}"
-    maxWidth: "88%"
-    padding: "10px 14px"
-  send-btn:
-    backgroundColor: "rgba(188,58,44,.14)"
-    border: "1px solid rgba(188,58,44,.35)"
-    rounded: "{rounded.md}"
-    height: "44px"
-    padding: "0 24px"
-    textColor: "{colors.text}"
-  profile-avatar:
-    backgroundColor: "linear-gradient(135deg, rgba(188,58,44,.15), rgba(188,58,44,.04))"
-    border: "2px solid rgba(188,58,44,.15)"
-    rounded: "{rounded.full}"
-    size: "64px"
-  input:
-    backgroundColor: "rgba(255,255,255,.03)"
-    border: "1px solid {colors.line}"
-    rounded: "{rounded.md}"
-    padding: "12px 16px"
-    textColor: "{colors.text}"
-  input-focus:
-    borderColor: "rgba(125,211,252,.35)"
-    boxShadow: "0 0 0 4px rgba(125,211,252,.08)"
----
+# VisePanda Design System
 
-## Overview
+Last updated: 2026-06-22
+Current version: v6.0.8
 
-VisePanda is an AI-powered China travel planner with a distinctive visual identity combining:
+## Design Direction
 
-- **Chinese ink-wash painting (水墨画)** — layered mountain silhouettes, drifting mist, and a subtle harvest moon as atmospheric background elements
-- **Dark modern UI** — deep purple-black base (#0E0B14) with clean, minimal interface
-- **Red seal accent** — cinnabar red (#BC3A2C) derived from traditional Chinese seal stamps (印章), used for primary CTAs
-- **Gold accents** (#C9A96E) for cultural/navigation elements
-- **Sky blue** (#7DD3FC) as tertiary travel accent for maps and secondary UI
+VisePanda should feel like a focused travel planning workspace for international visitors to China. The interface should be calm, practical, mobile-friendly, and trustworthy.
 
-## Colors
+The current design direction is:
 
-- **Primary (#0E0B14):** Deep purple-black — main canvas background
-- **Accent (#BC3A2C):** 朱砂红 (cinnabar red) — CTAs, send button, seal logo, profile avatar
-- **Gold (#C9A96E):** Navigation accents, Chinese subtitle text
-- **Sky Blue (#7DD3FC):** Travel accent — chat bubbles, map UI, secondary borders, links
-- **Moon glow:** Radial gradient from warm yellow-white (rgba(255,233,196,.04)) — inspired by the ink-wash moon
+- English-native travel product
+- Light sky-blue workspace
+- Warm orange primary actions
+- Clear app-style tabs
+- Real destination imagery
+- Compact mobile-first controls
+- Professional AI assistant tone
+
+Avoid returning to the older dark ink-wash visual system unless explicitly requested as a new brand exploration. The active product UI is now lighter and more utilitarian.
+
+## Current Tokens
+
+Current source of truth: `web/app.css`.
+
+Important active colors:
+
+| Token | Value | Use |
+| --- | --- | --- |
+| `--bg` | `#eef8fc` | Page background |
+| `--bg-elevated` | `#f8fcff` | Elevated background |
+| `--surface` | `#ffffff` | Cards, controls, panels |
+| `--surface-soft` | `#f3f9fc` | Soft sections |
+| `--surface-tint` | `#dff4fb` | Selected tab / tint |
+| `--text` | `#0f2633` | Primary text |
+| `--text-muted` | `#486474` | Secondary text |
+| `--border` | `#d4e6ee` | Default border |
+| `--brand` | `#0ea5e9` | Sky-blue brand/action accent |
+| `--brand-strong` | `#075985` | Strong brand text |
+| `--accent` | `#f97316` | Primary CTA |
+| `--accent-strong` | `#c2410c` | CTA hover |
+| `--success` | `#2d8a63` | Success/check states |
+| `--danger` | `#b42318` | Error states |
 
 ## Typography
 
-Chinese-first stack: `Noto Sans SC → PingFang SC → Microsoft YaHei` for all UI text, with fallback to system sans-serif. Body text at 14px for readability. Small caps (11px, 0.08em letter-spacing) for Chinese subtitles.
+Current font stack:
 
-## Layout & Spacing
+```css
+"Plus Jakarta Sans", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif
+```
 
-- Max landing content width: 640px (96vw on mobile) centered
-- Chat max-width: 800px centered
-- Card grid: auto-fit columns, min 160px
-- Mobile padding: 12px sides, safe-area-inset-bottom respected
+Rules:
 
-## Elevation & Depth
+- Do not scale font sizes with viewport width.
+- Keep letter spacing at `0` unless there is a clear local reason.
+- Body text must stay readable on mobile.
+- Buttons, tabs, inputs, status text, and chat controls need explicit, polished sizing.
 
-Background uses 3 stacked ink-wash mountain silhouettes at opacities 0.008-0.016, blurred at 5px. A moon glow radial gradient adds warmth to the upper-right. Surface cards use subtle gradient backgrounds with hover elevation (translateY -3px + box-shadow).
+## Shape and Spacing
 
-## Shapes
+Current radius:
 
-Cards: 12px rounded. Buttons: 8px rounded (modern square-ish). Chat bubbles: 16px rounded. Input fields: 8px rounded. The logo seal is rotated -2deg for an organic stamp feel.
+```css
+--radius: 8px;
+```
 
-## Components
+Use 8px cards and controls by default. Mobile bottom nav uses a slightly larger shell radius for ergonomic separation.
 
-### Header
-Fixed 56px with glassmorphism (rgba(10,8,16,.6) with 12px blur). Left side: red seal stamp square with 熊猫行 (Xiong Mao Xing / Panda Travel) in Songti serif. Right side: language toggle + sign-in/actions.
+Spacing rules:
 
-### Landing Cards
-6 destination cards in responsive grid. Each card has gradient surface, subtle gold top-border on hover (gold 0.12 opacity), and a 3px lift animation.
+- Mobile sides: about 14px.
+- Desktop page sides: responsive clamp from 18px to 48px.
+- Avoid nested cards.
+- Use cards for repeated items, dialogs, and tool surfaces.
+- Keep page sections as open bands or unframed layouts.
 
-### Chat
-Clean chat interface with user bubbles (blue-tinted) and bot bubbles (neutral). Send button in cinnabar red. Welcome section with gold subtitle "AI 中国旅行规划". Quick-reply chips with neutral styling.
+## Navigation
 
-### Map
-Leaflet dark theme overlay for itinerary visualization. 320px height container with border-radius 12px, visible when itinerary is detected.
+The primary nav has five tabs:
 
-## Do's and Don'ts
+1. Plan
+2. Ask
+3. Cities
+4. Tools
+5. Trips
 
-- DO use the seal-style logo on all pages for brand consistency
-- DO keep ink-wash background as a subtle layer (max 0.2 opacity + 5px blur) — never make it compete with content
-- DO use gold (#C9A96E) sparingly — titles and accents only
-- DO use red (#BC3A2C) for the primary action button on every page
-- DON'T make the UI feel "temple-like" or overly traditional — the Chinese elements should be atmospheric, not decorative
-- DON'T use full-width Chinese text backgrounds
-- DON'T use Chinese characters as primary navigation labels (keep them English with Chinese subtitles)
-- DON'T use the red accent for every button — reserve for the primary CTA
+Desktop:
+
+- Sticky below the topbar.
+- Centered tab row.
+- Active tab has sky tint and orange underline.
+
+Mobile:
+
+- Fixed bottom app-style tab bar.
+- Five equally sized tab targets.
+- Safe-area aware.
+- Active state must be visually obvious.
+- `aria-selected` must stay in sync with the active tab.
+
+## Mobile UX Rules
+
+Mobile portrait is a primary surface.
+
+Required checks after UI changes:
+
+- No horizontal overflow at 390px width.
+- Bottom nav does not cover core controls.
+- Chat input does not fight the bottom nav.
+- Auth dialog acts like a bottom sheet.
+- Floating Ask button hides in Ask view.
+- Tap targets should be at least 44px where practical.
+
+## Plan View
+
+The Plan view is the first product screen.
+
+It should show:
+
+- Brand topbar
+- Quick planning copy
+- Prompt chips
+- Destination/length planner
+- Primary Ask AI CTA
+- Entry / Route / Local snapshot cards
+- Destination imagery
+- Featured city cards
+- Readiness checklist
+
+The first screen should not become a marketing landing page. It must remain usable.
+
+## Ask View
+
+Ask is a professional AI consultation workspace.
+
+It should show:
+
+- Mode selector
+- Provider/model route selector
+- Depth selector
+- Professional preset prompts
+- Chat status surface
+- Chat log
+- Input composer
+
+Chat messages should remain readable and structured. Avoid decorative chrome that reduces space for answers.
+
+## Cities, Tools, Trips
+
+Cities:
+
+- Use real city imagery.
+- Keep cards scannable.
+- Search should remain prominent.
+
+Tools:
+
+- Cards should clearly describe practical use.
+- Opened tool details should be readable and actionable.
+
+Trips:
+
+- Guest and synced states should be clear.
+- Empty states should offer a useful next action.
+
+## Auth Dialog
+
+The auth dialog supports:
+
+- Sign in
+- Create account
+- Verify email
+- Resend code
+- Optional Google login
+- Profile update
+- Logout
+
+Mobile behavior:
+
+- Bottom-sheet layout.
+- Visible sheet handle.
+- Inputs are full width.
+- No name field during registration.
+
+## Visual Asset Rules
+
+- Use real travel imagery for cities and hero/supporting surfaces.
+- Avoid dark blurred overlays.
+- Avoid decorative blobs and one-note palettes.
+- Keep product imagery inspectable.
+- Do not use emoji as primary UI icons.
+- Inline SVG icons are acceptable and currently used.
+
+## Accessibility Rules
+
+- Preserve semantic buttons and labels.
+- Keep focus states visible.
+- Keep color contrast strong.
+- Preserve `role="tablist"`, `role="tab"`, `role="tabpanel"`, and `aria-selected`.
+- Keep status text in live regions where already present.
+- Respect `prefers-reduced-motion`.
+
+## Cache and Release Rule
+
+When CSS or JS changes, update:
+
+- `web/index.html`
+- `web/admin.html`
+- `web/sw.js`
+- `web/tests/stability-ui.test.js`
+
+Current frontend cache marker:
+
+```text
+20260622-v608-mobile-ui3
+```
+
+Current service worker cache:
+
+```text
+visepanda-shell-v608-mobile-ui3
+```

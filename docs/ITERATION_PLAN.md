@@ -1,21 +1,137 @@
-# VisePanda 10轮迭代计划 (Iter 81-90)
+# Active Iteration Plan
 
-> 启动时间：2026-05-26
+Last updated: 2026-06-22
+Current version: v6.0.8
 
-| Iter | 模块 | 内容 | 估计复杂度 |
-|:----:|------|------|:----------:|
-| 81 | 🚄 交通时刻表 | 主要城市间高铁/航班数据 + prompt集成 | ⭐⭐ |
-| 82 | 🆘 语言急救卡 | 一键生成中文卡片（打车/点餐/问路/就医） | ⭐⭐ |
-| 83 | 📍 紧急联系人 | 行程分享给预设联系人 + 一键发送位置 | ⭐⭐ |
-| 84 | ⚖️ 行程对比输出 | 自动给出2-3方案 + prompt增强 | ⭐ |
-| 85 | ♿ 无障碍 | 轮椅友好路线提示 + 老人慢游模式数据 | ⭐⭐ |
-| 86 | 🥦 特殊饮食 | 素食/清真/过敏原中英文提示 + 餐厅筛选 | ⭐⭐ |
-| 87 | 🛂 旅行护照 | 城市打卡电子章 + 进度跟踪(前端localStorage) | ⭐⭐⭐ |
-| 88 | 📸 最佳拍照时间 | 景区黄金时段建议 + 天气结合 | ⭐⭐ |
-| 89 | 🌧️ 天气影响评估 | 雨天自动推荐室内替代方案 | ⭐⭐ |
-| 90 | ⚡ 性能优化 | 懒加载 + 关键CSS内联 + 字体压缩 | ⭐⭐ |
+## Baseline
 
-**范围约束：**
-- 所有功能内联到 `api/index.py`（避免Vercel import bug）
-- 数据优先用 seed/静态，不依赖第三方API
-- 每个迭代独立可部署、可验证
+The current repository has shipped the v6.0.x rebuild series:
+
+| Version | Focus |
+| --- | --- |
+| v6.0.1 | Clean rewrite foundation |
+| v6.0.2 | Mobile portrait polish |
+| v6.0.3 | Mobile UX state hardening |
+| v6.0.4 | Visual system upgrade |
+| v6.0.5 | Chat consultation workflow |
+| v6.0.6 | DeepSeek V4 Flash defaults |
+| v6.0.7 | Email verification and Google OAuth |
+| v6.0.8 | Mobile layout and app tabs |
+
+## Iteration 1: Professional Chat
+
+Status: next recommended iteration
+
+### Goal
+
+Make Ask more detailed, professional, and mode-aware.
+
+### Scope
+
+- Add more preset questions.
+- Make mode labels and prompt behavior more specialized.
+- Add structured response instructions.
+- Route task types to configured providers.
+- Improve frontend prompt grouping for mobile.
+
+### Acceptance Criteria
+
+- Ask view exposes clear professional presets.
+- A user can choose mode, provider, and depth without layout breakage.
+- Chat still streams token-by-token.
+- Local fallback still works.
+- Frontend and backend tests pass.
+
+## Iteration 2: Ask to Trip Draft
+
+### Goal
+
+Let users save useful Ask output into Trips.
+
+### Scope
+
+- Add a save-from-chat action.
+- Store route title, destination, rough dates or duration, and notes.
+- Show saved output in Trips.
+- Preserve guest fallback.
+
+### Acceptance Criteria
+
+- Guest can save a local draft.
+- Signed-in user can save a synced draft.
+- Empty trip states still work.
+- Tests cover guest and authenticated behavior.
+
+## Iteration 3: City and Tool Context
+
+### Goal
+
+Connect content surfaces to Ask.
+
+### Scope
+
+- "Ask about this city" action.
+- "Use this tool in my plan" action.
+- Pass context into the chat prompt.
+- Improve status text and toasts.
+
+### Acceptance Criteria
+
+- City context appears in Ask prompt.
+- Tool context appears in Ask prompt.
+- No tab or mobile overflow regressions.
+
+## Iteration 4: Production Account QA
+
+### Goal
+
+Confirm account flows on production domain.
+
+### Scope
+
+- Google OAuth production redirect test.
+- Resend email delivery test.
+- Register -> verify -> profile flow.
+- Password reset smoke test.
+
+### Acceptance Criteria
+
+- Google button appears only when configured.
+- Email verification sends through configured provider.
+- Test-only code exposure is not enabled in production.
+- User can complete the normal account flow.
+
+## Iteration 5: Browser Smoke Suite
+
+### Goal
+
+Add basic rendered UI regression coverage.
+
+### Scope
+
+- Plan first screen smoke test.
+- Mobile tab smoke test.
+- Ask preset smoke test.
+- Auth dialog smoke test.
+- Cities search smoke test.
+- Tools open smoke test.
+- Trips guest save smoke test.
+
+### Acceptance Criteria
+
+- Smoke suite can run locally.
+- It does not require production secrets.
+- It catches blank page, tab failure, and major mobile overflow.
+
+## Iteration Hygiene
+
+For every iteration:
+
+1. Keep edits scoped.
+2. Update docs when behavior changes.
+3. Update cache busting after frontend changes.
+4. Run Python tests.
+5. Run frontend tests.
+6. Run syntax checks.
+7. Run `git diff --check`.
+8. Commit with a clear message.

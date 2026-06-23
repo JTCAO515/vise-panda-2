@@ -1,325 +1,329 @@
-"""VisePanda — SSE Chat API + FAQ Matching + System Prompt Builder."""
-
 import json
 import os
-import re as _re
-import urllib.request as _urllib_request
+import urllib.error
+import urllib.request
+from http import HTTPStatus
 
-from api.common import (
-    DATA_DIR, STATIC_DIR, _json, _json_error, _load_json, _sse_event,
+from api.cities import all_cities
+from api.common import cors_headers, error_response, json_response, read_json
+
+
+SYSTEM_BRIEF = (
+    "You are VisePanda, an English-language China travel assistant. "
+    "Give practical, safety-aware planning help for international visitors."
 )
 
-# ── LLM config (check multiple env var names for compatibility) ──
-DEEPSEEK_API_KEY = (os.environ.get("DEEPSEEK_API_KEY", "")
-                    or os.environ.get("LLM_API_KEY", "")
-                    or os.environ.get("AESCULAP_DEEPSEEK_KEY", ""))
-DEEPSEEK_MODEL = os.environ.get("DEEPSEEK_MODEL",
-                 os.environ.get("LLM_MODEL", "deepseek-v4-flash"))
-DEEPSEEK_BASE = (os.environ.get("DEEPSEEK_BASE_URL", "")
-                 or os.environ.get("LLM_BASE_URL", "")
-                 or "https://api.deepseek.com/v1")
+CHAT_MODES = {
+    "itinerary": {
+        "label": "Itinerary strategist",
+        "instruction": "Build a realistic day-by-day route with sequencing, rail or flight logic, daily pacing, meal ideas, and what to skip.",
+    },
+    "entry": {
+        "label": "Entry and visa analyst",
+        "instruction": "Focus on passport, visa, transit, customs, payment readiness, documents, and what the traveler must verify before booking.",
+    },
+    "budget": {
+        "label": "Budget analyst",
+        "instruction": "Break down costs by lodging, food, transport, attractions, payment setup, and cost-control tradeoffs.",
+    },
+    "transit": {
+        "label": "Transit planner",
+        "instruction": "Compare high-speed rail, flights, airport transfers, metro, taxi, DiDi, walking time, and booking friction for foreigners.",
+    },
+    "food": {
+        "label": "Food and culture guide",
+        "instruction": "Recommend local dishes, dining areas, etiquette, dietary issues, timing, and ordering tips.",
+    },
+    "safety": {
+        "label": "Safety and readiness checker",
+        "instruction": "Give calm risk checks, emergency numbers, health prep, scam avoidance, insurance, medicine, and offline backup steps.",
+    },
+    "city-fit": {
+        "label": "City fit comparator",
+        "instruction": "Compare cities by travel style, season, access, budget, food, culture, nature, English-friendliness, and required days.",
+    },
+    "custom": {
+        "label": "General travel consultant",
+        "instruction": "Answer as a practical China travel consultant and ask only the most useful follow-up questions.",
+    },
+}
+
+DEPTH_INSTRUCTIONS = {
+    "quick": "Keep the answer concise, but include the assumptions and the next action.",
+    "standard": "Give a structured answer with assumptions, recommendations, tradeoffs, and next steps.",
+    "expert": "Be detailed and professional. Include assumptions, decision criteria, scenario branches, and verification checkpoints.",
+}
 
 
-# ════════════════════════════════════════════════════════════
-# FAQ MATCHING ENGINE
-# ════════════════════════════════════════════════════════════
+def _provider_routes():
+    routes = [
+        {
+            "id": "auto",
+            "label": "Auto route",
+            "available": True,
+            "model": "best configured route",
+            "description": "Uses a configured remote model when available, otherwise the local guide.",
+        },
+        {
+            "id": "local-guide",
+            "label": "Local guide",
+            "available": True,
+            "model": "deterministic local fallback",
+            "description": "No external API call; uses curated city and FAQ context.",
+        },
+        {
+            "id": "deepseek",
+            "label": "DeepSeek",
+            "available": bool(os.environ.get("DEEPSEEK_API_KEY")),
+            "model": os.environ.get("DEEPSEEK_MODEL", "deepseek-v4-flash"),
+            "description": "Remote chat completions through DeepSeek when DEEPSEEK_API_KEY is configured.",
+        },
+        {
+            "id": "openai-compatible",
+            "label": "OpenAI-compatible",
+            "available": bool(
+                os.environ.get("OPENAI_COMPATIBLE_API_KEY")
+                and os.environ.get("OPENAI_COMPATIBLE_BASE_URL")
+                and os.environ.get("OPENAI_COMPATIBLE_MODEL")
+            ),
+            "model": os.environ.get("OPENAI_COMPATIBLE_MODEL", "configure OPENAI_COMPATIBLE_MODEL"),
+            "description": "Generic OpenAI-compatible chat completions route for another model provider.",
+        },
+    ]
+    return routes
 
-_FAQ_CACHE = None
 
-def _load_faq() -> dict:
-    global _FAQ_CACHE
-    if _FAQ_CACHE is not None:
-        return _FAQ_CACHE
-    data = _load_json(DATA_DIR / "faq.json")
-    _FAQ_CACHE = data or {"categories": []}
-    return _FAQ_CACHE
-
-
-def _tokenize(text: str) -> set:
-    tokens = set()
-    for word in _re.split(r"[\s,\-./?()\[\]{}!@#$%^&*;:\"'<>]+", text.lower()):
-        word = word.strip()
-        if len(word) > 1:
-            tokens.add(word)
-    return tokens
+def chat_options():
+    return {
+        "modes": [
+            {"id": key, "label": value["label"], "description": value["instruction"]}
+            for key, value in CHAT_MODES.items()
+        ],
+        "providers": _provider_routes(),
+        "depths": [
+            {"id": key, "label": key.capitalize(), "description": value}
+            for key, value in DEPTH_INSTRUCTIONS.items()
+        ],
+    }
 
 
-def _match_faq(user_text: str) -> dict | None:
-    if not user_text:
-        return None
-    faq = _load_faq()
-    categories = faq.get("categories", [])
-    if not categories:
-        return None
-    tokens = _tokenize(user_text)
-    if not tokens:
-        return None
-    best = None
-    best_score = 0
-    MIN_SCORE = 1
-    for cat in categories:
-        patterns = cat.get("patterns", [])
-        if not patterns:
-            continue
-        text_lower = user_text.lower()
-        score = 0
-        matched_terms = []
-        for p in patterns:
-            p_lower = p.strip().lower()
-            if len(p_lower) <= 2:
-                continue
-            if p_lower in text_lower:
-                score += 1
-                matched_terms.append(p_lower)
-            if " " in p_lower:
-                words_in_pattern = p_lower.split()
-                matched_count = sum(1 for w in words_in_pattern if len(w) > 1 and w in tokens)
-                if matched_count >= 2:
-                    score += 0.3 * matched_count
-                    if p_lower not in matched_terms:
-                        matched_terms.extend(words_in_pattern[:2])
-        if score >= 2:
-            density = score / max(len(patterns), 1)
-            score += density * 2
-        if len(tokens) <= 3 and score >= len(patterns) * 0.3:
-            score *= 0.5
-        if score > best_score:
-            best_score = score
-            best = {
-                "id": cat.get("id", ""),
-                "title": cat.get("title", ""),
-                "icon": cat.get("icon", "🐼"),
-                "score": round(score, 1),
-                "matched_terms": matched_terms[:6],
-                "expanded_keywords": cat.get("expanded_keywords", []),
-                "prompt_hint": cat.get("prompt_hint", ""),
-            }
-    if best and best_score >= MIN_SCORE:
-        return best
+def _faq_categories():
+    try:
+        return read_json_file("faq.json").get("categories", [])
+    except (OSError, ValueError, KeyError, AttributeError):
+        return []
+
+
+def read_json_file(filename):
+    from api.common import load_json
+
+    return load_json(filename)
+
+
+def _matched_categories(message, mode):
+    text = (message or "").lower()
+    matches = []
+    mode_map = {
+        "entry": "visa",
+        "transit": "transport",
+        "city-fit": "comparison",
+    }
+    preferred = mode_map.get(mode, mode)
+    for category in _faq_categories():
+        patterns = category.get("patterns") or []
+        score = 1 if category.get("id") == preferred else 0
+        score += sum(1 for pattern in patterns if str(pattern).lower() in text)
+        if score:
+            matches.append((score, category))
+    matches.sort(key=lambda item: item[0], reverse=True)
+    return [category for _, category in matches[:3]]
+
+
+def _matched_cities(message):
+    text = (message or "").lower()
+    cities = all_cities()
+    matches = [city for city in cities if city["name"].lower() in text or city["id"] in text]
+    return matches or cities[:4]
+
+
+def _planning_context(message, mode):
+    cities = _matched_cities(message)
+    categories = _matched_categories(message, mode)
+    city_context = "\n".join(
+        "- {name}: {province}; {duration}; best season {season}; vibe {vibe}; highlights {highlights}".format(
+            name=city["name"],
+            province=city["province"],
+            duration=city["duration"],
+            season=city["bestSeason"],
+            vibe=city["vibe"],
+            highlights=", ".join(city["highlights"][:4]),
+        )
+        for city in cities[:5]
+    )
+    category_context = "\n".join(
+        "- {title}: {hint}".format(title=category.get("title", "Travel topic"), hint=category.get("prompt_hint", ""))
+        for category in categories
+    )
+    return city_context, category_context, cities, categories
+
+
+def _advisor_prompt(message, mode, depth):
+    selected_mode = CHAT_MODES.get(mode, CHAT_MODES["custom"])
+    selected_depth = DEPTH_INSTRUCTIONS.get(depth, DEPTH_INSTRUCTIONS["standard"])
+    city_context, category_context, _, _ = _planning_context(message, mode)
+    return (
+        f"{SYSTEM_BRIEF}\n\n"
+        f"Consultation mode: {selected_mode['label']}.\n"
+        f"Mode instruction: {selected_mode['instruction']}\n"
+        f"Depth instruction: {selected_depth}\n\n"
+        "Use this app context when relevant:\n"
+        f"City context:\n{city_context}\n\n"
+        f"Topic context:\n{category_context or '- No specific FAQ topic matched.'}\n\n"
+        "Answer format:\n"
+        "1. Start with the direct recommendation.\n"
+        "2. State assumptions if the traveler did not provide nationality, dates, budget, mobility needs, or travel style.\n"
+        "3. Give professional, specific details instead of generic advice.\n"
+        "4. Add a short checklist or decision table when useful.\n"
+        "5. End with 2 or 3 targeted follow-up questions only if they would materially improve the plan.\n\n"
+        f"Traveler question: {message}"
+    )
+
+
+def _fallback_answer(message, mode="custom", depth="standard", route_note=""):
+    matches = _matched_cities(message)
+    categories = _matched_categories(message, mode)
+    city_line = ", ".join(city["name"] for city in matches[:4])
+    highlight_line = "; ".join(f"{city['name']}: {', '.join(city['highlights'][:3])}" for city in matches[:3])
+    mode_label = CHAT_MODES.get(mode, CHAT_MODES["custom"])["label"]
+    category_line = ", ".join(category.get("title", "Travel topic") for category in categories[:3]) or "General travel planning"
+    detail_line = "Use a compact route first." if depth == "quick" else "Check timing, entry rules, payment setup, and daily pacing before locking hotels."
+    if depth == "expert":
+        detail_line = "Compare route logic, entry risk, budget range, transport friction, weather, and backup plans before booking."
+    return (
+        f"{route_note}"
+        f"As your {mode_label.lower()}, I would anchor the answer around {city_line}. "
+        f"Relevant planning lens: {category_line}. "
+        f"Useful highlights: {highlight_line}. "
+        f"{detail_line} "
+        "Before departure, prepare passport copies, hotel confirmations, Alipay or WeChat Pay, offline maps, and a backup translation app. "
+        "To make this more precise, tell me your nationality, travel month, total days, budget band, and whether food, history, nature, or comfort matters most."
+    )
+
+
+def _chat_completion(endpoint, api_key, model, prompt):
+    payload = {
+        "model": model,
+        "messages": [
+            {"role": "system", "content": SYSTEM_BRIEF},
+            {"role": "user", "content": prompt},
+        ],
+        "temperature": 0.35,
+        "stream": False,
+    }
+    request = urllib.request.Request(
+        endpoint,
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+        method="POST",
+    )
+    with urllib.request.urlopen(request, timeout=22) as response:
+        data = json.loads(response.read().decode("utf-8"))
+        return data["choices"][0]["message"]["content"]
+
+
+def _remote_answer(message, provider, mode, depth):
+    prompt = _advisor_prompt(message, mode, depth)
+    if provider == "deepseek":
+        api_key = os.environ.get("DEEPSEEK_API_KEY")
+        if not api_key:
+            return None
+        return _chat_completion(
+            "https://api.deepseek.com/chat/completions",
+            api_key,
+            os.environ.get("DEEPSEEK_MODEL", "deepseek-v4-flash"),
+            prompt,
+        )
+    if provider == "openai-compatible":
+        api_key = os.environ.get("OPENAI_COMPATIBLE_API_KEY")
+        base_url = (os.environ.get("OPENAI_COMPATIBLE_BASE_URL") or "").rstrip("/")
+        model = os.environ.get("OPENAI_COMPATIBLE_MODEL")
+        if not (api_key and base_url and model):
+            return None
+        endpoint = base_url if base_url.endswith("/chat/completions") else f"{base_url}/chat/completions"
+        return _chat_completion(endpoint, api_key, model, prompt)
     return None
 
 
-# ════════════════════════════════════════════════════════════
-# IMAGE MARKER HANDLER
-# ════════════════════════════════════════════════════════════
+def _answer_with_route(message, requested_provider, mode, depth):
+    routes = {route["id"]: route for route in _provider_routes()}
+    selected = requested_provider if requested_provider in routes else "auto"
+    remote_order = ["deepseek", "openai-compatible"]
+    if selected in {"deepseek", "openai-compatible"}:
+        remote_order = [selected]
+    if selected == "local-guide":
+        return _fallback_answer(message, mode, depth), routes["local-guide"]
 
-def _yield_with_images(content):
-    pattern = r'\[img:([a-z_]+)(?:\|([^\]]+))?\]'
-    parts = _re.split(pattern, content)
-    static_img_dir = str(STATIC_DIR / "img")
-    i = 0
-    while i < len(parts):
-        if parts[i]:
-            yield _sse_event(json.dumps({"type": "token", "content": parts[i], "token": parts[i]}))
-        i += 1
-        if i < len(parts):
-            key = parts[i]
-            label = parts[i + 1] if i + 1 < len(parts) else key.replace('_', ' ').title()
-            i += 2
-            candidates = [f"{key}.jpg", f"city-{key}.jpg", f"food-{key}.jpg"]
-            found = None
-            for name in candidates:
-                p = os.path.join(static_img_dir, name)
-                if os.path.exists(p):
-                    found = f"/static/img/{name}"
-                    break
-            if found:
-                yield _sse_event(json.dumps({"type": "image", "content": {
-                    "key": key, "url": found, "label": label,
-                }}))
-            else:
-                yield _sse_event(json.dumps({"type": "token", "content": f"[{label}]", "token": f"[{label}]"}))
-
-
-# ════════════════════════════════════════════════════════════
-# SYSTEM PROMPT BUILDER
-# ════════════════════════════════════════════════════════════
-
-def _build_system_prompt(params: dict, faq_match: dict | None = None) -> str:
-    from api.cities import ESTIMATE_DATA
-
-    city = params.get("city", "").lower()
-    prompt_parts = [
-        "You are VisePanda, an expert AI China travel planner. You have a comprehensive knowledge base of 36 Chinese cities.",
-        "",
-        "## CORE RULES",
-        "- Always use specific, real information from your knowledge base (specific restaurant names, prices, districts)",
-        "- When suggesting itineraries, ALWAYS use the structured Day format below",
-        "- Be honest: say 'I don't have specific data on that' instead of making things up",
-        "- Consider seasonality, weather, and local holidays in your recommendations",
-        "- For food recommendations, include specific dish names in both English and Chinese",
-        "- Include practical tips: transport options, budget ranges, peak hours to avoid",
-        "- Be concise and direct. Organize information into clear sections with ### headers.",
-    ]
-    if faq_match:
-        prompt_parts.append("")
-        prompt_parts.append(f"## QUESTION INTENT: {faq_match['title']}")
-        prompt_parts.append(f"The user's question relates to '{faq_match['title']}'.")
-        keywords = faq_match.get("expanded_keywords", [])
-        if keywords:
-            prompt_parts.append("Relevant topics to cover:")
-            for i, kw in enumerate(keywords[:6], 1):
-                prompt_parts.append(f"  {i}. {kw}")
-        hint = faq_match.get("prompt_hint", "")
-        if hint:
-            prompt_parts.append("Answering guidance:")
-            prompt_parts.append(hint)
-
-    prompt_parts.extend([
-        "",
-        "## ITINERARY FORMAT",
-        "**Day 1: [Title]**",
-        "- 🕐 Morning: [activity] at [specific location]",
-        "- 🕐 Afternoon: [activity] at [specific location]",
-        "- 🕐 Evening: [activity] at [specific location]",
-        "- 🍽️ Eat: [specific dish] at [restaurant name] (¥[price])",
-        "- 🏨 Stay: [recommended area] - [budget/mid/luxury option]",
-        "- 💡 Tip: [local insider advice]",
-    ])
-
-    if city:
-        city_data = _load_json(DATA_DIR / "cities.json") or {}
-        food_data = _load_json(DATA_DIR / "food.json") or {}
-        hotels_data = _load_json(DATA_DIR / "hotels.json") or {}
-        tips_data = _load_json(DATA_DIR / "tips.json") or {}
-
-        info = city_data.get(city)
-        if info:
-            prompt_parts.append(f"\n## KNOWLEDGE: {city.title()}")
-            prompt_parts.append(f"- Name (CN): {info.get('name_cn', '')}")
-            prompt_parts.append(f"- Province: {info.get('province', '')}")
-            prompt_parts.append(f"- Best season: {info.get('best_season', '')}")
-            prompt_parts.append(f"- Recommended stay: {info.get('days', '')}")
-            prompt_parts.append(f"- Vibe: {info.get('vibe', '')}")
-            prompt_parts.append(f"- Budget tip: {info.get('budget_tip', '')}")
-
-            foods = food_data.get(city, [])
-            if foods:
-                prompt_parts.append(f"\n### Must-eat Foods in {city.title()}")
-                for f in foods[:6]:
-                    prompt_parts.append(f"{'⭐ ' if f.get('must_try') else '   '}{f.get('name_en','')} ({f.get('description','')}) {f.get('price_range','')}")
-
-            h = hotels_data.get(city, {})
-            if h:
-                prompt_parts.append(f"\n### Accommodation in {city.title()}")
-                for tier, label in [("budget", "Budget"), ("mid", "Mid"), ("luxury", "Luxury")]:
-                    t = h.get(tier, {})
-                    if t:
-                        prompt_parts.append(f"- {label}: {t.get('range','')} — {t.get('desc','')} ({t.get('areas','')})")
-                if h.get('tip'):
-                    prompt_parts.append(f"- Tip: {h['tip']}")
-
-            tips = tips_data.get(city, [])
-            if tips:
-                prompt_parts.append(f"\n### Local Tips for {city.title()}")
-                for t in tips[:4]:
-                    if isinstance(t, dict):
-                        prompt_parts.append(f"- {t.get('en','')}: {t.get('tip','')}")
-                    else:
-                        prompt_parts.append(f"- {t}")
-
-            est = ESTIMATE_DATA.get(city)
-            if est:
-                prompt_parts.append(f"\n### Price Estimates for {city.title()}")
-                prompt_parts.append(f"- Budget daily: {est.get('budget_daily', '')}")
-                prompt_parts.append(f"- Mid daily: {est.get('mid_daily', '')}")
-                prompt_parts.append(f"- Luxury daily: {est.get('luxury_daily', '')}")
-
-    prompt_parts.append("\n## POPULAR CITY GUIDE (Quick Reference)")
-    all_cities = _load_json(DATA_DIR / "cities.json") or {}
-    for name, info in list(all_cities.items())[:8]:
-        vibes = info.get('vibe', '').split('·')[0].strip() if info.get('vibe') else ''
-        season = info.get('best_season', '')[:20]
-        prompt_parts.append(f"- {name.title()}: {vibes} | Best: {season} | {info.get('days','')}")
-
-    return "\n".join(prompt_parts)
-
-
-# ════════════════════════════════════════════════════════════
-# CHAT SSE HANDLER
-# ════════════════════════════════════════════════════════════
-
-def handle_chat(environ, start_response):
-    """POST /api/chat — SSE streaming chat with DeepSeek V4 Flash."""
-    if not DEEPSEEK_API_KEY:
-        return _json_error(start_response, "DEEPSEEK_API_KEY not configured", "503 Service Unavailable")
-
-    from api.common import _read_post
-    params = _read_post(environ)
-    messages = params.get("messages", [])
-    if not messages:
-        return _json_error(start_response, "messages required", "400 Bad Request")
-
-    latest_user = ""
-    for msg in reversed(messages):
-        if msg.get("role") == "user":
-            latest_user = msg.get("content", "")
-            break
-    faq_match = _match_faq(latest_user)
-    system_prompt = _build_system_prompt(params, faq_match=faq_match)
-
-    def stream():
-        if faq_match:
-            yield _sse_event(json.dumps({"type": "faq", "content": json.dumps(faq_match), "faq": faq_match}))
-
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {DEEPSEEK_API_KEY}",
-        }
-        payload = {
-            "model": DEEPSEEK_MODEL,
-            "messages": [{"role": "system", "content": system_prompt}] + messages,
-            "stream": True,
-            "temperature": 0.7,
-            "max_tokens": 2048,
-        }
-        req = _urllib_request.Request(
-            f"{DEEPSEEK_BASE}/chat/completions",
-            data=json.dumps(payload).encode("utf-8"),
-            headers=headers,
-            method="POST",
-        )
+    for provider in remote_order:
+        if not routes[provider]["available"]:
+            continue
         try:
-            with _urllib_request.urlopen(req, timeout=60) as resp:
-                buffer = ""
-                while True:
-                    chunk = resp.read(4096)
-                    if not chunk:
-                        break
-                    buffer += chunk.decode("utf-8", errors="replace")
-                    lines = buffer.split("\n")
-                    buffer = lines.pop()
-                    for line in lines:
-                        line = line.strip()
-                        if not line or line == "data: [DONE]":
-                            continue
-                        if line.startswith("data: "):
-                            try:
-                                data = json.loads(line[6:])
-                                delta = data.get("choices", [{}])[0].get("delta", {})
-                                content = delta.get("content", "")
-                                if content:
-                                    if "---SPLIT---" in content:
-                                        parts = content.split("---SPLIT---")
-                                        for i, part in enumerate(parts):
-                                            if part:
-                                                yield from _yield_with_images(part)
-                                            if i < len(parts) - 1:
-                                                yield _sse_event(json.dumps({"type": "split", "content": "---SEPARATOR---", "split": True}))
-                                    else:
-                                        yield from _yield_with_images(content)
-                            except (json.JSONDecodeError, KeyError, IndexError):
-                                pass
-        except Exception as ex:
-            yield _sse_event(json.dumps({"type": "error", "content": str(ex)}), event="error")
-        yield _sse_event(json.dumps({"done": True}), event="done")
+            answer = _remote_answer(message, provider, mode, depth)
+            if answer:
+                return answer, routes[provider]
+        except (urllib.error.URLError, KeyError, IndexError, json.JSONDecodeError, TimeoutError, ValueError):
+            continue
 
-    headers_out = [
-        ("Content-Type", "text/event-stream"),
+    route_note = "" if selected == "auto" else f"{routes[selected]['label']} is not configured or did not respond, so I used the local guide. "
+    return _fallback_answer(message, mode, depth, route_note), routes["local-guide"]
+
+
+def _sse(answer, meta=None):
+    chunks = []
+    if meta:
+        chunks.append(f"data: {json.dumps({'meta': meta})}\n\n")
+    for word in answer.split(" "):
+        chunks.append(f"data: {json.dumps({'token': word + ' '})}\n\n")
+    chunks.append(f"data: {json.dumps({'done': True})}\n\n")
+    return "".join(chunks)
+
+
+def dispatch(method, environ, start_response):
+    if method == "GET":
+        return json_response(start_response, chat_options(), environ=environ)
+    if method != "POST":
+        return error_response(start_response, HTTPStatus.METHOD_NOT_ALLOWED, "method_not_allowed", "Method not allowed.", environ)
+    try:
+        body = read_json(environ)
+    except ValueError as exc:
+        return error_response(start_response, HTTPStatus.BAD_REQUEST, "bad_json", str(exc), environ)
+
+    message = str(body.get("message") or body.get("prompt") or "").strip()
+    mode = str(body.get("mode") or "custom").strip()
+    provider = str(body.get("provider") or "auto").strip()
+    depth = str(body.get("depth") or "standard").strip()
+    if not message:
+        return error_response(start_response, HTTPStatus.BAD_REQUEST, "message_required", "Message is required.", environ)
+    if len(message) > 4000:
+        return error_response(start_response, HTTPStatus.BAD_REQUEST, "message_too_long", "Message is too long.", environ)
+
+    answer, route = _answer_with_route(message, provider, mode, depth)
+    meta = {
+        "provider": route["id"],
+        "providerLabel": route["label"],
+        "model": route["model"],
+        "mode": mode if mode in CHAT_MODES else "custom",
+        "modeLabel": CHAT_MODES.get(mode, CHAT_MODES["custom"])["label"],
+        "depth": depth if depth in DEPTH_INSTRUCTIONS else "standard",
+    }
+    headers = [
+        ("Content-Type", "text/event-stream; charset=utf-8"),
         ("Cache-Control", "no-cache"),
-        ("Connection", "keep-alive"),
-        ("Access-Control-Allow-Origin", "*"),
         ("X-Accel-Buffering", "no"),
     ]
-    start_response("200 OK", headers_out)
-    return stream()
+    headers.extend(cors_headers(environ))
+    start_response("200 OK", headers)
+    return [_sse(answer, meta).encode("utf-8")]
+
+
+def non_stream_preview(message):
+    return {"answer": _fallback_answer(message)}

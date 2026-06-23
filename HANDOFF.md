@@ -1,265 +1,713 @@
-# VisePanda (VP-Hermes-Web) 项目交接文档
+# VisePanda / VP-Codex-Web Handoff
 
-> **最后更新：** 2026-06-20  
-> **当前版本：** `v5.0.9`  
-> **当前状态：** 可继续开发、可继续线上验证，基础稳定性已补一轮，但整体仍处于“产品验证到准商用”之间  
-> **代码仓库：** `https://github.com/JTCAO515/VP-Hermes-Web.git`  
-> **线上地址：** `https://www.go2china.space`  
-> **当前部署：** `Vercel` 自动部署，现阶段继续保留
+Last updated: 2026-06-23
+Current version: v6.1.1
+Latest commit: pending local commit for verified responsive QA fixes
+Repository: https://github.com/JTCAO515/VP-Codex-Web
+Production domain: https://go2china.space
+Deployment target: Vercel, routed through `api/index.py`
 
----
+## 1. Project Summary
 
-## 1. 项目是什么
+VisePanda is an English-language China travel workspace for international visitors. It combines destination discovery, visa and entry readiness, saved trips, travel tools, and a streaming AI guide into a lightweight web product.
 
-`VisePanda` 是一个面向国际游客的中国旅行 AI 产品网站，不是泛用聊天站点，而是围绕“中国旅行”这一垂直场景组织信息、工具和规划能力。
+The product is not a generic chatbot. The intended user journey is:
 
-它当前承担三件事：
+1. Start directly in the Ask / AI Guide surface.
+2. Use quick prompts or type a planning question.
+3. Reveal advanced chat settings only after the conversation starts.
+4. Browse cities and practical tools as supporting context.
+5. Save trip drafts locally as a guest or sync them after signing in.
+6. Use account login, email verification, and optional Google OAuth for persisted user state.
 
-1. 让用户通过聊天快速生成中国行程与旅行建议
-2. 提供城市、签证、预算、短语、急救等结构化旅行信息
-3. 作为英文原生的旅游产品站继续向可商用方向演进
+The current product is a working MVP-plus foundation. It is suitable for continued iteration, production validation, and gradual commercial hardening. It is not yet a fully mature commercial platform.
 
-一句话定义：
+## 2. Current Product Surface
 
-> **一个面向国际游客、以 AI 对话规划为主入口、聚焦中国旅行场景的英文原生产品网站。**
+### Ask
 
-## 2. 当前能做什么
+The first screen is the AI travel guide. It includes:
 
-当前已经形成的核心能力如下，接手时应优先视为“已有资产”，而不是从头再做。
+- A progressive chat welcome state
+- First-screen prompt input
+- High-value quick prompts
+- Mode, provider, and depth controls after the conversation starts
+- A viewport-bounded mobile chat shell with internal message scrolling
 
-### 2.1 用户可见能力
+### Overview
 
-- AI 聊天规划，支持流式回复与多段内容输出
-- 36 城市内容浏览与部分对比能力
-- Trips 保存、读取、删除与聊天历史关联
-- Tools 详情页，覆盖 `Packing / Pricing / Visa / Phrases / Emergency`
-- Email / Password 登录、Google OAuth、用户 profile
-- Admin 用户管理、统计与聊天记录查看
-- 英文原生内容展示，并保留 `English（中文）` 专名
-- 移动端底部导航、安全区与竖屏体验优化
+The planning workspace remains available from the top bar. It includes:
 
-### 2.2 工程层能力
+- Destination input
+- Trip length selector
+- Entry / Route / Local snapshot cards
+- Featured city strip
+- Readiness checklist
+- Mobile-first Ask AI shortcut
 
-- 前后端已形成稳定主链路
-- 已有 Python 与 Node 双回归测试入口
-- 已形成版本、文档、测试、发布联动节奏
-- GitHub 提交后会自动触发 `Vercel` 部署
+The latest v6.0.8 iteration focused heavily on this surface, especially mobile portrait usage.
 
-## 3. 页面结构与内容格式
+### Ask
 
-项目当前是 `Vanilla JS SPA`，页面结构已比较完整：
+The Ask view is the AI guide workspace. It supports:
 
-| 页面 | 作用 | 当前状态 |
-|------|------|----------|
-| `Home` | 首页、信任层、城市入口、快速规划入口 | 已完成风格化升级 |
-| `Chat` | AI 规划主入口 | 可用，支持流式聊天 |
-| `Map` | 地图与城市入口 | 可用，POI 仍不完整 |
-| `Trips` | 行程保存与浏览 | 可用 |
-| `Cities` | 城市浏览与详情 | 可用 |
-| `Tools` | 旅行工具集合 | 已支持工具详情展开 |
-| `Admin` | 后台管理 | 可用，但更偏内部使用 |
+- Streaming server-sent-event responses
+- Professional consultation modes
+- Model/provider routing
+- Depth controls
+- Preset expert prompts
 
-当前主内容类型主要分为四类：
+Current chat modes include itinerary, entry/visa, budget, transit, food/culture, safety/readiness, city-fit comparison, and general travel consulting.
 
-1. 聊天气泡与规划结果
-2. 城市结构化内容
-3. Trips 行程内容
-4. Tools 工具卡片与详情面板
+### Cities
 
-## 4. 当前技术架构
+The Cities view renders searchable city cards from curated JSON data in `data/cities.json`.
 
-当前技术架构应理解为“轻前端 + 轻后端 + 文档化迭代”。
+It is currently good for discovery and lightweight comparison. It is not yet a full booking or POI product.
 
-| 层 | 技术 |
-|----|------|
-| 前端 | `HTML + CSS + Vanilla JS` |
-| 后端 | `Python WSGI` |
-| LLM | `DeepSeek V4 Flash` |
-| 地图 | `AMap` + `Leaflet fallback` |
-| 存储 | `SQLite` |
-| 部署 | `Vercel` |
-| 测试 | `python3 -m unittest` + `node --test` |
+### Tools
 
-当前高层运行关系：
+The Tools view loads practical travel helpers from `data/tools.json`.
+
+Current categories include packing, pricing, phrases, emergency, and visa-related helpers.
+
+### Trips
+
+Trips supports:
+
+- Guest local drafts through browser storage
+- Authenticated saved trips through backend persistence
+- Basic trip creation and listing
+
+This is usable, but the product loop between generated chat plans and structured trip timelines still needs more work.
+
+### Account
+
+The current account system supports:
+
+- Email/password login
+- Registration without collecting a name
+- Email verification code flow
+- Resend verification code
+- Password reset flow
+- Optional Google OAuth login
+- Profile update
+- Logout
+
+Google login is hidden in the UI unless the required Google OAuth environment variables are configured.
+
+### Admin
+
+`web/admin.html` is a minimal admin surface for user management. It is intentionally small and should be treated as an internal operations tool, not a public product surface.
+
+## 3. Current Technical Architecture
+
+The project is intentionally lightweight.
 
 ```text
-web/index.html + web/app.js + web/app.css
-              ↓
-           api/index.py
-              ↓
-api/auth.py / api/chat.py / api/cities.py / api/tools.py / api/visa.py
-              ↓
-        data/*.json + DeepSeek API
+web/index.html
+web/app.css
+web/app.js
+        |
+        v
+api/index.py
+        |
+        +-- api/auth.py
+        +-- api/chat.py
+        +-- api/cities.py
+        +-- api/tools.py
+        +-- api/visa.py
+        +-- api/config.py
+        |
+        v
+data/*.json
+SQLite auth/trips storage
+optional external model/email/OAuth providers
 ```
 
-本文件只保留架构判断，不展开更细工程责任；详尽工程说明预留到：
+### Frontend
 
-- [工程接手附录](docs/2026-06-20-engineering-handoff-notes.md)
+- Static HTML, CSS, and vanilla JavaScript
+- Main files:
+  - `web/index.html`
+  - `web/app.css`
+  - `web/app.js`
+  - `web/sw.js`
+  - `web/admin.html`
+- No React, Next.js, or bundler is currently used.
+- The app behaves like a small single-page app by switching `data-view-panel` sections.
 
-## 5. 已达成效果
+### Backend
 
-从交接视角看，当前已经明确达成这些结果：
+- Python WSGI app
+- Standard library focused
+- Main router: `api/index.py`
+- Auth, users, sessions, trips, password reset, email verification, and admin live mostly in `api/auth.py`.
 
-1. 项目已经从功能原型进化为完整产品网站
-2. 用户可见主内容完成了一轮英文原生化
-3. 移动端体验已做过两轮专项优化
-4. `v5.0.9` 已完成一轮生产稳定性修复
-5. 版本、测试、文档和发布节奏开始成型
+### Storage
 
-这意味着接手者面对的不是空壳，也不是单页 demo，而是一个可继续推进的产品基础。
+- SQLite is used for local and current backend persistence.
+- Auth DB path can be configured with `AUTH_DB_PATH`.
+- There is historical documentation mentioning Supabase/Postgres, but the current active implementation should be treated as SQLite-based unless a future migration is explicitly planned.
 
-## 6. 计划达成效果
+### Deployment
 
-当前阶段的合理目标，不是推倒重来，而是在现有基础上继续补齐闭环与商用品质。
+- Vercel deployment through `vercel.json`
+- All API and static routes go through `api/index.py`
+- Static app files are served by the backend static response helper
 
-### 6.1 产品完成度
+## 4. Important Files
 
-- 继续稳定线上体验
-- 增强 `Trips / Cities / Tools / Chat` 之间的联动
-- 让工具页逐步从信息展示升级为旅行工作台
+| File | Purpose |
+| --- | --- |
+| `README.md` | Fast project overview, API list, environment variables |
+| `HANDOFF.md` | Current handoff document |
+| `CHANGELOG.md` | Release notes |
+| `api/index.py` | Main WSGI router and health/config endpoints |
+| `api/config.py` | Public app config and version |
+| `api/auth.py` | Auth, sessions, users, trips, admin, verification, OAuth |
+| `api/chat.py` | Streaming AI chat and provider routing |
+| `api/cities.py` | City API and map payload |
+| `api/tools.py` | Travel tools API |
+| `api/visa.py` | Visa helper API |
+| `web/index.html` | Main product UI |
+| `web/app.css` | Main responsive visual system |
+| `web/app.js` | Main frontend state, data loading, auth, chat, navigation |
+| `web/sw.js` | PWA service worker cache shell |
+| `web/tests/*.test.js` | Frontend structure and stability tests |
+| `tests/*.py` | Python API and contract tests |
+| `data/*.json` | Curated product data |
+| `static/img/*` | Product image assets |
 
-### 6.2 商用方向
+## 5. Current Version State
 
-- 当前继续保留 `Vercel`
-- 当前不立刻整站迁移
-- 后续优先考虑 `前端保留 + 后端 API 独立 + 托管数据库 + 对象存储/CDN`
+### v6.1.1
 
-对应文档：
+Latest commit: pending local commit for verified responsive QA fixes
 
-- [商用升级路线](docs/2026-06-20-commercial-upgrade-plan.md)
+This release verifies the v2 optimization report against the live app before applying fixes:
 
-## 7. 过往关键迭代
+- Fixed the guest Trips empty state so its action opens Ask instead of the removed dashboard nav target.
+- Expanded the desktop chat shell on wide screens to reduce empty space on 27 inch displays.
+- Tightened mobile chat after the first message: compact settings, bounded shell height, internal message scrolling, and no automatic post-send input focus on narrow screens.
+- Added a mobile composing state that hides the bottom tab bar while the chat input is focused.
+- Replaced the root `100vh` minimum with `100dvh`.
+- Confirmed the auth dialog is already centered on desktop and the bottom nav is already four tabs.
+- Cache busting is updated to `20260623-v611-responsive-qa2`.
+- App version is updated to `6.1.1`.
 
-### 7.1 阶段演进
+### v6.1.0
 
-- `v3.x`：完成基础产品骨架、聊天、地图、FAQ、城市知识库
-- `v4.x`：补齐 Auth、Trips、Chat History、Admin、Visa 等可用产品能力
-- `v4.1.x`：推进英文原生化与数据层英文化
+This release shifts the product from a planning dashboard toward an AI-first travel agent:
 
-### 7.2 最近关键迭代
+- Ask is the default first screen.
+- Primary navigation is now Ask, Cities, Tools, and Trips.
+- Overview remains available from the top bar as a secondary planning surface.
+- Chat opens with a focused AI agent welcome state, six quick prompts, and first-screen input.
+- Mode, provider, depth, and detailed presets reveal after the first user message.
+- SSE parsing is protected against malformed `data:` lines.
+- Shared API calls and chat calls now use request timeouts.
+- Chat sends Authorization headers when a session token exists.
+- City cards use image fallback handling.
+- Cache busting is updated to `20260623-v610-ai-first3`.
+- App version is updated to `6.1.0`.
 
-- `v5.0.1 → v5.0.3`：建立测试基座，修复契约问题，规范文档与版本联动
-- `v5.0.4`：首页、Cities、Trips 完成一轮风格升级
-- `v5.0.5 → v5.0.6`：移动端专项优化
-- `v5.0.7`：用户可见主内容完成英文化
-- `v5.0.8`：Tools 升级为可展开详情的工具页
-- `v5.0.9`：完成一轮生产稳定性专项修复
+### v6.0.8
 
-## 8. 当前真实问题
+Latest commit: `4a58629 Polish mobile layout and app tabs`
 
-这是接手时最需要正视的部分。
+This release improved mobile portrait layout and UI polish:
 
-### 8.1 线上质量仍需继续真实回归
+- Reworked the first screen into a planning-first workspace.
+- Added Entry / Route / Local snapshot cards.
+- Improved mobile bottom tab logic and visual selected states.
+- Added app-style tab semantics with `role="tablist"`, `role="tab"`, `aria-selected`, and `role="tabpanel"`.
+- Added a mobile `Ask AI` floating shortcut.
+- Refined the visual system with brighter sky-blue surfaces and orange CTA treatment.
+- Updated cache busting to `20260622-v608-mobile-ui3`.
+- Updated app version to `6.0.8`.
 
-`v5.0.9` 只代表已经补过一轮，不代表线上质量问题已经彻底消失。接下来仍应重点验证：
+### v6.0.7
 
-- `Sign in`
-- 图片加载与 fallback
-- tab 切换反馈
-- 手机端底部导航可见性
-- 多浏览器一致性
+Commit: `4d306d2 Modernize auth with email verification and Google OAuth`
 
-### 8.2 产品闭环还不够强
+This release modernized authentication:
 
-当前页面与模块已不少，但关键链路联动仍不够成熟，尤其是：
+- Registration no longer asks for name.
+- Email/password registration requires email verification.
+- Unverified users cannot log in by password.
+- Added resend verification code endpoint.
+- Added optional Resend email delivery.
+- Added optional Google OAuth start/callback flow.
+- Added `/api/auth/config` to expose auth feature availability.
 
-- `Cities → Tools → Chat`
-- `Trips → Tools`
+### v6.0.6
 
-### 8.3 数据覆盖还不均匀
+Commit: `75a0954 Configure DeepSeek V4 Flash defaults for v6.0.6`
 
-- 预算数据只覆盖部分城市
-- 地图 POI 覆盖不完整
-- 个别工具与城市内容仍有补全空间
+This release aligned chat defaults around DeepSeek V4 Flash.
 
-### 8.4 工程层仍有历史包袱
+### v6.0.5
 
-- `web/app.js` 依然偏重，不建议在未理解入口顺序前做大重构
-- `static/*` 含历史兼容层，不能默认都属于当前主链路
-- 部署仍受 `Vercel` 边界影响，冷启动、流式接口、日志与资源治理后续仍要补
+Commit: `6f19049 Upgrade chat consultation workflow for v6.0.5`
 
-## 9. 当前部署与商用判断
+This release upgraded chat into a more professional consultation workflow with modes, presets, provider routes, and depth.
 
-当前部署判断已经相对明确：
+### v6.0.4
 
-1. **继续使用 `Vercel`**
-2. **不立刻整站迁移**
-3. 先把线上验证、稳定性和产品闭环补强
-4. 商用升级优先迁出后端 API、数据库与资源治理能力
+Commit: `82ce874 Upgrade visual system for v6.0.4`
 
-对应路线文档：
+This release improved the overall visual system.
 
-- [商用升级路线](docs/2026-06-20-commercial-upgrade-plan.md)
+### v6.0.3
 
-结论不是“现在立刻迁移”，而是“现在继续保留，后续按商用需要分阶段拆出”。
+Commit: `c1e7976 Harden mobile UX states for v6.0.3`
 
-## 10. 接手建议
+This release hardened mobile UX states.
 
-### 10.1 第一天先做什么
+### v6.0.2
 
-1. 如果你不知道该先看哪份文档，先读 [docs/2026-06-20-agent-transfer-index.md](docs/2026-06-20-agent-transfer-index.md)
-2. 再读 `HANDOFF.md`
-3. 再读 [docs/2026-06-20-engineering-handoff-notes.md](docs/2026-06-20-engineering-handoff-notes.md)
-4. 再读 [docs/2026-06-20-first-week-takeover-checklist.md](docs/2026-06-20-first-week-takeover-checklist.md)
-5. 再读 [docs/2026-06-20-high-risk-files-guide.md](docs/2026-06-20-high-risk-files-guide.md)
-6. 最后参考 [docs/2026-06-20-production-regression-manual.md](docs/2026-06-20-production-regression-manual.md)
-7. 再读 [docs/2026-06-20-next-2-4-weeks-priority-guide.md](docs/2026-06-20-next-2-4-weeks-priority-guide.md)
-8. 再读 [docs/2026-06-20-technical-debt-boundaries.md](docs/2026-06-20-technical-debt-boundaries.md)
-9. 再读 [docs/2026-06-20-module-ownership-guide.md](docs/2026-06-20-module-ownership-guide.md)
-10. 再看 `README.md`
-11. 再看 `CHANGELOG.md`
-12. 最后跑测试和本地服务
+Commit: `230e05d Polish mobile portrait experience`
 
-### 10.2 建议先跑的命令
+This release focused on mobile portrait interaction.
 
-```bash
-python3 -m unittest discover -s tests -v
+### v6.0.1
+
+Commit: `fcd79f1 Rewrite VisePanda from clean foundation`
+
+This was the clean rewrite baseline after moving into the new repository.
+
+## 6. Local Development
+
+Use PowerShell from the repository root.
+
+```powershell
+python -c "from api.index import app; from wsgiref.simple_server import make_server; server = make_server('127.0.0.1', 8765, app); print('http://127.0.0.1:8765'); server.serve_forever()"
+```
+
+Open:
+
+```text
+http://127.0.0.1:8765
+```
+
+Health check:
+
+```powershell
+curl.exe http://127.0.0.1:8765/api/health
+```
+
+Expected current health version:
+
+```json
+{"ok":true,"service":"VisePanda","version":"6.1.1"}
+```
+
+## 7. Test Commands
+
+Run all Python contract tests:
+
+```powershell
+python -m unittest discover -s tests -v
+```
+
+Run all frontend structure tests:
+
+```powershell
 node --test web/tests/*.test.js
-python3 -c "
-from api.index import app
-from wsgiref.simple_server import make_server
-httpd = make_server('', 8765, app)
-print('http://127.0.0.1:8765')
-httpd.serve_forever()
-"
 ```
 
-### 10.3 第一天不要先做什么
+Run syntax checks:
 
-- 不要一上来重构整个前端
-- 不要一上来整站迁移
-- 不要在没搞清活跃链路前大改 `static/*`
-- 不要把兼容层误认成当前主入口
+```powershell
+python -m py_compile api/config.py api/index.py
+node --check web/app.js
+```
 
-## 11. 关键文档索引
+Run whitespace diff check before committing:
 
-| 文档 | 用途 |
-|------|------|
-| [README.md](README.md) | 项目总览与快速启动 |
-| [CHANGELOG.md](CHANGELOG.md) | 版本与迭代历史 |
-| [HANDOFF.md](HANDOFF.md) | 当前总交接文档 |
-| [docs/2026-06-20-agent-transfer-index.md](docs/2026-06-20-agent-transfer-index.md) | 交接文档总目录页 |
-| [docs/2026-06-20-engineering-handoff-notes.md](docs/2026-06-20-engineering-handoff-notes.md) | 详尽工程接手附录 |
-| [docs/2026-06-20-first-week-takeover-checklist.md](docs/2026-06-20-first-week-takeover-checklist.md) | 新接手开发者首周进入清单 |
-| [docs/2026-06-20-high-risk-files-guide.md](docs/2026-06-20-high-risk-files-guide.md) | 高风险文件修改指南 |
-| [docs/2026-06-20-production-regression-manual.md](docs/2026-06-20-production-regression-manual.md) | 发布前后回归手册 |
-| [docs/2026-06-20-next-2-4-weeks-priority-guide.md](docs/2026-06-20-next-2-4-weeks-priority-guide.md) | 未来 2-4 周推荐迭代顺序 |
-| [docs/2026-06-20-technical-debt-boundaries.md](docs/2026-06-20-technical-debt-boundaries.md) | 技术债边界说明 |
-| [docs/2026-06-20-module-ownership-guide.md](docs/2026-06-20-module-ownership-guide.md) | 模块责任建议表 |
-| [docs/2026-06-20-commercial-upgrade-plan.md](docs/2026-06-20-commercial-upgrade-plan.md) | 商用升级路线 |
-| [docs/superpowers/specs/2026-06-20-production-stability-pass-design.md](docs/superpowers/specs/2026-06-20-production-stability-pass-design.md) | `v5.0.9` 稳定性专项设计 |
-| [docs/superpowers/plans/2026-06-20-production-stability-pass.md](docs/superpowers/plans/2026-06-20-production-stability-pass.md) | `v5.0.9` 实施计划 |
+```powershell
+git diff --check
+```
 
-## 12. 最终结论
+Latest known passing state from v6.1.1:
 
-这个项目已经完成了从“功能原型”向“可持续迭代产品网站”的过渡，但还没有到完全成熟商用状态。
+- Python tests: 18/18 passing
+- Frontend tests: 18/18 passing
+- `node --check web/app.js`: passing
+- `python -m py_compile api/config.py api/index.py`: passing
+- `git diff --check`: passing
 
-最准确的判断是：
+## 8. Environment Variables
 
-> **它已经具备继续开发、继续线上验证和继续增强商用品质的基础，但接手重点应放在稳定性、链路联动和分阶段商用准备，而不是从零重写。**
+Do not commit real secrets. Configure them only in local shell or deployment environment.
 
-对新接手者来说，最重要的顺序是：
+### Required for production-quality AI chat
 
-1. 先理解项目定义与当前能力
-2. 再判断当前真实问题与部署边界
-3. 最后基于现有主链路继续做稳定性、联动与商用准备
+- `DEEPSEEK_API_KEY`: DeepSeek API key.
+- `DEEPSEEK_MODEL`: recommended value is `deepseek-v4-flash`.
+
+If no DeepSeek key is configured, the app falls back to local deterministic guide behavior.
+
+### Optional OpenAI-compatible provider
+
+- `OPENAI_COMPATIBLE_API_KEY`: optional provider key.
+- `OPENAI_COMPATIBLE_BASE_URL`: optional provider base URL.
+- `OPENAI_COMPATIBLE_MODEL`: optional provider model name.
+
+These enable another OpenAI-compatible chat completions route.
+
+### Google OAuth
+
+- `APP_BASE_URL`: `https://go2china.space`.
+- `GOOGLE_CLIENT_ID`: Google OAuth client id.
+- `GOOGLE_CLIENT_SECRET`: Google OAuth client secret.
+- `GOOGLE_REDIRECT_URI`: `https://go2china.space/api/auth/google/callback`.
+
+If `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are not configured, the frontend hides the Google login button.
+
+### Email verification
+
+- `RESEND_API_KEY`: Resend API key.
+- `EMAIL_FROM`: verified sender, for example `VisePanda <verified-sender@go2china.space>`.
+
+If `RESEND_API_KEY` is missing, the backend uses development delivery behavior.
+
+### Auth and admin
+
+- `AUTH_DB_PATH`: optional SQLite database path.
+- `ADMIN_EMAIL`: explicit admin seed email.
+- `ADMIN_PASSWORD`: explicit strong admin seed password.
+
+Weak admin defaults such as `admin123` are ignored.
+
+### Test-only flags
+
+- `AUTH_EXPOSE_EMAIL_CODE=1`
+- `AUTH_EXPOSE_RESET_TOKEN=1`
+
+Never enable these in production.
+
+## 9. API Surface
+
+Public:
+
+- `GET /api/health`
+- `GET /api/config`
+- `GET /api/cities`
+- `GET /api/cities/:id`
+- `GET /api/map`
+- `GET /api/tools`
+- `GET /api/tools/:id`
+- `GET /api/visa/countries`
+- `GET /api/visa/info?nationality=us`
+- `POST /api/visa/generate`
+- `GET /api/chat`
+- `POST /api/chat`
+
+Auth:
+
+- `POST /api/auth/register`
+- `POST /api/auth/verify-email`
+- `POST /api/auth/resend-verification`
+- `GET /api/auth/google/start`
+- `GET /api/auth/google/callback`
+- `POST /api/auth/login`
+- `POST /api/auth/logout`
+- `GET /api/auth/me`
+- `POST /api/auth/update-profile`
+- `POST /api/auth/forgot-password`
+- `POST /api/auth/reset-password`
+- `GET /api/auth/config`
+
+Trips:
+
+- `GET /api/trips`
+- `POST /api/trips`
+- `DELETE /api/trips/:id`
+
+Admin:
+
+- `GET /api/admin/users`
+- `DELETE /api/admin/users/:id`
+
+## 10. Frontend Interaction Notes
+
+The main app is driven by `web/app.js`.
+
+Important frontend state:
+
+- `state.token`
+- `state.user`
+- `state.cities`
+- `state.tools`
+- `state.chat`
+- `state.authMode`
+- `state.pendingEmail`
+- `state.authConfig`
+
+Important frontend functions:
+
+- `setView(view)`: switches Plan / Ask / Cities / Tools / Trips
+- `loadCities()`: loads and renders city cards
+- `loadTools()`: loads and renders tools
+- `loadTrips()`: loads guest or authenticated trips
+- `sendChat(message, overrides)`: streams chat output
+- `loadChatOptions()`: loads chat modes/providers/depths
+- `loadAuthConfig()`: checks Google/email feature availability
+- `updateAuthUi()`: controls auth dialog state
+- `restoreSession()`: restores authenticated user
+- `bindEvents()`: attaches most frontend event handlers
+- `boot()`: app startup entrypoint
+
+When editing the frontend, be careful with:
+
+- Mobile bottom navigation safe area
+- Chat form and bottom nav overlap
+- Service worker cache busting
+- `hidden` and `is-hidden` state staying in sync
+- Auth dialog mobile bottom sheet layout
+- Horizontal overflow on 390px portrait width
+
+## 11. Auth Notes
+
+The auth system is in `api/auth.py`.
+
+Registration flow:
+
+1. User enters email/password.
+2. Backend creates or updates an unverified user.
+3. Backend creates a six-digit email verification code.
+4. If Resend is configured, code is emailed.
+5. User submits code to `/api/auth/verify-email`.
+6. Backend marks email verified and returns session token.
+
+Password login requires `email_verified_at` to be present.
+
+Google OAuth flow:
+
+1. Frontend links to `/api/auth/google/start`.
+2. Backend creates OAuth state and redirects to Google.
+3. Google redirects back to `/api/auth/google/callback`.
+4. Backend validates state, exchanges code, fetches user info, and creates/links user.
+5. Callback page stores token in `sessionStorage` and redirects home.
+
+Do not log or commit auth tokens, verification codes, OAuth secrets, or API keys.
+
+## 12. Chat Notes
+
+Chat is routed through `api/chat.py`.
+
+Important behavior:
+
+- `GET /api/chat` exposes available modes/providers/depths.
+- `POST /api/chat` streams SSE tokens.
+- Frontend parses `data:` lines and appends streamed tokens into the active AI message.
+- If no remote model is configured, local deterministic behavior keeps the app usable.
+
+The current product direction is to make chat more professional and specialized, not just more casual. Future iterations should improve:
+
+- Question quality
+- Follow-up interviewing
+- Mode-specific system instructions
+- Provider routing
+- Structured itinerary extraction into Trips
+- Tool/city context injection
+
+## 13. Mobile UI Notes
+
+v6.1.1 specifically targets an AI-first mobile portrait flow.
+
+Verified in browser QA at 390x844:
+
+- No horizontal overflow
+- Four primary tabs exist: Ask, Cities, Tools, Trips
+- Ask is selected by default
+- Active tab updates `aria-selected`
+- Chat panel is the first visible product surface
+- Welcome state, quick prompts, input, and send button fit in the first mobile viewport
+- Advanced chat controls reveal after the first message in a compact two-column mobile layout
+- The chat shell stays bounded to the mobile viewport after the conversation starts
+- The bottom tab bar hides while the chat input is focused
+- Browser console had no relevant errors
+
+Known caveat:
+
+- Browser QA used the in-app browser at desktop width and 390x844 mobile width.
+- Local service worker/cache can retain old CSS during development; bump cache strings when changing frontend assets.
+
+## 14. Service Worker and Cache
+
+Current service worker cache name:
+
+```js
+visepanda-shell-v611-responsive-qa2
+```
+
+Current frontend cache busting query:
+
+```text
+20260623-v611-responsive-qa2
+```
+
+When changing frontend CSS or JS, update:
+
+- `web/index.html`
+- `web/admin.html`
+- `web/sw.js`
+- `web/tests/stability-ui.test.js`
+
+This prevents phones and PWA installs from staying on stale UI.
+
+## 15. Deployment Checklist
+
+Before pushing:
+
+1. Confirm no secrets are in tracked files.
+2. Run backend tests.
+3. Run frontend tests.
+4. Run syntax checks.
+5. Run `git diff --check`.
+6. Confirm version numbers are aligned if releasing a named version.
+7. Confirm service worker cache name and asset query strings changed after frontend edits.
+
+After pushing:
+
+1. Confirm Vercel deployment succeeded.
+2. Open `https://go2china.space`.
+3. Check `/api/health`.
+4. Test mobile portrait layout.
+5. Test Sign in / Create account / Verify email.
+6. Test Ask preset and manual chat.
+7. Test Cities, Tools, and Trips tabs.
+
+## 16. Current Risks and Known Gaps
+
+### Product gaps
+
+- Chat answers are improving, but still need more professional multi-step consultation.
+- Chat output is not yet deeply converted into structured trip plans.
+- City cards and tools are useful but still mostly informational.
+- Trips need stronger integration with Chat and Tools.
+- Visa/entry guidance must avoid overclaiming and should encourage verification.
+
+### Engineering gaps
+
+- `web/app.js` is growing and should eventually be split by feature, but do not refactor casually.
+- `api/auth.py` owns many responsibilities and should be handled carefully.
+- SQLite is fine for current MVP but may need managed Postgres later.
+- Admin is functional but minimal.
+- No full browser E2E test suite exists yet.
+
+### UX gaps
+
+- Mobile layout is now stronger, but should be tested on real iOS Safari and Android Chrome.
+- Headless screenshot tooling showed viewport quirks; real-device visual QA is still recommended.
+- The app should eventually add clearer loading states for provider-backed chat latency.
+
+## 17. Recommended Next Iterations
+
+### Next iteration: Chat depth and professionalization
+
+Focus:
+
+- Add more professional preset question trees.
+- Make modes ask targeted follow-up questions.
+- Route different prompt classes to different providers where configured.
+- Add structured response sections: assumptions, questions, route, budget, risks, next actions.
+- Add a path from strong chat output to a saved trip draft.
+
+Suggested files:
+
+- `api/chat.py`
+- `web/index.html`
+- `web/app.js`
+- `web/app.css`
+- `web/tests/chat-stream.test.js`
+- `web/tests/stability-ui.test.js`
+- `tests/test_api_contract.py`
+
+### Following iteration: Trip planning loop
+
+Focus:
+
+- Convert AI route output into a saveable trip object.
+- Add trip detail view or expandable trip cards.
+- Connect trip readiness with tools.
+
+### Following iteration: Production auth/email validation
+
+Focus:
+
+- Test Resend delivery on the real domain.
+- Test Google OAuth on `go2china.space`.
+- Confirm redirect URI and domain settings.
+- Confirm production never exposes verification codes.
+
+### Following iteration: Data quality
+
+Focus:
+
+- Strengthen city data.
+- Add practical foreign-traveler details.
+- Add payment, SIM/eSIM, maps, rail, and hotel-area guidance.
+
+### Following iteration: Browser E2E tests
+
+Focus:
+
+- Add a small Playwright or equivalent smoke suite.
+- Cover Plan -> Ask, Register -> Verify, Cities search, Tools open, Trips guest save.
+
+## 18. Do Not Do These First
+
+- Do not rewrite the frontend stack before the product loop is clearer.
+- Do not migrate storage before production auth and Trips behavior are stable.
+- Do not commit API keys or OAuth secrets.
+- Do not enable `AUTH_EXPOSE_EMAIL_CODE=1` in production.
+- Do not treat historical Supabase docs as current implementation truth without checking code.
+- Do not make large refactors in `web/app.js` and `api/auth.py` without adding tests first.
+
+## 19. Quick New-Agent Start
+
+If you are a new agent taking over:
+
+1. Read `README.md`.
+2. Read this `HANDOFF.md`.
+3. Run:
+
+```powershell
+python -m unittest discover -s tests -v
+node --test web/tests/*.test.js
+```
+
+4. Start local server:
+
+```powershell
+python -c "from api.index import app; from wsgiref.simple_server import make_server; server = make_server('127.0.0.1', 8765, app); print('http://127.0.0.1:8765'); server.serve_forever()"
+```
+
+5. Open `http://127.0.0.1:8765`.
+6. Check Plan, Ask, Cities, Tools, Trips.
+7. Check mobile portrait at about 390x844.
+8. Only then start editing.
+
+## 20. Final Status
+
+The project is in a good continuation state.
+
+The current foundation has:
+
+- Working product shell
+- Working AI guide flow
+- Working account system with verification
+- Optional Google OAuth
+- Optional Resend email delivery
+- Guest and authenticated trip persistence
+- Searchable city data
+- Practical tools
+- Mobile-first app-style navigation
+- Contract and frontend structure tests
+- Vercel deployment path
+
+The best next move is not a rewrite. The best next move is to keep strengthening the professional travel-planning loop: better chat questions, better provider routing, better structured trip output, and tighter connection between Chat, Trips, Cities, and Tools.
